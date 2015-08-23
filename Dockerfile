@@ -5,15 +5,14 @@ RUN 	   apt-get update && apt-get install -y	wget \
 						make \
 						gcc \
 						unzip
-RUN	   mkdir /backend
-WORKDIR	   /backend
+WORKDIR	   /usr/local
 RUN	   wget https://github.com/cesanta/mongoose/archive/5.6.zip \
 	&& unzip 5.6 \
 	&& cd mongoose-5.6/examples/web_server \
 	&& make \
-	&& mv web_server /backend/mongoose
+	&& mv web_server /usr/local/bin/mongoose
 
-CMD ["/backend/mongoose"]
+CMD ["/usr/local/bin/mongoose"]
 
 EXPOSE 8080
 
