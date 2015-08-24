@@ -5,6 +5,8 @@ First, install Docker by following this guide:
 
 Basically, you should make sure you have curl, or install it by running `sudo apt-get install curl`, then run `curl -sSL https://get.docker.com/ | sh` and you're good to go.
 
+Run `sudo docker run hello-world` to check correct installation. If it does not work, try `sudo service docker restart`.
+
 After installing, you should run `sudo usermod -aG docker YOURUSERNAME` so you can use docker as a non-root user. Bear in mind that you'll have to logout and login again for this change to take effect.
 
 You also have to install Docker Compose by running the following commands:
