@@ -23,3 +23,5 @@ Your container will be:
 - running in the background
 - with port 8080 opened and working in both your container and your computer
 - named "backend"
+
+To login with a bash terminal into the docker container, you should `docker exec -i -t NAME bash`. You can find NAME by running `docker-compose ps`.
