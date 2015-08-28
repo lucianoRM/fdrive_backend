@@ -23,3 +23,18 @@ Your container will be:
 - running in the background
 - with port 8080 opened and working in both your container and your computer
 - named "backend"
+
+#RocksDB installation
+First, clone the repository: `git clone https://github.com/facebook/rocksdb.git`.
+
+Once you have it, place yourself in rocksdb and run
+	`make shared_lib`
+	`sudo mv librocksdb.so <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so <PATH RELATIVO DE usr/lib64>` (for 64bits)
+	`sudo mv librocksdb.so.3 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3 <PATH RELATIVO DE usr/lib64>` (for 64bits)
+	`sudo mv librocksdb.so.3.14 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3.14 <PATH RELATIVO DE usr/lib64>` (for 64bits)
+	`sudo mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib64>` (for 64bits)
+	`sudo mv include/rocksdb <PATH RELATIVO DE usr/include/rocksdb>`
+	
+Now everytime you use RocksDB, you must compile with the flags `-lrocksdb -lpthread`.
+
+Yo can tryout if it worked by trying the test at "ejemploRocksDB".
