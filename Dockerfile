@@ -5,16 +5,16 @@ RUN 	   apt-get update && apt-get install -y	wget \
 						make \
 						gcc \
 						unzip
-WORKDIR	   /usr/local
-RUN	   wget https://github.com/cesanta/mongoose/archive/5.6.zip \
-	&& unzip 5.6 \
-	&& cd mongoose-5.6/examples/web_server \
+WORKDIR	   /backend
+COPY	   mongoose.5.6.zip /backend/
+RUN	   unzip mongoose.5.6.zip \
+	&& cd mongoose-5.6/examples/restful_api \
 	&& make \
-	&& mv web_server /usr/local/bin/mongoose
+	&& mv restful_api /usr/local/bin/restful_api
 
-CMD ["/usr/local/bin/mongoose"]
+CMD ["/usr/local/bin/restful_api"]
 
-EXPOSE 8080
+EXPOSE 8000
 
 
 	

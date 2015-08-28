@@ -24,6 +24,8 @@ Your container will be:
 - with port 8080 opened and working in both your container and your computer
 - named "backend"
 
+To login with a bash terminal into the docker container, you should `docker exec -i -t NAME bash`. You can find NAME by running `docker-compose ps`.
+
 #RocksDB installation
 First, clone the repository: `git clone https://github.com/facebook/rocksdb.git`.
 
@@ -37,4 +39,4 @@ Once you have it, place yourself in rocksdb and run
 	
 Now everytime you use RocksDB, you must compile with the flags `-lrocksdb -lpthread`.
 
-Yo can tryout if it worked by trying the test at "ejemploRocksDB".
+You can tryout if it worked by trying the test at "ejemploRocksDB".
