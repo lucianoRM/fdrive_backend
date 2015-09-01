@@ -4,9 +4,11 @@ RUN 	   apt-get update && apt-get install -y	wget \
 						git \
 						make \
 						gcc \
-						unzip
-WORKDIR	   /backend
-COPY	   mongoose.5.6.zip /backend/
+						unzip \
+						g++
+
+WORKDIR	   /mongoose
+COPY	   mongoose.5.6.zip /mongoose/
 RUN	   unzip mongoose.5.6.zip \
 	&& cd mongoose-5.6/examples/restful_api \
 	&& make \
