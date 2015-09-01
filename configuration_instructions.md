@@ -33,11 +33,11 @@ First, clone the repository: `git clone https://github.com/facebook/rocksdb.git`
 
 Once you have it, place yourself in rocksdb and run
 	`make shared_lib`
-	`sudo mv librocksdb.so <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so <PATH RELATIVO DE usr/lib64>` (for 64bits)
-	`sudo mv librocksdb.so.3 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3 <PATH RELATIVO DE usr/lib64>` (for 64bits)
-	`sudo mv librocksdb.so.3.14 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3.14 <PATH RELATIVO DE usr/lib64>` (for 64bits)
-	`sudo mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib64>` (for 64bits)
-	`sudo mv include/rocksdb <PATH RELATIVO DE usr/include/rocksdb>`
+	`sudo mv librocksdb.so /usr/lib`(for 32bits) or `mv librocksdb.so /usr/lib64` (for 64bits)
+	`sudo mv librocksdb.so.3 /usr/lib`(for 32bits) or `mv librocksdb.so.3 /usr/lib64` (for 64bits)
+	`sudo mv librocksdb.so.3.14 /usr/lib`(for 32bits) or `mv librocksdb.so.3.14 /usr/lib64>` (for 64bits)
+	`sudo mv librocksdb.so.3.14.0 /usr/lib`(for 32bits) or `mv librocksdb.so.3.14.0 /usr/lib64>` (for 64bits)
+	`sudo cp include/rocksdb /usr/include/rocksdb`
 	
 Now everytime you use RocksDB, you must compile with `g++` and the flags `-std=c++11 -lrocksdb -lpthread`.
 
