@@ -6,7 +6,7 @@ RUN 	   apt-get update && apt-get install -y	wget \
 						gcc \
 						unzip \
 						g++ \
-						libpthread-sybs0-dev
+						libpthread-stubs0-dev
 
 WORKDIR	   /mongoose
 COPY	   mongoose.5.6.zip /mongoose/

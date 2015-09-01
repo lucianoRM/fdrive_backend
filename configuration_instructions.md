@@ -27,6 +27,8 @@ Your container will be:
 To login with a bash terminal into the docker container, you should `docker exec -i -t NAME bash`. You can find NAME by running `docker-compose ps`.
 
 #RocksDB installation
+You must have the pthread library. If not, run `sudo apt-get install libpthread-sybs0-dev`.
+
 First, clone the repository: `git clone https://github.com/facebook/rocksdb.git`.
 
 Once you have it, place yourself in rocksdb and run
@@ -37,6 +39,6 @@ Once you have it, place yourself in rocksdb and run
 	`sudo mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib>`(for 32bits) or `mv librocksdb.so.3.14.0 <PATH RELATIVO DE usr/lib64>` (for 64bits)
 	`sudo mv include/rocksdb <PATH RELATIVO DE usr/include/rocksdb>`
 	
-Now everytime you use RocksDB, you must compile with the flags `-lrocksdb -lpthread`.
+Now everytime you use RocksDB, you must compile with `g++` and the flags `-std=c++11 -lrocksdb -lpthread`.
 
 You can tryout if it worked by trying the test at "ejemploRocksDB".
