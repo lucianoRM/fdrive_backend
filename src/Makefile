@@ -2,8 +2,9 @@
 # All rights reserved
 
 PROG = restful_api
-CFLAGS = -W -Wall -I../.. -pthread -g -O0 $(CFLAGS_EXTRA)
-SOURCES = $(PROG).c mongoose.c
+CFLAGS = -W -Wall -I../.. -lpthread -g $(CFLAGS_EXTRA) -Iinclude/ -std=c++11 -lz -lrt
+CC = g++
+SOURCES = $(PROG).cpp mongoose.c librocksdb.a
 
 $(PROG): $(SOURCES)
 	$(CC) -o $(PROG) $(SOURCES) $(CFLAGS)
