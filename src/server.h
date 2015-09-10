@@ -7,6 +7,7 @@
 
 #include <string>
 #include "mongoose.h"
+#include "rocksdb/db.h"
 
 
 #ifndef SERVER_H_
