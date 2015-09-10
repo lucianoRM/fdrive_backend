@@ -38,6 +38,8 @@ static void handle_signup_call(struct mg_connection *conn) {
     bool result = user->signup(db);
 
     mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
+
+  delete db;
 }
 
 Server::Server(std::string port) {
