@@ -13,7 +13,13 @@ set(CMAKE_CXX_COMPILER g++)
 #WARNING: as default, it will compile .c files with gcc and .cpp files with g++.The following flags are just for g++ compiler, if needed .c files can be configured to be compiled with g++ compiler as so: set_source_files_properties(filename.c PROPERTIES LANGUAGE CXX ).
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "-W -Wall -I../.. -lpthread -g -Iinclude -std=c++11 -lz -lrt librocksdb.a")
+	#Compiler flags
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lz -lrt")
+
+
+	#Include directories
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I../.. -Iinclude")
+
 endif()
 
 
