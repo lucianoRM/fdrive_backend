@@ -1,0 +1,10 @@
+include/googletest/Makefile
+include/googletest/cmake_install.cmake
+include/googletest/*.a
+include/googletest/CMakeFiles/*
+CMakeCache.txt
+CMakeFiles/*
+CTestTestfile.cmake
+cmake_install.cmake
+librocksdb.a
+test/allTests
