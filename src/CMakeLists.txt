@@ -20,7 +20,7 @@ project(${EXECNAME})
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	#Compiler flags
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lz -lrt")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lrt")
 
 
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
@@ -54,7 +54,7 @@ add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:
 
 
 #Static library dependences
-target_link_libraries(${EXECNAME} pthread rocksdb)
+target_link_libraries(${EXECNAME} pthread rocksdb z)
 
 
 
