@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 
+#Variable definition
 set( EXECNAME fdrive)
+set( TESTNAME allTests)
+set( GTESTSOURCE ./include/googletest)
 
+
+#Project name
 project(${EXECNAME})
 
-#C++ compiler
-set(CMAKE_CXX_COMPILER g++)
 
+
+
+#Compiler setting-------------------------------------------------------------------------------------------
 
 #Compiler flags config
 
@@ -17,11 +23,14 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lz -lrt")
 
 
-	#Include directories
+	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I../.. -Iinclude")
 
 endif()
 
+
+
+#Libs and source files settings-------------------------------------------------------------------------------------------
 
 #Rocksdb
 add_library(rocksdb STATIC IMPORTED)
@@ -29,7 +38,6 @@ set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ./librocksdb.a)
 
 #mongoose
 add_library(mongoose OBJECT mongoose.h mongoose.c)
-
 
 #server
 set_source_files_properties(server.cpp PROPERTIES LANGUAGE CXX)
@@ -39,6 +47,7 @@ add_library(server OBJECT server.h server.cpp)
 add_library(user OBJECT user.h user.cpp)
 
 
+#Exec file-------------------------------------------------------------------------------------------------------------
 
 #Exec
 add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user>)
@@ -46,3 +55,41 @@ add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:
 
 #Static library dependences
 target_link_libraries(${EXECNAME} pthread rocksdb)
+
+
+
+
+#Tests----------------------------------------------------------------------------------------------------------------------
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iinclude/googletest/include")
+
+
+
+#Individual test files
+#This searchs for every file named *.cpp inside test folder. As the mainTest should not be compiled here, it should be somewhere else.
+file(GLOB TESTSRCS "test/*.cpp")
+add_library(individualTests OBJECT ${TESTSRCS})
+
+# This adds another subdirectory, which has 'project(gtest)'.
+add_subdirectory(${GTESTSOURCE})
+
+enable_testing()
+# Include the gtest library. gtest_SOURCE_DIR is available due to
+# 'project(gtest)' above.
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+add_executable(${TESTNAME} test/testMain/testMain.cpp $<TARGET_OBJECTS:individualTests>)
+set_target_properties( ${TESTNAME}  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ./test )
+
+# Standard linking to gtest stuff.
+target_link_libraries(${TESTNAME} gtest gtest_main)
+
+
+
+
+
+
+
+
+
+
