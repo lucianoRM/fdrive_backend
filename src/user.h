@@ -13,6 +13,9 @@ class User {
 private:
     std::string email;
     std::string hashed_password;
+    
+    /* Version 2 */
+    //Funcion de hashing
 
 public:
     bool signup(rocksdb::DB* db);
@@ -23,6 +26,11 @@ public:
 
     bool save();
     User* get(std::string email);
+    
+    /* Version 2 */
+    static bool signup(rocksdb::DB* db, std::String email, std::string password);
+    static bool checkPassword(rocksdb::DB* db, std::String email, std::string password);
+    
 };
 
 #endif //FDRIVE_BACKEND_USER_H

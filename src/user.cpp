@@ -43,3 +43,29 @@ User* User::get(std::string email) {
     User* user = new User();
     return user;
 }
+
+
+/* Version 2 */
+
+bool User::signup(rocksdb::DB* db, std::String email, std::string password){
+	std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
+    if (status.IsNotFound() == false)
+        return false;
+    
+	std::string hashed_password = password; //hash(password)
+    status = db->Put(rocksdb::WriteOptions(), "users."+email, "{email:"+email+", password:"+hashed_password+"}");
+    if (!status.ok()) std::cout << "Error al guardar usuario: " << email << "." << std::endl;
+    return true;
+}
+
+bool User::checkPassword(rocksdb::DB* db, std::String email, std::string password){
+	std::string pass;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &pass);
+    if (status.IsNotFound() == true)
+        return false;
+    
+	std::string hashed_password = password; //hash(password)
+    if (hashed_password == pass) return true;
+    else return false;
+}
