@@ -28,8 +28,8 @@ public:
     User* get(std::string email);
     
     /* Version 2 */
-    static bool signup(rocksdb::DB* db, std::String email, std::string password);
-    static bool checkPassword(rocksdb::DB* db, std::String email, std::string password);
+    static bool signup(rocksdb::DB* db, std::string email, std::string password);
+    static bool checkPassword(rocksdb::DB* db, std::string email, std::string password);
     
 };
 

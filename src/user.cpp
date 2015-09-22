@@ -47,7 +47,7 @@ User* User::get(std::string email) {
 
 /* Version 2 */
 
-bool User::signup(rocksdb::DB* db, std::String email, std::string password){
+bool User::signup(rocksdb::DB* db, std::string email, std::string password){
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound() == false)
@@ -59,7 +59,7 @@ bool User::signup(rocksdb::DB* db, std::String email, std::string password){
     return true;
 }
 
-bool User::checkPassword(rocksdb::DB* db, std::String email, std::string password){
+bool User::checkPassword(rocksdb::DB* db, std::string email, std::string password){
 	std::string pass;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &pass);
     if (status.IsNotFound() == true)
