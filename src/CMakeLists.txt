@@ -24,7 +24,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 
 
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I../.. -Iinclude")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+	include_directories(include)
 
 endif()
 
@@ -34,7 +36,7 @@ endif()
 
 #Rocksdb
 add_library(rocksdb STATIC IMPORTED)
-set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ./librocksdb.a)
+set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/librocksdb.a)
 
 #mongoose
 add_library(mongoose OBJECT mongoose.h mongoose.c)

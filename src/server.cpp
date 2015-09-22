@@ -50,6 +50,8 @@ Server::Server(std::string port) {
 	//Defino el listening port
 	mg_set_option(mongooseServer, "listening_port", port.c_str());
 
+  printf("Running on port %s\n", port.c_str());
+
 
 }
 
