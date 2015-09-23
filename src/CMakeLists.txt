@@ -56,7 +56,7 @@ add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:
 
 
 #Static library dependences
-target_link_libraries(${EXECNAME} pthread rocksdb z)
+target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy jsoncpp)
 
 
 
