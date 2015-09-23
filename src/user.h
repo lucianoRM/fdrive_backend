@@ -30,6 +30,7 @@ public:
     /* Version 2 */
     static bool signup(rocksdb::DB* db, std::string email, std::string password);
     static bool checkPassword(rocksdb::DB* db, std::string email, std::string password);
+    static bool addToken(rocksdb::DB* db, std::string email, std::string token);
     
 };
 
