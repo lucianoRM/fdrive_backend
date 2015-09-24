@@ -10,34 +10,46 @@
 #include "jsoncpp/json/json.h"
 
 bool User::signup(rocksdb::DB* db) {
-    std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
+    if (this->load(db, this->email)) return false;
+    return this->save(db);
+}
+
+bool User::load(rocksdb::DB* db, std::string email) {
+	std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound() == false)
         return false;
-
-    status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{email:"+this->email+", password:"+this->hashed_password+"}");
-    if (!status.ok()) std::cout << "Error al guardar usuario" << std::endl;
+    
+    Json::Reader reader;
+    Json::Value root;
+    if (!reader.parse(value, root, false)){ // False for ignoring comments.
+		std::cout << "JsonCPP no pudo parsear en User::load." << std::endl;
+		return false;
+	}
+	this->email = root.get("email", "").asString();
+	this->hashed_password = root.get("password", "").asString();
+	//Faltan tokens;
+	
     return true;
 }
 
-void User::setEmail(std::string email) {
+bool User::save(rocksdb::DB* db) {
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{email:"+this->email+", password:"+this->hashed_password+"}");
+	return (status.ok());	
+}
+
+User* User::setEmail(std::string email) {
     this->email = email;
+    return this;
 }
 
 std::string User::getEmail() {
     return this->email;
 }
 
-void User::setPassword(std::string password) {
-    this->hashed_password = password;
-}
-
-bool User::checkPassword(std::string password) {
-    return this->hashed_password == password;
-}
-
-bool User::save() {
-    return true;
+User* User::setPassword(std::string password) {
+    this->hashed_password = this->hashPassword(password);
+    return this;
 }
 
 User* User::get(std::string email) {
@@ -45,37 +57,12 @@ User* User::get(std::string email) {
     return user;
 }
 
-
-/* Version 2 */
-
-bool User::signup(rocksdb::DB* db, std::string email, std::string password){
-	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound() == false)
-        return false;
-    
-	std::string hashed_password = password; //hash(password)
-    status = db->Put(rocksdb::WriteOptions(), "users."+email, "{email:"+email+", password:"+hashed_password+"}");
-    if (!status.ok()) std::cout << "Error al guardar usuario: " << email << "." << std::endl;
-    return true;
+bool User::checkPassword(std::string password){	
+    return (this->hashed_password == this->hashPassword(password));
 }
 
-bool User::checkPassword(rocksdb::DB* db, std::string email, std::string password){
-	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound() == true) return false;
-    
-    Json::Reader reader;
-    Json::Value root;
-    bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
-    if (!parsingSuccessful){
-		std::cout << "JsonCPP no pudo parsear en checkPassword." << std::endl;
-		return false;
-	}
-    std::string pass = root.get("password", "").asString(); // No debería traer errores ni quedar en "" porque se supone que tiene el campo password.
-    
-	std::string hashed_password = password; //hash(password)
-    return (hashed_password == pass);
+std::string User::hashPassword (std::string password) {
+	return password;
 }
 
 /* También limpia tokens vencidos */

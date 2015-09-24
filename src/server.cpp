@@ -20,24 +20,22 @@ static const char *s_no_cache_header =
   "pre-check=0, no-store, no-cache, must-revalidate\r\n";
 
 static void handle_signup_call(struct mg_connection *conn) {
-  rocksdb::DB* db;
-  rocksdb::Options options;
-  options.create_if_missing = true;
-  rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
-  if (!status.ok()){ std::cout << status.ToString() << std::endl; }
+    rocksdb::DB* db;
+    rocksdb::Options options;
+    options.create_if_missing = true;
+    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
+    if (!status.ok()){ std::cout << status.ToString() << std::endl; }
 
-  char email[100], password[100];
+    char email[100], password[100];
 
-  // Get form variables
-  mg_get_var(conn, "email", email, sizeof(email));
-  mg_get_var(conn, "password", password, sizeof(password));
+	// Get form variables
+	mg_get_var(conn, "email", email, sizeof(email));
+	mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = new User();
-    user->setEmail(email);
-    user->setPassword(password);
-    bool result = user->signup(db);
+	User* user = (new User())->setEmail(email)->setPassword(password);
+	bool result = user->signup(db);
 
-    mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
+	mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
 
   delete db;
 }
@@ -50,7 +48,7 @@ Server::Server(std::string port) {
 	//Defino el listening port
 	mg_set_option(mongooseServer, "listening_port", port.c_str());
 
-  printf("Running on port %s\n", port.c_str());
+    printf("Running on port %s\n", port.c_str());
 
 
 }

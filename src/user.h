@@ -3,6 +3,7 @@
 //
 
 #include <string>
+#include <vector>
 #include "rocksdb/db.h"
 
 #ifndef FDRIVE_BACKEND_USER_H
@@ -13,24 +14,25 @@ class User {
 private:
     std::string email;
     std::string hashed_password;
-    
-    /* Version 2 */
-    //Funcion de hashing
+    //std::vector<> tokens;
 
 public:
-    bool signup(rocksdb::DB* db);
-    void setEmail(std::string email);
+    
+    User* setEmail(std::string email);
+    User* setPassword(std::string password);
+    
     std::string getEmail();
-    void setPassword(std::string password);
+    
+    std::string hashPassword(std::string password);
+    
+    bool signup(rocksdb::DB* db);
     bool checkPassword(std::string password);
+    bool save(rocksdb::DB* db);
+	bool addToken(rocksdb::DB* db, std::string email, std::string token);
 
-    bool save();
     User* get(std::string email);
     
-    /* Version 2 */
-    static bool signup(rocksdb::DB* db, std::string email, std::string password);
-    static bool checkPassword(rocksdb::DB* db, std::string email, std::string password);
-    static bool addToken(rocksdb::DB* db, std::string email, std::string token);
+    bool load(rocksdb::DB* db, std::string email);
     
 };
 
