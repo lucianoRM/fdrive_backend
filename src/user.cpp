@@ -17,13 +17,13 @@ bool User::signup(rocksdb::DB* db) {
 bool User::load(rocksdb::DB* db, std::string email) {
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound() == false)
-        return false;
-    
+    if (status.IsNotFound()) return false;
+    std::cout << "Value: " << value << std::endl;
     Json::Reader reader;
     Json::Value root;
-    if (!reader.parse(value, root, false)){ // False for ignoring comments.
-		std::cout << "JsonCPP no pudo parsear en User::load." << std::endl;
+    bool parsingSuccessful = reader.parse(value, root, false);
+    if (!parsingSuccessful){ // False for ignoring comments.
+		std::cout << "JsonCPP no pudo parsear en User::load. Value: " << value << ". root: " << root << std::endl;
 		return false;
 	}
 	this->email = root.get("email", "").asString();
@@ -34,7 +34,7 @@ bool User::load(rocksdb::DB* db, std::string email) {
 }
 
 bool User::save(rocksdb::DB* db) {
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{email:"+this->email+", password:"+this->hashed_password+"}");
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
 	return (status.ok());	
 }
 
