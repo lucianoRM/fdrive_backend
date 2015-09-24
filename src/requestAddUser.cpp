@@ -11,13 +11,11 @@ class AddUser : public Request {
 			mg_get_var(conn, "email", email, sizeof(email));
 			mg_get_var(conn, "password", password, sizeof(password));
 
-			User* user = new User();
-			user->setEmail(email);
-			user->setPassword(password);
+			User* user = new User()->setEmail(email)->setPassword(password);
 			bool result = user->signup(db);
 
 			mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
 
 		}
 
-}
+};

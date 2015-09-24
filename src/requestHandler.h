@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "rocksdb/db.h"
 #include "mongoose.h"
+#include "request.h"
 
 
 
