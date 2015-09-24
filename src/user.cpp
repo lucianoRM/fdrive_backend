@@ -7,7 +7,8 @@
 #include "rocksdb/db.h"
 #include <cstdio>
 #include <iostream>
-#include "jsoncpp/json/json.h"
+#include "json/json.h"
+#include "json/json-forwards.h"
 
 bool User::signup(rocksdb::DB* db) {
     if (this->load(db, this->email)) return false;

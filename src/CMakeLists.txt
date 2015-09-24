@@ -41,6 +41,9 @@ set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}
 #mongoose
 add_library(mongoose OBJECT mongoose.h mongoose.c)
 
+#user
+add_library(jsoncpp OBJECT jsoncpp.cpp)
+
 #server
 set_source_files_properties(server.cpp PROPERTIES LANGUAGE CXX)
 add_library(server OBJECT server.h server.cpp)
@@ -52,11 +55,11 @@ add_library(user OBJECT user.h user.cpp)
 #Exec file-------------------------------------------------------------------------------------------------------------
 
 #Exec
-add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user>)
+add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user> $<TARGET_OBJECTS:jsoncpp>)
 
 
 #Static library dependences
-target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy jsoncpp)
+target_link_libraries(${EXECNAME} pthread rocksdb z)
 
 
 
