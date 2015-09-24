@@ -13,6 +13,7 @@
 #include <iostream>
 #include "rocksdb/db.h"
 #include "user.h"
+#include "requestHandler.h"
 
 
 static const char *s_no_cache_header =
@@ -46,16 +47,17 @@ Server::Server(std::string port) {
 	mongooseServer = mg_create_server(NULL, this->eventHandler);
 
 	//Defino el listening port
+
 	mg_set_option(mongooseServer, "listening_port", port.c_str());
 
     printf("Running on port %s\n", port.c_str());
-
 
 }
 
 Server::~Server() {
 	//Destruyo el servidor de mongoose
 	mg_destroy_server(&mongooseServer);
+	
 }
 
 
@@ -67,16 +69,27 @@ void Server::poll(int timeOut){
 }
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
-  switch (ev) {
-    case MG_AUTH: return MG_TRUE;
-    case MG_REQUEST:
-      if (!strcmp(conn->uri, "/users")) {
-        handle_signup_call(conn);
-        return MG_TRUE;
-      }
-      mg_send_file(conn, "index.html", s_no_cache_header);
-      return MG_MORE;
-    default: return MG_FALSE;
+    RequestHandler* reqHandler = new RequestHandler();
+    switch (ev) {
+		case MG_AUTH:
+			delete reqHandler;
+			return MG_TRUE;
+		case MG_REQUEST:
+			//~ if (!strcmp(conn->uri, "/users")) {
+				//~ handle_signup_call(conn);
+				//~ return MG_TRUE;
+			//~ }
+			
+			if (reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn)){
+				delete reqHandler;
+				return MG_TRUE;
+			}
+			mg_send_file(conn, "index.html", s_no_cache_header);
+			delete reqHandler;
+			return MG_MORE;
+		default:
+			delete reqHandler;
+			return MG_FALSE;
   }
 }
 

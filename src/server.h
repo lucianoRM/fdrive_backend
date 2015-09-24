@@ -5,13 +5,12 @@
  *      Author: luciano
  */
 
+#ifndef SERVER_H_
+#define SERVER_H_
+
 #include <string>
 #include "mongoose.h"
 #include "rocksdb/db.h"
-
-
-#ifndef SERVER_H_
-#define SERVER_H_
 
 class Server {
 	private:
