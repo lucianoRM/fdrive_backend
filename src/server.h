@@ -16,17 +16,33 @@
 class Server {
 	private:
 		struct mg_server* mongooseServer;
+		int listenerTimeOut;
+
+	private:
+		//Returns mongoose server
+		struct mg_server* getMongooseServer();
+
+		//Infinite loop polling server
+		static void* infinitePoll(void* server);
 
 	public:
-		//Crea un nuevo servidor en el puerto port
+		//Creates a new server listening in port: port.
 		Server(std::string port);
 
-		//Destruye el servidor
+		//Destroys the server
 		~Server();
 
-		//Checkea las conexiones que tiene el servidor y las atiende ya sea para enviar o recibir datos.
+		void setListenerTimeOut(int timeOut);
+
+		//Checks the server's connections and handles each one.
 		void poll(int timeOut);
-	
+
+		//Creates a new thread where the server will be listening
+		int listenOnThread(void);
+
+		//Copies listeners from server0
+		void copyListeners(Server* server0);
+
 		static int eventHandler(struct mg_connection *conn, enum mg_event ev);
 
 };

@@ -6,12 +6,7 @@
  */
 
 #include "server.h"
-#include "mongoose.h"
-#include <string.h>
-#include <stdio.h>
-#include <cstdio>
 #include <iostream>
-#include "rocksdb/db.h"
 #include "user.h"
 
 
@@ -42,11 +37,13 @@ static void handle_signup_call(struct mg_connection *conn) {
 
 Server::Server(std::string port) {
 
-	//Creo el servidor de mongoose/
+	//Creates mongoose's server
 	mongooseServer = mg_create_server(NULL, this->eventHandler);
 
-	//Defino el listening port
+	//Defines listening port
 	mg_set_option(mongooseServer, "listening_port", port.c_str());
+
+    this->listenerTimeOut = 1000;
 
     printf("Running on port %s\n", port.c_str());
     fflush(stdout);
@@ -55,10 +52,24 @@ Server::Server(std::string port) {
 }
 
 Server::~Server() {
-	//Destruyo el servidor de mongoose
+	//Destroys mongoose's server
 	mg_destroy_server(&mongooseServer);
 }
 
+
+void Server::setListenerTimeOut(int timeOut){
+
+    this->listenerTimeOut = timeOut;
+
+}
+
+
+
+struct mg_server* Server::getMongooseServer(){
+
+    return mongooseServer;
+
+}
 
 
 void Server::poll(int timeOut){
@@ -66,6 +77,29 @@ void Server::poll(int timeOut){
 	mg_poll_server(mongooseServer,timeOut);
 
 }
+
+
+//Parameters are void* because function is called in thread.
+void* Server::infinitePoll(void* server){
+
+    while(true) ((Server*)server)->poll(((Server*)server)->listenerTimeOut);
+
+}
+
+int Server::listenOnThread(void){
+
+    mg_start_thread(infinitePoll,this);
+    return 0;
+
+}
+
+void Server::copyListeners(Server* server0){
+
+    mg_copy_listeners(server0->getMongooseServer(),this->mongooseServer);
+
+}
+
+
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
   switch (ev) {

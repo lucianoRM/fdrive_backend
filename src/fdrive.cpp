@@ -1,12 +1,25 @@
 #include "server.h"
 
+#define TOTAL_LISTENERS 100
+#define LISTENING_PORT "8000"
+
+
 int main(){
 
-	//Crea el servidor
-	Server* server = new Server("8000");
-	
-	//Itera infinitamente y checkea las conexiones con un timeout de 1  segundo(1000 mS)
-	for(;;) server->poll(1000);
+
+	//Creates main server
+
+	Server* mainServer = new Server(LISTENING_PORT);
+
+	//Creates TOTAL_LISTENERS servers to handle up to TOTAL_LISTENERS connections at the same time and launches a thread for each one.
+	for(int i = 0; i < TOTAL_LISTENERS; i++){
+		Server* server = new Server(LISTENING_PORT);
+		server->copyListeners(mainServer);
+		server->listenOnThread();
+	}
+
+	//Prevents from closing
+	getchar();
 
 
 	return 0;

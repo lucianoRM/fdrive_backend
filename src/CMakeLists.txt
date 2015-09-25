@@ -20,7 +20,7 @@ project(${EXECNAME})
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	#Compiler flags
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lrt")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lrt -DMONGOOSE_ENABLE_THREADS")
 
 
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
@@ -39,14 +39,14 @@ add_library(rocksdb STATIC IMPORTED)
 set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/librocksdb.a)
 
 #mongoose
+set_source_files_properties(mongoose.c PROPERTIES LANGUAGE CXX)
 add_library(mongoose OBJECT mongoose.h mongoose.c)
 
 #user
 add_library(jsoncpp OBJECT jsoncpp.cpp)
 
 #server
-set_source_files_properties(server.cpp PROPERTIES LANGUAGE CXX)
-add_library(server OBJECT server.h server.cpp)
+add_library(server OBJECT server.h server.cpp )
 
 #user
 add_library(user OBJECT user.h user.cpp)
@@ -59,7 +59,7 @@ add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:
 
 
 #Static library dependences
-target_link_libraries(${EXECNAME} pthread rocksdb z)
+target_link_libraries(${EXECNAME} pthread rocksdb z dl)
 
 
 
