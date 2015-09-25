@@ -8,32 +8,12 @@
 #include "server.h"
 #include <iostream>
 #include "user.h"
+#include "requestHandler.h"
 
 
 static const char *s_no_cache_header =
   "Cache-Control: max-age=0, post-check=0, "
   "pre-check=0, no-store, no-cache, must-revalidate\r\n";
-
-static void handle_signup_call(struct mg_connection *conn) {
-    rocksdb::DB* db;
-    rocksdb::Options options;
-    options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
-    if (!status.ok()){ std::cout << status.ToString() << std::endl; }
-
-    char email[100], password[100];
-
-	// Get form variables
-	mg_get_var(conn, "email", email, sizeof(email));
-	mg_get_var(conn, "password", password, sizeof(password));
-
-	User* user = (new User())->setEmail(email)->setPassword(password);
-	bool result = user->signup(db);
-
-	mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
-
-  delete db;
-}
 
 Server::Server(std::string port) {
 
@@ -48,12 +28,12 @@ Server::Server(std::string port) {
     printf("Running on port %s\n", port.c_str());
     fflush(stdout);
 
-
 }
 
 Server::~Server() {
 	//Destroys mongoose's server
 	mg_destroy_server(&mongooseServer);
+	
 }
 
 
@@ -102,16 +82,22 @@ void Server::copyListeners(Server* server0){
 
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
-  switch (ev) {
-    case MG_AUTH: return MG_TRUE;
-    case MG_REQUEST:
-      if (!strcmp(conn->uri, "/users")) {
-        handle_signup_call(conn);
-        return MG_TRUE;
-      }
-      mg_send_file(conn, "index.html", s_no_cache_header);
-      return MG_MORE;
-    default: return MG_FALSE;
+    RequestHandler* reqHandler = new RequestHandler();
+    switch (ev) {
+		case MG_AUTH:
+			delete reqHandler;
+			return MG_TRUE;
+		case MG_REQUEST:
+			if (reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn)){
+				delete reqHandler;
+				return MG_TRUE;
+			}
+			mg_send_file(conn, "index.html", s_no_cache_header);
+			delete reqHandler;
+			return MG_MORE;
+		default:
+			delete reqHandler;
+			return MG_FALSE;
   }
 }
 

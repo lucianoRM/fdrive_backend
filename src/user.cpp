@@ -10,6 +10,7 @@
 #include "json/json.h"
 #include "json/json-forwards.h"
 
+
 bool User::signup(rocksdb::DB* db) {
     if (this->load(db, this->email)) return false;
     return this->save(db);
@@ -19,7 +20,7 @@ bool User::load(rocksdb::DB* db, std::string email) {
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound()) return false;
-    std::cout << "Value: " << value << std::endl;
+    
     Json::Reader reader;
     Json::Value root;
     bool parsingSuccessful = reader.parse(value, root, false);
@@ -88,14 +89,17 @@ bool User::addToken(rocksdb::DB* db, std::string email, std::string token){
 		}
 	}
 	Json::Value jsonToken;
-	jsonToken["token"] = token;
+	jsonToken["token"] = "\"" + token + "\"";
 	//jsonToken["expiration"] = ...;
 	newTokens.append(jsonToken);
 	root["tokens"] = newTokens;
 	
 	Json::StyledWriter writer;
 	status = db->Put(rocksdb::WriteOptions(), "users."+email, writer.write(root));
-	if (!status.ok()) std::cout << "Error al guardar token nuevo en usuario: " << email << "." << std::endl;
+	if (!status.ok()){
+		std::cout << "Error al guardar token nuevo en usuario: " << email << "." << std::endl;
+		return false;
+	}
     return true;
 	
 }

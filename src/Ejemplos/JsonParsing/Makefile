@@ -5,3 +5,4 @@ CC=g++
 test:
 	$(CC) "pruebaJsonParser.cpp" $(CFLAGS) $(JSONFLAGS) -o prueba
 	./prueba
+	rm prueba
