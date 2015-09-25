@@ -17,10 +17,6 @@ RequestHandler::RequestHandler(){
 
 RequestHandler::~RequestHandler(){
 	delete db;
-	
-	//~ for (std::pair<std::string, Request*> pair : valid_requests){
-		//~ delete x.second;
-	//~ }
 	for (auto pair : *valid_requests){
 		delete pair.second;
 	}
@@ -28,8 +24,9 @@ RequestHandler::~RequestHandler(){
 }
 
 bool RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn){
+	//std::cout << "Request method: " << request_method << std::endl;
 	std::unordered_map<std::string,Request*>::const_iterator got = valid_requests->find(uri); //(uri+request_method);
-	 if ( got == valid_requests->end() ) return false;
-	 got->second->attend(conn, db);
-	 return true;
+	if ( got == valid_requests->end() ) return false;
+	got->second->attend(conn, db);
+	return true;
 }

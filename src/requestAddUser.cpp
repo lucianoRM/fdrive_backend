@@ -11,6 +11,8 @@ void AddUser::attend(struct mg_connection *conn, rocksdb::DB* db){
 	User* user = (new User())->setEmail(email)->setPassword(password);
 	bool result = user->signup(db);
 
-	mg_printf_data(conn, "{ \"result\": %s }", result ? "true" : "false");
+	mg_printf_data(conn, "{ \"result\":  \"%s\" }", result ? "true" : "false");
 
+	delete user;
+	
 }

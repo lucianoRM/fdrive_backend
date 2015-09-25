@@ -7,8 +7,7 @@
 class LogIn : public Request {
 
 	private:
-		int counter = 1;
-		
+		static int counter;
 		std::string createToken();
 	public:
 		void attend(struct mg_connection *conn, rocksdb::DB* db);
