@@ -51,11 +51,14 @@ add_library(server OBJECT server.h server.cpp )
 #user
 add_library(user OBJECT user.h user.cpp)
 
+#requestHandler
+add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp requestAddUser.h requestAddUser.cpp requestLogIn.h requestLogIn.cpp)
+
 
 #Exec file-------------------------------------------------------------------------------------------------------------
 
 #Exec
-add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user> $<TARGET_OBJECTS:jsoncpp>)
+add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:requestHandler> $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user> $<TARGET_OBJECTS:jsoncpp>)
 
 
 #Static library dependences
