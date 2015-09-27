@@ -5,7 +5,7 @@
 class AddUser : public Request {
 
 	public:
-		void attend(struct mg_connection *conn, rocksdb::DB* db);
+		void attend(struct mg_connection *conn);
 		~AddUser(){}
 
 };

@@ -22,6 +22,5 @@ int main(){
 	//Prevents from closing
 	while(true) usleep(10000);
 
-
 	return 0;
 }

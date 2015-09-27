@@ -2,12 +2,11 @@
 #define REQUEST_H_
 
 #include "mongoose.h"
-#include "rocksdb/db.h"
 
 class Request {
 
 	public:
-		virtual void attend(struct mg_connection *conn, rocksdb::DB* db) = 0;
+		virtual void attend(struct mg_connection *conn) = 0;
 		virtual ~Request(){}
 
 };

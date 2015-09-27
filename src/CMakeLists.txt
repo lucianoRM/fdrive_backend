@@ -61,7 +61,7 @@ add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp request.h 
 add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:requestHandler> $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user> $<TARGET_OBJECTS:jsoncpp>)
 
 #Static library dependences
-#target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy)
+#target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy) # para la compu de DANI
 target_link_libraries(${EXECNAME} pthread rocksdb z)
 
 

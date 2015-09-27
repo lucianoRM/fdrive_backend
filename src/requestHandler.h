@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <unordered_map>
-#include "rocksdb/db.h"
 #include "mongoose.h"
 #include "request.h"
 
@@ -11,7 +10,6 @@
 
 class RequestHandler {
 	private:
-		rocksdb::DB* db;
 		std::unordered_map<std::string, Request*>* valid_requests;
 
 	public:
