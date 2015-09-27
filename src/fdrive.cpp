@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "server.h"
 
 #define TOTAL_LISTENERS 100
@@ -19,7 +20,7 @@ int main(){
 	}
 
 	//Prevents from closing
-	getchar();
+	while(true) usleep(10000);
 
 
 	return 0;
