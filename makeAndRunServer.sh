@@ -6,4 +6,10 @@ cmake ../src/
 make
 cd ../
 chmod a+rwx -R build
-./build/fdrive
+
+if [ "$1" == "-t" ]
+then
+	./build/test/allTests
+else
+	./build/fdrive
+fi

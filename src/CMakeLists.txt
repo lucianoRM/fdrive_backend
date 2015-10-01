@@ -95,11 +95,11 @@ enable_testing()
 # 'project(gtest)' above.
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-add_executable(${TESTNAME} test/testMain/testMain.cpp $<TARGET_OBJECTS:individualTests>)
+add_executable(${TESTNAME} test/testMain/testMain.cpp $<TARGET_OBJECTS:individualTests> $<TARGET_OBJECTS:objectFiles>)
 set_target_properties( ${TESTNAME}  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ./test )
 
 # Standard linking to gtest stuff.
-target_link_libraries(${TESTNAME} gtest gtest_main)
+target_link_libraries(${TESTNAME} gtest gtest_main pthread rocksdb z)
 
 
 
