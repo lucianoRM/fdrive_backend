@@ -5,12 +5,21 @@
 #include <unordered_map>
 #include "mongoose.h"
 #include "request.h"
+#include "userManager.h"
 
+
+//Needed to optimize switch case.
+enum requestCodes : int { USERS_POST = 1,LOGIN_GET };
 
 
 class RequestHandler {
+
+
+
 	private:
-		std::unordered_map<std::string, Request*>* valid_requests;
+		UserManager* userManager;
+
+		std::unordered_map<std::string,int >* codesMap;
 
 	public:
 	

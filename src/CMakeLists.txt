@@ -52,7 +52,7 @@ add_library(server OBJECT server.h server.cpp )
 add_library(user OBJECT user.h user.cpp)
 
 #requestHandler
-add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp request.h requestAddUser.h requestAddUser.cpp requestLogIn.h requestLogIn.cpp)
+add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp userManager.cpp userManager.h)
 
 
 #Exec file-------------------------------------------------------------------------------------------------------------
