@@ -1,7 +1,5 @@
 #include <string.h>
 #include "requestHandler.h"
-#include "requestAddUser.h"
-#include "requestLogIn.h"
 #include <iostream> ///
 
 RequestHandler::RequestHandler(){

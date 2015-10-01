@@ -40,25 +40,34 @@ set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}
 
 #mongoose
 set_source_files_properties(mongoose.c PROPERTIES LANGUAGE CXX)
-add_library(mongoose OBJECT mongoose.h mongoose.c)
+
+
+#Object files
+file(GLOB OSRCS "${CMAKE_CURRENT_LIST_DIR}/*.[cph]*")
+list(REMOVE_ITEM OSRCS ${CMAKE_CURRENT_LIST_DIR}/fdrive.cpp)
+add_library(objectFiles OBJECT ${OSRCS})
+
+
+
+#add_library(mongoose OBJECT mongoose.h mongoose.c)
 
 #jsoncpp
-add_library(jsoncpp OBJECT jsoncpp.cpp)
+#add_library(jsoncpp OBJECT jsoncpp.cpp)
 
 #server
-add_library(server OBJECT server.h server.cpp )
+#add_library(server OBJECT server.h server.cpp )
 
 #user
-add_library(user OBJECT user.h user.cpp)
+#add_library(user OBJECT user.h user.cpp)
 
 #requestHandler
-add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp userManager.cpp userManager.h)
+#add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp userManager.cpp userManager.h)
 
 
 #Exec file-------------------------------------------------------------------------------------------------------------
 
 #Exec
-add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:requestHandler> $<TARGET_OBJECTS:server> $<TARGET_OBJECTS:mongoose> $<TARGET_OBJECTS:user> $<TARGET_OBJECTS:jsoncpp>)
+add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:objectFiles>)
 
 #Static library dependences
 #target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy) # para la compu de DANI
