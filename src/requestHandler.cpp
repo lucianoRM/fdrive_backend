@@ -30,21 +30,24 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 
 	//Combine uri+request_method
 	std::string uriPlusMethod = uri + ":" + request_method;
-
-	int reqCode = (*codesMap)[uriPlusMethod];
-
+	int reqCode;
+	try {
+		reqCode = codesMap->at(uriPlusMethod);
+	}catch(const std::out_of_range& oor){
+		return false;
+	}
 	switch (reqCode) {
 
 		//addUser
-		case USERS_POST:
+		case requestCodes::USERS_POST:
 			this->userManager->addUser(conn);
 			break;
 
-		case LOGIN_GET:
+		case requestCodes::LOGIN_GET:
 			this->userManager->userLogin(conn);
 			break;
 
-		case SAVEFILE_POST:
+		case requestCodes::SAVEFILE_POST:
 			this->fileManager->addFile(conn);
 			break;
 		default:

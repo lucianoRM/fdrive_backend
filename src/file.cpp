@@ -3,7 +3,6 @@
 //
 
 #include "file.h"
-#include <iostream>
 
 File::File(){
 
@@ -30,6 +29,7 @@ File::~File(){
 
 void File::setName(std::string newName){
 
+    if(newName == "~") throw errorCode::NAME_NOT_VALID;
     this->metadata->name = newName;
 
 
@@ -37,6 +37,7 @@ void File::setName(std::string newName){
 
 void File::setExtension(std::string newExt){
 
+    if(newExt == ".") throw errorCode::EXTENSION_NOT_VALID;
     this->metadata->extension = newExt;
 
 

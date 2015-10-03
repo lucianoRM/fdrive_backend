@@ -12,6 +12,8 @@
 #include "rocksdb/db.h"
 #include "json/json.h"
 #include "json/json-forwards.h"
+#include <iostream>
+#include "errorManager.h"
 
 struct metadata {
 
