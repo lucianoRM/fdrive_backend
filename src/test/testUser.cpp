@@ -43,6 +43,7 @@ TEST(SignUpTest, SignupAvailableEmail) {
     user->setEmail(genRandomEmail());
     EXPECT_EQ(true,user->signup(db));
     delete db;
+    delete user;
 
 
 }
@@ -73,6 +74,8 @@ TEST(SignUpTest, SignupTakenEmail){
 
 
     delete db;
+    delete user;
+    delete user2;
 
 }
 
@@ -93,7 +96,7 @@ TEST(SignUpTest, SignupNoEmail){
     EXPECT_EQ(false,user->signup(db));
 
     delete db;
-
+    delete user;
 }
 
 TEST(LoadTest, loadSavedUser){
@@ -115,7 +118,7 @@ TEST(LoadTest, loadSavedUser){
     EXPECT_EQ(true,user->load(db,email));
 
     delete db;
-
+    delete user;
 }
 
 TEST(LoadTest, loadNonExistentUser){
@@ -137,6 +140,7 @@ TEST(LoadTest, loadNonExistentUser){
     EXPECT_EQ(false,user->load(db,genRandomEmail()));
 
     delete db;
+    delete user;
 
 }
 
@@ -163,6 +167,8 @@ TEST(LoadTest, loadUserDifferentEmail){
     EXPECT_EQ(false,user1->load(db,email2));
 
     delete db;
+    delete user1;
+    delete user2;
 
 }
 

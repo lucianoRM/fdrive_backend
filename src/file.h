@@ -8,6 +8,7 @@
 #include <string>
 #include <list>
 #include <algorithm>
+#include <ctime>
 
 struct metadata {
 
@@ -15,7 +16,7 @@ struct metadata {
     std::string name;
     std::string extension;
     std::string owner;
-    std::string lastModified;
+    struct tm* lastModified;
     std::string lastUser; //last user that modified the file
     std::list<std::string>* tags;
 
@@ -33,13 +34,14 @@ class File {
 
 
         //Metadata setters
-        bool setName(std::string newName);
-        bool setExtension(std::string newExt);
-        bool setOwner(std::string newOwner);
-        bool setLastModDate(std::string newDate);
-        bool setLastUser(std::string newLastUser);
-        bool setTag(std::string newTag);
+        void setName(std::string newName);
+        void setExtension(std::string newExt);
+        void setOwner(std::string newOwner);
+        void setLastModDate( );
+        void setLastUser(std::string newLastUser);
+        void setTag(std::string newTag);
 
+        struct metadata* getMetadata(); //Returns the metadata from the file.
 
         bool save(); //Saves the metadata to the db
         bool erase(); //Erase the metadata from the db

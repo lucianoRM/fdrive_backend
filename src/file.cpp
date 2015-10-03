@@ -3,73 +3,79 @@
 //
 
 #include "file.h"
+#include <iostream>
 
 File::File(){
 
-    metadata = new struct metadata;
-
-    metadata->id = 0;
-    metadata->extension = ".";
-    metadata->name = "";
-   // metadata->lastModified = "";
-    metadata->lastUser = "";
-    metadata->owner = "";
-    metadata->tags = new std::list<std::string>;
+    this->metadata = new struct metadata;
+    this->metadata->id = -1;
+    this->metadata->extension = ".";
+    this->metadata->name = "";
+    time_t currTime;
+    time(&currTime);
+    this->metadata->lastModified = gmtime(&currTime);
+    this->metadata->lastUser = "";
+    this->metadata->owner = "";
+    this->metadata->tags = new std::list<std::string>;
 }
 
 File::~File(){
 
-    delete metadata->tags;
-    delete metadata;
+    delete this->metadata->tags;
+    delete this->metadata;
 
 }
 
 
 
-bool File::setName(std::string newName){
+void File::setName(std::string newName){
 
     this->metadata->name = newName;
-    return true;
 
 
 }
 
-bool File::setExtension(std::string newExt){
+void File::setExtension(std::string newExt){
 
     this->metadata->extension = newExt;
-    return true;
+
 
 }
 
-bool File::setOwner(std::string newOwner){
+void File::setOwner(std::string newOwner){
 
     this->metadata->owner = newOwner;
-    return true;
 
 }
 
-/*bool File::setLastModDate(std::string newDate){
+void File::setLastModDate(){
 
-    this->metadata->
+    time_t currTime;
+    time(&currTime);
+    this->metadata->lastModified = gmtime(&currTime);
 
 
-}*/
+}
 
-bool File::setLastUser(std::string newLastUser){
+void File::setLastUser(std::string newLastUser){
 
     this->metadata->lastUser = newLastUser;
-    return true;
-
-
 }
 
-bool File::setTag(std::string newTag){
+void File::setTag(std::string newTag){
 
     std::list<std::string>* ftags = this->metadata->tags;
     //Checks if the tag already exists
-    std::for_each(ftags->begin(), ftags->end(), [&newTag](std::string &n){if(n == newTag) return false; });
+    std::for_each(ftags->begin(), ftags->end(), [&newTag](std::string &n){if(n == newTag) return NULL; });
+
     this->metadata->tags->push_back(newTag);
-    return true;
+}
+
+struct metadata* File::getMetadata(){
+
+    return this->metadata;
+
+
 }
 
 
