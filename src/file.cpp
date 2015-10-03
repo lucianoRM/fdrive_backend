@@ -79,20 +79,20 @@ struct metadata* File::getMetadata(){
 
 }
 
+std::string File::getKey() {
+
+    std::string key = this->metadata->name + this->metadata->extension + ":" + this->metadata->owner;
+    return key;
+
+}
+
 
 bool File::notExists(rocksdb::DB* db){
 
-
-    int fileId = this->metadata->id;
-
-    //Checks if id has been set
-    if(fileId == -1) return false;
-
+    std::string fileKey = this->getKey();
     std::string value;
-
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files."+std::to_string(fileId), &value);
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.keys."+std::string(fileKey), &value);
     if (status.IsNotFound()) return true;
-
     return false;
 
 
@@ -104,7 +104,11 @@ bool File::load(rocksdb::DB* db){ return true;} //Loads metadata from the db, id
 bool File::save(rocksdb::DB* db){
 
     int fileId = this->metadata->id;
-    if(fileId < 0) { //if id is not set.
+
+    if(fileId < 0) { //if id is not set and file doesn't exists
+
+        if(!this->notExists(db)) throw errorCode::NAME_NOT_VALID; //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+
         //Checks if it is the first file, has to initialize id counter.
         std::string value;
         rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.maxID", &value);
@@ -124,7 +128,15 @@ bool File::save(rocksdb::DB* db){
         this->metadata->id = fileId;
     }
 
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),this->metadata->name);
+
+    //Saves file into id hash
+    std::string fileKey = this->getKey();
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey),std::to_string(fileId));
+    if(!status.ok()) return false;
+
+
+    status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),this->metadata->name);
+
 
     return (status.ok());
 

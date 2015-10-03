@@ -34,6 +34,7 @@ class File {
 
     private:
         bool notExists(rocksdb::DB* db); //Checks if the file is already in the db
+        std::string getKey(); //Returns key made from file metadata
 
 
 

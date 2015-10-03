@@ -38,7 +38,16 @@ bool FileManager::addFile(struct mg_connection* conn){
 
     bool result;
 
-    result = file->save(db);
+    try{
+        result = file->save(db);
+    }catch (errorCode e){
+        ErrorManager* em = new ErrorManager();
+        mg_printf_data(conn, "%s",em->getMessage(e).c_str());
+        delete em;
+        delete db;
+        return false;
+    }
+
 
     delete db;
 
