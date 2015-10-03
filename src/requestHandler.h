@@ -8,7 +8,7 @@
 #include "userManager.h"
 
 
-//Needed to optimize switch case.
+//Needed for switch case.
 enum requestCodes : int { USERS_POST = 1,LOGIN_GET };
 
 

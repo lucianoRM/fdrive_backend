@@ -6,8 +6,8 @@
 
 
 
-UserManager::UserManager(){};
-UserManager::~UserManager(){};
+UserManager::UserManager(){}
+UserManager::~UserManager(){}
 
 
 std::string UserManager::createToken(){
