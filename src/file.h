@@ -9,6 +9,9 @@
 #include <list>
 #include <algorithm>
 #include <ctime>
+#include "rocksdb/db.h"
+#include "json/json.h"
+#include "json/json-forwards.h"
 
 struct metadata {
 
@@ -27,6 +30,11 @@ class File {
     private:
         struct metadata* metadata;
 
+    private:
+        bool notExists(rocksdb::DB* db); //Checks if the file is already in the db
+
+
+
     public:
 
         File();
@@ -43,8 +51,9 @@ class File {
 
         struct metadata* getMetadata(); //Returns the metadata from the file.
 
-        bool save(); //Saves the metadata to the db
-        bool erase(); //Erase the metadata from the db
+        bool load(rocksdb::DB* db); //Loads the metadata from the db. Id needs to be set.
+        bool save(rocksdb::DB* db); //Saves the metadata to the db
+        bool erase(rocksdb::DB* db); //Erase the metadata from the db
 
 
 

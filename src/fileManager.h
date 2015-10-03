@@ -1,0 +1,27 @@
+//
+// Created by luciano on 03/10/15.
+//
+
+#ifndef TALLER_FILEMANAGER_H
+#define TALLER_FILEMANAGER_H
+
+#include "mongoose.h"
+#include "file.h"
+#include <string>
+#include <iostream>
+
+class FileManager {
+
+    public:
+        FileManager();
+        ~FileManager();
+
+        bool addFile(struct mg_connection* conn);
+
+        bool loadFile(struct mg_connection* conn);
+
+
+};
+
+
+#endif //TALLER_FILEMANAGER_H

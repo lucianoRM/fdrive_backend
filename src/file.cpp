@@ -66,7 +66,7 @@ void File::setTag(std::string newTag){
 
     std::list<std::string>* ftags = this->metadata->tags;
     //Checks if the tag already exists
-    std::for_each(ftags->begin(), ftags->end(), [&newTag](std::string &n){if(n == newTag) return NULL; });
+    std::for_each(ftags->begin(), ftags->end(), [&newTag](std::string &n){if(n == newTag) return; });
 
     this->metadata->tags->push_back(newTag);
 }
@@ -79,5 +79,54 @@ struct metadata* File::getMetadata(){
 }
 
 
-bool save(){ return true;} //Saves the metadata to the db
-bool erase(){return true;} //Erase the metadata from the db
+bool File::notExists(rocksdb::DB* db){
+
+
+    int fileId = this->metadata->id;
+
+    //Checks if id has been set
+    if(fileId == -1) return false;
+
+    std::string value;
+
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files."+std::to_string(fileId), &value);
+    if (status.IsNotFound()) return true;
+
+    return false;
+
+
+}
+
+bool File::load(rocksdb::DB* db){ return true;} //Loads metadata from the db, id should be set.
+
+
+bool File::save(rocksdb::DB* db){
+
+    int fileId = this->metadata->id;
+    if(fileId < 0) { //if id is not set.
+        //Checks if it is the first file, has to initialize id counter.
+        std::string value;
+        rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.maxID", &value);
+
+        //if not found has to initialize it
+        if (status.IsNotFound()) {
+            rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
+            if (!status.ok()) return false;
+            fileId = 0;
+        }else {
+            //If here is because id counter was initialized
+            int maxID = stoi(value);
+            rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
+            if (!status.ok()) return false;
+            fileId = maxID + 1;
+        }
+        this->metadata->id = fileId;
+    }
+
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),this->metadata->name);
+
+    return (status.ok());
+
+
+}
+bool File::erase(rocksdb::DB* db){return true;} //Erase the metadata from the db

@@ -6,10 +6,11 @@
 #include "mongoose.h"
 #include "request.h"
 #include "userManager.h"
+#include "fileManager.h"
 
 
 //Needed for switch case.
-enum requestCodes : int { USERS_POST = 1,LOGIN_GET };
+enum requestCodes : int { USERS_POST = 1,LOGIN_GET,SAVEFILE_POST };
 
 
 class RequestHandler {
@@ -18,6 +19,7 @@ class RequestHandler {
 
 	private:
 		UserManager* userManager;
+		FileManager* fileManager;
 
 		std::unordered_map<std::string,int >* codesMap;
 
