@@ -19,16 +19,9 @@ bool FileManager::addFile(struct mg_connection* conn){
 
     File* file = new File();
 
-    try {
-        file->setName(std::string(name));
-        file->setExtension(std::string(extension));
-        file->setOwner(std::string(owner));
-    }catch(errorCode e){
-        ErrorManager* em = new ErrorManager();
-        mg_printf_data(conn, "%s",em->getMessage(e).c_str());
-        delete em;
-        return false;
-    }
+    file->setName(std::string(name));
+    file->setExtension(std::string(extension));
+    file->setOwner(std::string(owner));
 
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -36,25 +29,14 @@ bool FileManager::addFile(struct mg_connection* conn){
     rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
     if (!status.ok()){ std::cout << "En AddUser:" << status.ToString() << std::endl; }
 
-    bool result;
+    bool result = file->save(db);
 
-    try{
-        result = file->save(db);
-    }catch (errorCode e){
-        ErrorManager* em = new ErrorManager();
-        mg_printf_data(conn, "%s",em->getMessage(e).c_str());
-        delete em;
-        delete db;
-        return false;
-    }
-
-
+    //Should delete db inmediately after using it
     delete db;
 
     mg_printf_data(conn, "{ \"result\":  \"%s\" }, File ID: %d", result ? "true" : "false",file->getMetadata()->id);
 
     delete file;
-
 
     return true;
 }

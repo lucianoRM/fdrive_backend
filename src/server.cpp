@@ -98,7 +98,7 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 		default:
 			delete reqHandler;
 			return MG_FALSE;
-  }
+	}
 }
 
 

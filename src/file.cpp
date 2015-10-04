@@ -29,7 +29,7 @@ File::~File(){
 
 void File::setName(std::string newName){
 
-    if(newName == "~") throw errorCode::NAME_NOT_VALID;
+    if(newName == "~") throw errorCode::FILENAME_NOT_VALID;
     this->metadata->name = newName;
 
 
@@ -37,7 +37,7 @@ void File::setName(std::string newName){
 
 void File::setExtension(std::string newExt){
 
-    if(newExt == ".") throw errorCode::EXTENSION_NOT_VALID;
+    if(newExt == ".") throw errorCode::FILEEXTENSION_NOT_VALID;
     this->metadata->extension = newExt;
 
 
@@ -107,7 +107,10 @@ bool File::save(rocksdb::DB* db){
 
     if(fileId < 0) { //if id is not set and file doesn't exists
 
-        if(!this->notExists(db)) throw errorCode::NAME_NOT_VALID; //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+        if(!this->notExists(db)){
+            delete db; //Should be closed here because exception catcher doesn't know anything about db.
+            throw errorCode::FILENAME_TAKEN; //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+        }
 
         //Checks if it is the first file, has to initialize id counter.
         std::string value;

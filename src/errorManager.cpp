@@ -9,11 +9,11 @@ ErrorManager::ErrorManager(){
 
     this->errorMessages = new std::unordered_map<int,std::string>;
 
-    (*this->errorMessages)[LOGIN_FAIL] = std::string("Login Fail");
-    (*this->errorMessages)[EMAIL_TAKEN] = std::string("Email Taken");
-    (*this->errorMessages)[EXTENSION_NOT_VALID] = std::string("Extension not valid");
-    (*this->errorMessages)[NAME_NOT_VALID] = std::string("Name not valid");
-
+    (*this->errorMessages)[errorCode::LOGIN_FAIL] = std::string("Login Fail");
+    (*this->errorMessages)[errorCode::EMAIL_TAKEN] = std::string("Email Taken");
+    (*this->errorMessages)[errorCode::FILEEXTENSION_NOT_VALID] = std::string("File extension not valid");
+    (*this->errorMessages)[errorCode::FILENAME_NOT_VALID] = std::string("Filename not valid");
+    (*this->errorMessages)[errorCode::FILENAME_TAKEN] = std::string("Filename taken");
 }
 
 ErrorManager::~ErrorManager(){

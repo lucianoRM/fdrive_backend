@@ -7,6 +7,7 @@
 #include "request.h"
 #include "userManager.h"
 #include "fileManager.h"
+#include "errorManager.h"
 
 
 //Needed for switch case.
@@ -20,6 +21,7 @@ class RequestHandler {
 	private:
 		UserManager* userManager;
 		FileManager* fileManager;
+		ErrorManager* errorManager;
 
 		std::unordered_map<std::string,int >* codesMap;
 
