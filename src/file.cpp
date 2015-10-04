@@ -12,7 +12,9 @@ File::File(){
     this->metadata->name = "";
     time_t currTime;
     time(&currTime);
-    this->metadata->lastModified = gmtime(&currTime);
+    char* time = ctime(&currTime);
+    time[strlen(time) - 1] = '\0'; //Removes \n at the end
+    this->metadata->lastModified = std::string(time);
     this->metadata->lastUser = "";
     this->metadata->owner = "";
     this->metadata->tags = new std::list<std::string>;
@@ -53,7 +55,9 @@ void File::setLastModDate(){
 
     time_t currTime;
     time(&currTime);
-    this->metadata->lastModified = gmtime(&currTime);
+    char* time = ctime(&currTime);
+    time[strlen(time) - 1] = '\0'; //Removes \n at the end
+    this->metadata->lastModified = std::string(time);
 
 
 }
@@ -67,9 +71,16 @@ void File::setTag(std::string newTag){
 
     std::list<std::string>* ftags = this->metadata->tags;
     //Checks if the tag already exists
-    std::for_each(ftags->begin(), ftags->end(), [&newTag](std::string &n){if(n == newTag) return; });
+    bool exists = false;
+    std::for_each(ftags->begin(), ftags->end(), [&newTag,&exists](std::string &n){if(!n.compare(newTag)) {exists = true; return;} });
 
-    this->metadata->tags->push_back(newTag);
+    if(!exists) this->metadata->tags->push_back(newTag);
+}
+
+
+void File::setId(int id){
+
+    this->metadata->id = id;
 }
 
 struct metadata* File::getMetadata(){
@@ -87,6 +98,26 @@ std::string File::getKey() {
 }
 
 
+Json::Value File::getJson(){
+
+    Json::Value root;
+    root["name"] = this->metadata->name;
+    root["extension"]  = this->metadata->extension;
+    root["owner"] = this->metadata->owner;
+    root["id"] = this->metadata->id;
+    root["lastModified"] = this->metadata->lastModified;
+    root["lastUser"] = this->metadata->lastUser;
+
+    Json::Value tags;
+    std::for_each(this->metadata->tags->begin(),this->metadata->tags->end(),[&tags](std::string &tag){tags.append(tag);});
+    root["tags"] = tags;
+
+    return root;
+
+
+}
+
+
 bool File::notExists(rocksdb::DB* db){
 
     std::string fileKey = this->getKey();
@@ -98,7 +129,38 @@ bool File::notExists(rocksdb::DB* db){
 
 }
 
-bool File::load(rocksdb::DB* db){ return true;} //Loads metadata from the db, id should be set.
+bool File::load(rocksdb::DB* db){
+
+    int id = this->metadata->id;
+    if(id < 0) return false; //File id not set
+
+    std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(),"files."+std::to_string(id),&value);
+    if(status.IsNotFound()) {
+        delete db; //should be deleted here because of exception throwing.
+        throw errorCode::FILE_NOT_FOUND;
+    }
+
+    //If here is because file exists in db
+    Json::Reader reader;
+    Json::Value root;
+
+    if(!reader.parse(value,root,false)) return false;
+
+    //Load metadata into file
+    this->metadata->owner = root["owner"].asString();
+    this->metadata->lastModified = root["lastModified"].asString();
+    this->metadata->extension = root["extension"].asString();
+    this->metadata->lastUser = root["lastUser"].asString();
+    this->metadata->name = root["name"].asString();
+    Json::Value tags = root["tags"];
+    for(Json::Value::iterator it= tags.begin(); it != tags.end();it++ ){
+        this->metadata->tags->push_back((*it).asString());
+    }
+
+
+    return true;
+}
 
 
 bool File::save(rocksdb::DB* db){
@@ -137,8 +199,15 @@ bool File::save(rocksdb::DB* db){
     rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey),std::to_string(fileId));
     if(!status.ok()) return false;
 
+    //Saves file
+    Json::Value root = this->getJson();
+    Json::StyledWriter writer;
 
-    status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),this->metadata->name);
+    std::string json = writer.write(root);
+
+    //std::cout << json;
+
+    status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
 
 
     return (status.ok());

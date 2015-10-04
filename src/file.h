@@ -21,7 +21,7 @@ struct metadata {
     std::string name;
     std::string extension;
     std::string owner;
-    struct tm* lastModified;
+    std::string lastModified;
     std::string lastUser; //last user that modified the file
     std::list<std::string>* tags;
 
@@ -35,6 +35,7 @@ class File {
     private:
         bool notExists(rocksdb::DB* db); //Checks if the file is already in the db
         std::string getKey(); //Returns key made from file metadata
+        Json::Value getJson(); //Returns Json value made from file metadata
 
 
 
@@ -51,6 +52,7 @@ class File {
         void setLastModDate( );
         void setLastUser(std::string newLastUser);
         void setTag(std::string newTag);
+        void setId(int id);
 
         struct metadata* getMetadata(); //Returns the metadata from the file.
 

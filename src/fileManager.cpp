@@ -41,4 +41,36 @@ bool FileManager::addFile(struct mg_connection* conn){
     return true;
 }
 
-bool FileManager::loadFile(struct mg_connection* conn){return true;}
+bool FileManager::loadFile(struct mg_connection* conn){
+
+    //TODO:Should be json.
+    char id[100];
+    // Get form variables
+    mg_get_var(conn, "id", id, sizeof(id));
+
+    File* file = new File();
+
+    file->setId(atoi(id));
+
+    std::cout << atoi(id) << std::endl;
+
+    rocksdb::DB* db;
+    rocksdb::Options options;
+    options.create_if_missing = true;
+    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
+    if (!status.ok()){ std::cout << "En AddUser:" << status.ToString() << std::endl; }
+
+    bool result = file->load(db);
+
+    //Should delete db inmediately after using it
+    delete db;
+
+    mg_printf_data(conn, "{ \"result\":  \"%s\" }, name: %s\nowner: %s\n,lastMod: %s\n,lastOwner: %s\n", result ? "true" : "false",file->getMetadata()->name.c_str(),file->getMetadata()->owner.c_str(),file->getMetadata()->lastModified.c_str(),file->getMetadata()->lastUser.c_str()); 
+
+    delete file;
+
+    return true;
+
+
+
+}

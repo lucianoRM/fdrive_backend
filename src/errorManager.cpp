@@ -14,6 +14,7 @@ ErrorManager::ErrorManager(){
     (*this->errorMessages)[errorCode::FILEEXTENSION_NOT_VALID] = std::string("File extension not valid");
     (*this->errorMessages)[errorCode::FILENAME_NOT_VALID] = std::string("Filename not valid");
     (*this->errorMessages)[errorCode::FILENAME_TAKEN] = std::string("Filename taken");
+    (*this->errorMessages)[errorCode::FILE_NOT_FOUND] = std::string("File not found");
 }
 
 ErrorManager::~ErrorManager(){

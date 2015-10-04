@@ -12,7 +12,8 @@ RequestHandler::RequestHandler(){
 
 	(*this->codesMap)["/users:GET"] = requestCodes::USERS_POST;
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
-	(*this->codesMap)["/files:GET"] = requestCodes::SAVEFILE_POST; //TODO:Should be POST, easier to test this way.
+	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
+	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 
 
 
@@ -54,6 +55,11 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 			case requestCodes::SAVEFILE_POST:
 				this->fileManager->addFile(conn);
 				break;
+
+			case requestCodes::LOADFILE_GET:
+				this->fileManager->loadFile(conn);
+				break;
+
 			default:
 				return false;
 		}
