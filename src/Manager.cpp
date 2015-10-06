@@ -4,15 +4,16 @@
 
 #include "Manager.h"
 
-rocksdb::DB* Manager::openDatabase() {
+rocksdb::DB* Manager::openDatabase(std::string message) {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "mockdb", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, NAME_DB, &db);
 
     //La db se abrio correctamente
     if (!status.ok()){
-        std::cout << "Error DB:" << status.ToString() << std::endl;
+        std::cout << message << status.ToString() << std::endl;
+        delete db;
         return NULL;
     }
 
