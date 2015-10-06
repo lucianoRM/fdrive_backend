@@ -65,9 +65,6 @@ bool FileManager::loadFile(struct mg_connection* conn){
 
     file->setId(atoi(id));
 
-
-    std::cout << atoi(id) << std::endl;
-
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
     if (!db) {
         return 1;
@@ -83,7 +80,7 @@ bool FileManager::loadFile(struct mg_connection* conn){
 
     std::string json = writer.write(file->getJson());
 
-    mg_printf_data(conn, "{ \"result\":  \"%s\" }\n%s", json.c_str());
+    mg_printf_data(conn, "%s", json.c_str());
 
     delete file;
 

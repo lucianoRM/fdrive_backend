@@ -129,6 +129,43 @@ bool File::notExists(rocksdb::DB* db){
 
 }
 
+
+//If this function is called is because a file with no id(-1) is trying to be saved.
+bool File::genId(rocksdb::DB* db){
+
+    //Checks if the fileKey is in the db.
+    if(!this->notExists(db)){
+        delete db; //Should be closed here because exception catcher doesn't know anything about db.
+        throw errorCode::FILENAME_TAKEN; //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+    }
+
+    //Gets id counter
+    int fileId;
+    std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.maxID", &value);
+
+
+    //if not found has to initialize it
+    if (status.IsNotFound()) {
+        rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
+        if (!status.ok()) return false;
+        fileId = 0;
+    }else {
+        //If here is because id counter was initialized
+        int maxID = stoi(value);
+        rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
+        if (!status.ok()) return false;
+        fileId = maxID + 1;
+    }
+
+    //At this point, fileId has a valid number and db id counter is initialized
+    //The new id is assigned to the file.
+    this->metadata->id = fileId;
+    return true;
+
+
+}
+
 bool File::load(rocksdb::DB* db){
 
     int id = this->metadata->id;
@@ -168,34 +205,17 @@ bool File::load(rocksdb::DB* db){
 
 bool File::save(rocksdb::DB* db){
 
+    //TODO:CHECK FILE PARAMETERS. new files and already saved files have to have different parameters and some of them are not valid.
+
+
     int fileId = this->metadata->id;
 
-    if(fileId < 0) { //if id is not set and file doesn't exists
-
-        if(!this->notExists(db)){
-            delete db; //Should be closed here because exception catcher doesn't know anything about db.
-            throw errorCode::FILENAME_TAKEN; //File already exists and id not set. Trying to upload a new file with taken key. Not possible
-        }
-
-        //Checks if it is the first file, has to initialize id counter.
-        std::string value;
-        rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.maxID", &value);
-
-        //if not found has to initialize it
-        if (status.IsNotFound()) {
-            rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
-            if (!status.ok()) return false;
-            fileId = 0;
-        }else {
-            //If here is because id counter was initialized
-            int maxID = stoi(value);
-            rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
-            if (!status.ok()) return false;
-            fileId = maxID + 1;
-        }
-        this->metadata->id = fileId;
+    if(fileId < 0){ //Means that the file is new, doesn't exist in the db
+        if(!this->genId(db)) return false; //WARNING:Modifies id value
     }
 
+    //At this point the file will have a valid id, needs to ve retrieved from atribute again
+    fileId = this->metadata->id;
 
     //Saves file into id hash
     std::string fileKey = this->getKey();
@@ -208,13 +228,16 @@ bool File::save(rocksdb::DB* db){
 
     std::string json = writer.write(root);
 
-    //std::cout << json;
-
     status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
-
 
     return (status.ok());
 
 
 }
+
+
+
+
+
+
 bool File::erase(rocksdb::DB* db){return true;} //Erase the metadata from the db
