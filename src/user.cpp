@@ -2,24 +2,41 @@
 // Created by agustin on 10/09/15.
 //
 
-#include <string>
 #include "user.h"
-#include "rocksdb/db.h"
-#include <cstdio>
 #include <iostream>
 #include "json/json.h"
 #include "json/json-forwards.h"
+#include <iostream>
 
+User::User(std::string email, std::string password) {
+	this->email = email;
+	this->hashed_password = this->hashPassword(password);
+}
 
 bool User::signup(rocksdb::DB* db) {
-    if (this->load(db, this->email)) return false;
+	std::string value;
+	if (checkIfExisting(db,&value)) {
+		return false;
+	}
+
     return this->save(db);
 }
 
-bool User::load(rocksdb::DB* db, std::string email) {
+bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, value);
+	if (status.IsNotFound()) {
+		return false;
+	}
+
+	return true;
+}
+
+bool User::load(rocksdb::DB* db) {
 	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound()) return false;
+
+    if (! checkIfExisting(db,&value)) {
+		return false;
+	}
     
     Json::Reader reader;
     Json::Value root;
@@ -37,26 +54,15 @@ bool User::load(rocksdb::DB* db, std::string email) {
 
 bool User::save(rocksdb::DB* db) {
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
-	return (status.ok());	
-}
-
-User* User::setEmail(std::string email) {
-    this->email = email;
-    return this;
+	return (status.ok());
 }
 
 std::string User::getEmail() {
     return this->email;
 }
 
-User* User::setPassword(std::string password) {
+void User::setPassword(std::string password) {
     this->hashed_password = this->hashPassword(password);
-    return this;
-}
-
-User* User::get(std::string email) {
-    User* user = new User();
-    return user;
 }
 
 bool User::checkPassword(std::string password){	
@@ -68,10 +74,11 @@ std::string User::hashPassword (std::string password) {
 }
 
 /* También limpia tokens vencidos */
-bool User::addToken(rocksdb::DB* db, std::string email, std::string token){
+bool User::addToken(rocksdb::DB* db, std::string token){
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound() == true) return false;
+
     
     Json::Reader reader;
     Json::Value root;

@@ -10,21 +10,17 @@
 #ifndef TALLER_USERMANAGER_H
 #define TALLER_USERMANAGER_H
 
+#include "Manager.h"
 
-class UserManager {
+class UserManager:public Manager {
 
     private:
         int counter = 0;
-
-    private:
         std::string createToken();
 
     public:
         UserManager();
         ~UserManager();
-
-
-
 
         ///All public methods should have the same signature.
         int addUser(struct mg_connection *conn);

@@ -15,24 +15,22 @@ private:
     std::string email;
     std::string hashed_password;
     //std::vector<> tokens;
+    bool checkIfExisting(rocksdb::DB* db, std::string* value);
 
 public:
-    
-    User* setEmail(std::string email);
-    User* setPassword(std::string password);
+
+    User(std::string email, std::string password);
+    void setPassword(std::string password);
     
     std::string getEmail();
     
     std::string hashPassword(std::string password);
-    
     bool signup(rocksdb::DB* db);
     bool checkPassword(std::string password);
     bool save(rocksdb::DB* db);
-	bool addToken(rocksdb::DB* db, std::string email, std::string token);
-
-    User* get(std::string email);
+	bool addToken(rocksdb::DB* db, std::string token);
     
-    bool load(rocksdb::DB* db, std::string email);
+    bool load(rocksdb::DB* db);
     
 };
 
