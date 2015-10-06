@@ -6,7 +6,7 @@
 #include <iostream>
 #include "json/json.h"
 #include "json/json-forwards.h"
-
+#include <iostream>
 
 User::User(std::string email, std::string password) {
 	this->email = email;
@@ -14,14 +14,29 @@ User::User(std::string email, std::string password) {
 }
 
 bool User::signup(rocksdb::DB* db) {
-    if (this->load(db)) return false;
+	std::string value;
+	if (checkIfExisting(db,&value)) {
+		return false;
+	}
+
     return this->save(db);
+}
+
+bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, value);
+	if (status.IsNotFound()) {
+		return false;
+	}
+
+	return true;
 }
 
 bool User::load(rocksdb::DB* db) {
 	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound()) return false;
+
+    if (! checkIfExisting(db,&value)) {
+		return false;
+	}
     
     Json::Reader reader;
     Json::Value root;
@@ -39,7 +54,7 @@ bool User::load(rocksdb::DB* db) {
 
 bool User::save(rocksdb::DB* db) {
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
-	return (status.ok());	
+	return (status.ok());
 }
 
 std::string User::getEmail() {
@@ -63,6 +78,7 @@ bool User::addToken(rocksdb::DB* db, std::string token){
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound() == true) return false;
+
     
     Json::Reader reader;
     Json::Value root;

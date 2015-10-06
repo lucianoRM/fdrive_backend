@@ -7,29 +7,11 @@
 #include "../rocksdb/db.h"
 #include <string.h>
 
-//Generates a random string of len 16.
-std::string genRandomEmail() {
-    static const char alphanum[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
-
-    char s[17];
-
-    for (int i = 0; i < 16; ++i) {
-        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-    }
-
-    s[16] = 0;
-    std::string generatedString(s);
-    return generatedString;
-}
-
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "mockdb", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, "userTestDB", &db);
 
     //La db se abrio correctamente
     if (!status.ok()){
@@ -46,13 +28,16 @@ TEST(SignUpTest, SignupAvailableEmail) {
     if (! db) {
         return;
     }
+    User* user = new User("emailTest","password");
 
-    User* user = new User(genRandomEmail(),"password");
     EXPECT_EQ(true,user->signup(db));
+
+    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
     delete user;
 }
 
+/*
 TEST(SignUpTest, SignupTakenEmail){
     rocksdb::DB* db = openDatabase();
     if (! db) {
@@ -63,7 +48,6 @@ TEST(SignUpTest, SignupTakenEmail){
     User* user = new User(email,"password");
 
     EXPECT_EQ(true,user->signup(db));
-    EXPECT_EQ(false,user->signup(db));
 
     User* user2= new User(email,"password");
     EXPECT_EQ(false,user2->signup(db));
@@ -73,7 +57,6 @@ TEST(SignUpTest, SignupTakenEmail){
     delete user2;
 
 }
-
 
 TEST(SignUpTest, SignupNoEmail){
     EXPECT_EQ(true,true);
