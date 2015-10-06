@@ -23,11 +23,10 @@ bool FileManager::addFile(struct mg_connection* conn){
     file->setExtension(std::string(extension));
     file->setOwner(std::string(owner));
 
-    rocksdb::DB* db;
-    rocksdb::Options options;
-    options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
-    if (!status.ok()){ std::cout << "En AddUser:" << status.ToString() << std::endl; }
+    rocksdb::DB* db = this->openDatabase("En LogIn: ");
+    if (!db) {
+        return 1;
+    }
 
     bool result = file->save(db);
 
@@ -54,11 +53,10 @@ bool FileManager::loadFile(struct mg_connection* conn){
 
     std::cout << atoi(id) << std::endl;
 
-    rocksdb::DB* db;
-    rocksdb::Options options;
-    options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
-    if (!status.ok()){ std::cout << "En AddUser:" << status.ToString() << std::endl; }
+    rocksdb::DB* db = this->openDatabase("En LogIn: ");
+    if (!db) {
+        return 1;
+    }
 
     bool result = file->load(db);
 

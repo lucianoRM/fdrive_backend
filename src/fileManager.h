@@ -7,10 +7,11 @@
 
 #include "mongoose.h"
 #include "file.h"
+#include "Manager.h"
 #include <string>
 #include <iostream>
 
-class FileManager {
+class FileManager: public Manager{
 
     public:
         FileManager();
