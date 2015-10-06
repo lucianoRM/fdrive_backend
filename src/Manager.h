@@ -6,10 +6,9 @@
 #define FDRIVE_MANAGER_H
 
 #include "rocksdb/db.h"
+#include <string>
 
-NAME_DB="testdb";
-
-virtual class Manager {
+class Manager {
     protected:
         rocksdb::DB* openDatabase(std::string message);
 };
