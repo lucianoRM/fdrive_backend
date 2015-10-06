@@ -2,10 +2,7 @@
 // Created by agustin on 10/09/15.
 //
 
-#include <string>
 #include "user.h"
-#include "rocksdb/db.h"
-#include <cstdio>
 #include <iostream>
 #include "json/json.h"
 #include "json/json-forwards.h"
