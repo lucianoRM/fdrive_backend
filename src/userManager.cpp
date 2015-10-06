@@ -28,7 +28,7 @@ int UserManager::addUser(struct mg_connection *conn){
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = (new User())->setEmail(email)->setPassword(password);
+    User* user = new User(email,password);
 
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -54,14 +54,14 @@ int UserManager::userLogin(struct mg_connection *conn){
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = new User();
+    User* user = new User(email,password);
 
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
     rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
     if (!status.ok()){ std::cout << "En LogIn: " << status.ToString() << std::endl; }
-    bool result = user->load(db, email);
+    bool result = user->load(db);
     delete db;
 
     result &= user->checkPassword(password);
@@ -70,7 +70,7 @@ int UserManager::userLogin(struct mg_connection *conn){
 
     status = rocksdb::DB::Open(options, "testdb", &db);
     if (!status.ok()){ std::cout << "En LogIn: " << status.ToString() << std::endl; }
-    result &= user->addToken(db, email, token);
+    result &= user->addToken(db, token);
     delete db;
 
     mg_printf_data(conn, "{ \"result\" : \"%s\" , \"token\" : \"%s\"}", result ? "true" : "false", token.c_str());

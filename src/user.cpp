@@ -11,12 +11,17 @@
 #include "json/json-forwards.h"
 
 
+User::User(std::string email, std::string password) {
+	this->email = email;
+	this->hashed_password = this->hashPassword(password);
+}
+
 bool User::signup(rocksdb::DB* db) {
-    if (this->load(db, this->email)) return false;
+    if (this->load(db)) return false;
     return this->save(db);
 }
 
-bool User::load(rocksdb::DB* db, std::string email) {
+bool User::load(rocksdb::DB* db) {
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound()) return false;
@@ -40,23 +45,12 @@ bool User::save(rocksdb::DB* db) {
 	return (status.ok());	
 }
 
-User* User::setEmail(std::string email) {
-    this->email = email;
-    return this;
-}
-
 std::string User::getEmail() {
     return this->email;
 }
 
-User* User::setPassword(std::string password) {
+void User::setPassword(std::string password) {
     this->hashed_password = this->hashPassword(password);
-    return this;
-}
-
-User* User::get(std::string email) {
-    User* user = new User();
-    return user;
 }
 
 bool User::checkPassword(std::string password){	
@@ -68,7 +62,7 @@ std::string User::hashPassword (std::string password) {
 }
 
 /* También limpia tokens vencidos */
-bool User::addToken(rocksdb::DB* db, std::string email, std::string token){
+bool User::addToken(rocksdb::DB* db, std::string token){
 	std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
     if (status.IsNotFound() == true) return false;
