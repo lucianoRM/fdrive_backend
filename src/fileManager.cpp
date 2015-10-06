@@ -8,20 +8,35 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-bool FileManager::addFile(struct mg_connection* conn){
+bool FileManager::saveFile(struct mg_connection* conn){
 
-    //TODO:Should be json.
-    char name[100], extension[100], owner[100];
-    // Get form variables
-    mg_get_var(conn, "name", name, sizeof(name));
-    mg_get_var(conn, "extension", extension, sizeof(extension));
-    mg_get_var(conn, "owner", owner,sizeof(owner));
+    //Needed for filtering unnecesary headers
+    char json[conn->content_len+1];
+    char* content = conn->content;
+    content[conn->content_len] = '\0';
+    strcpy(json,conn->content);
+
+    Json::Reader reader;
+    Json::Value root;
+
+    reader.parse(json,root,false);
+
+    std::string name,extension,owner;
+
+    name = root["name"].asString();
+    extension = root["extension"].asString();
+    owner = root["owner"].asString();
+    Json::Value tags = root["tags"];
+
 
     File* file = new File();
 
     file->setName(std::string(name));
     file->setExtension(std::string(extension));
     file->setOwner(std::string(owner));
+    for( Json::ValueIterator itr = tags.begin() ; itr != tags.end() ; itr++ ) {
+        file->setTag((*itr).asString());
+    }
 
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -43,7 +58,6 @@ bool FileManager::addFile(struct mg_connection* conn){
 
 bool FileManager::loadFile(struct mg_connection* conn){
 
-    //TODO:Should be json.
     char id[100];
     // Get form variables
     mg_get_var(conn, "id", id, sizeof(id));
@@ -51,8 +65,6 @@ bool FileManager::loadFile(struct mg_connection* conn){
     File* file = new File();
 
     file->setId(atoi(id));
-
-    std::cout << atoi(id) << std::endl;
 
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -65,7 +77,12 @@ bool FileManager::loadFile(struct mg_connection* conn){
     //Should delete db inmediately after using it
     delete db;
 
-    mg_printf_data(conn, "{ \"result\":  \"%s\" }, name: %s\nowner: %s\n,lastMod: %s\n,lastOwner: %s\n", result ? "true" : "false",file->getMetadata()->name.c_str(),file->getMetadata()->owner.c_str(),file->getMetadata()->lastModified.c_str(),file->getMetadata()->lastUser.c_str()); 
+    Json::Value value;
+    Json::StyledWriter writer;
+
+    std::string json = writer.write(file->getJson());
+
+    mg_printf_data(conn, "{ \"result\":  \"%s\" }\n%s", json.c_str());
 
     delete file;
 

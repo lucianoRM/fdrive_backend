@@ -16,8 +16,7 @@ class FileManager {
         FileManager();
         ~FileManager();
 
-        bool addFile(struct mg_connection* conn);
-
+        bool saveFile(struct mg_connection* conn);
         bool loadFile(struct mg_connection* conn);
 
 

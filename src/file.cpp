@@ -132,7 +132,10 @@ bool File::notExists(rocksdb::DB* db){
 bool File::load(rocksdb::DB* db){
 
     int id = this->metadata->id;
-    if(id < 0) return false; //File id not set
+    if(id < 0) {
+        delete db;
+        throw errorCode::FILE_NOT_FOUND;
+    } //File id not set
 
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(),"files."+std::to_string(id),&value);

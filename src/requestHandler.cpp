@@ -53,7 +53,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				break;
 
 			case requestCodes::SAVEFILE_POST:
-				this->fileManager->addFile(conn);
+				this->fileManager->saveFile(conn);
 				break;
 
 			case requestCodes::LOADFILE_GET:
