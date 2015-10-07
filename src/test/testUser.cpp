@@ -22,6 +22,18 @@ rocksdb::DB* openDatabase() {
     return db;
 }
 
+TEST(HashedPasswordTest, HashedPassword) {
+rocksdb::DB* db = openDatabase();
+if (! db) {
+return;
+}
+User* user = new User("emailTest","password");
+
+EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
+
+delete db;
+delete user;
+}
 
 TEST(SignUpTest, SignupAvailableEmail) {
     rocksdb::DB* db = openDatabase();

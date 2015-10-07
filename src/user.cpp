@@ -7,6 +7,11 @@
 #include "json/json.h"
 #include "json/json-forwards.h"
 #include <iostream>
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+#include <openssl/engine.h>
+#include <openssl/aes.h>
+#include <openssl/rand.h>
 
 User::User(std::string email, std::string password) {
 	this->email = email;
@@ -70,7 +75,21 @@ bool User::checkPassword(std::string password){
 }
 
 std::string User::hashPassword (std::string password) {
-	return password;
+
+	unsigned char *out;
+	const char* pwd = password.c_str();
+	unsigned char salt_value[] = {'s','a','l','t'};
+
+	out = (unsigned char *) malloc(sizeof(unsigned char) * 20);
+	char* formatted_out = (char*) malloc(sizeof(unsigned char) * 41);
+
+	PKCS5_PBKDF2_HMAC_SHA1(pwd, strlen(pwd), salt_value, sizeof(salt_value), 1, 20, out);
+
+	for(int i=0;i<20;i++) { sprintf(&(formatted_out[i*2]), "%02x", out[i]); }
+
+	std::string new_password(reinterpret_cast<char*>(formatted_out));
+	delete out;
+	return new_password;
 }
 
 /* También limpia tokens vencidos */
