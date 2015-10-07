@@ -13,17 +13,26 @@
 #include <openssl/aes.h>
 #include <openssl/rand.h>
 
-User::User(std::string email, std::string password) {
+User::User(std::string email) {
 	this->email = email;
-	this->hashed_password = this->hashPassword(password);
 }
 
-bool User::signup(rocksdb::DB* db) {
+std::string User::getEmail() {
+	return this->email;
+}
+
+bool User::save(rocksdb::DB* db) {
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
+	return (status.ok());
+}
+
+bool User::signup(rocksdb::DB* db,std::string password) {
 	std::string value;
 	if (checkIfExisting(db,&value)) {
 		return false;
 	}
 
+	this->hashed_password = this->hashPassword(password);
     return this->save(db);
 }
 
@@ -36,42 +45,34 @@ bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
 	return true;
 }
 
-bool User::load(rocksdb::DB* db) {
+bool User::checkPassword(rocksdb::DB* db, std::string password){
 	std::string value;
 
-    if (! checkIfExisting(db,&value)) {
+	if (! checkIfExisting(db,&value)) {
 		return false;
 	}
-    
-    Json::Reader reader;
-    Json::Value root;
-    bool parsingSuccessful = reader.parse(value, root, false);
-    if (!parsingSuccessful){ // False for ignoring comments.
+
+	Json::Reader reader;
+	Json::Value root;
+	bool parsingSuccessful = reader.parse(value, root, false);
+	if (!parsingSuccessful){ // False for ignoring comments.
 		std::cout << "JsonCPP no pudo parsear en User::load. Value: " << value << ". root: " << root << std::endl;
 		return false;
 	}
-	this->email = root.get("email", "").asString();
+
 	this->hashed_password = root.get("password", "").asString();
-	//Faltan tokens;
-	
-    return true;
+
+	std::string passwordHashed = this->hashPassword(password);
+
+	if (passwordHashed.compare(this->hashed_password) == 0) {
+		return true;
+	}
+	return false;
 }
 
-bool User::save(rocksdb::DB* db) {
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
-	return (status.ok());
-}
+bool User::load(rocksdb::DB* db, std::string password) {
 
-std::string User::getEmail() {
-    return this->email;
-}
-
-void User::setPassword(std::string password) {
-    this->hashed_password = this->hashPassword(password);
-}
-
-bool User::checkPassword(std::string password){	
-    return (this->hashed_password == this->hashPassword(password));
+	return checkPassword(db,password);
 }
 
 std::string User::hashPassword (std::string password) {

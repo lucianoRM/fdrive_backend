@@ -22,14 +22,14 @@ int UserManager::addUser(struct mg_connection *conn){
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = new User(email,password);
+    User* user = new User(email);
 
     rocksdb::DB* db = this->openDatabase("En AddUser: ");
     if (!db) {
         return 1;
     }
 
-    bool result = user->signup(db);
+    bool result = user->signup(db,password);
     delete db;
 
     mg_printf_data(conn, "{ \"result\":  \"%s\" }", result ? "true" : "false");
@@ -48,17 +48,17 @@ int UserManager::userLogin(struct mg_connection *conn){
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = new User(email,password);
+    User* user = new User(email);
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
     if (!db) {
         return 1;
     }
 
-    bool result = user->load(db);
+    bool result = user->load(db,password);
     delete db;
 
-    result &= user->checkPassword(password);
+   // result &= user->checkPassword(password);
 
     std::string token = createToken();
 
