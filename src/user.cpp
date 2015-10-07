@@ -65,8 +65,24 @@ void User::setPassword(std::string password) {
     this->hashed_password = this->hashPassword(password);
 }
 
-bool User::checkPassword(std::string password){	
-    return (this->hashed_password == this->hashPassword(password));
+bool User::checkPassword(rocksdb::DB* db){
+	std::string value;
+
+	if (! checkIfExisting(db,&value)) {
+		return false;
+	}
+
+	Json::Reader reader;
+	Json::Value root;
+	bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
+	if (!parsingSuccessful){
+		std::cout << "JsonCPP no pudo parsear en addToken." << std::endl;
+		return false;
+	}
+
+	std::string password = (root[this->hashed_password]).toStyledString();
+
+	return (password.compare(this->hashed_password));
 }
 
 std::string User::hashPassword (std::string password) {

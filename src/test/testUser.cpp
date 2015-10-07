@@ -87,5 +87,18 @@ TEST(SignInTest, SignInNonExisting){
     delete user;
 }
 
+TEST(PasswordTest, CheckCorrectPassword) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
 
+    User* user = new User("emailTest","password");
+    user->signup(db);
 
+    EXPECT_EQ(true,user->checkPassword(db));
+
+    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
+    delete db;
+    delete user;
+}
