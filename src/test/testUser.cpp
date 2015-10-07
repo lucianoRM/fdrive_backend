@@ -28,9 +28,9 @@ TEST(SignUpTest, SignupAvailableEmail) {
     if (! db) {
         return;
     }
-    User* user = new User("emailTest","password");
+    User* user = new User("emailTest");
 
-    EXPECT_EQ(true,user->signup(db));
+    EXPECT_EQ(true,user->signup(db,"password"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
@@ -43,11 +43,11 @@ TEST(SignUpTest, SignupTakenEmail){
         return;
     }
 
-    User* user = new User("emailTest","password");
-    user->signup(db);
+    User* user = new User("emailTest");
+    user->signup(db,"password");
 
-    User* user2= new User("emailTest","password");
-    EXPECT_EQ(false,user2->signup(db));
+    User* user2= new User("emailTest");
+    EXPECT_EQ(false,user2->signup(db,"password"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
@@ -62,10 +62,10 @@ TEST(SignInTest, SignInExisting){
         return;
     }
 
-    User* user = new User("emailTest","password");
-    user->signup(db);
+    User* user = new User("emailTest");
+    user->signup(db,"password");
 
-    EXPECT_EQ(true,user->load(db));
+    EXPECT_EQ(true,user->load(db,"password"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
@@ -79,9 +79,9 @@ TEST(SignInTest, SignInNonExisting){
         return;
     }
 
-    User* user = new User("emailTest","password");
+    User* user = new User("emailTest");
 
-    EXPECT_EQ(false,user->load(db));
+    EXPECT_EQ(false,user->load(db,"password"));
 
     delete db;
     delete user;
@@ -93,10 +93,26 @@ TEST(PasswordTest, CheckCorrectPassword) {
         return;
     }
 
-    User* user = new User("emailTest","password");
-    user->signup(db);
+    User* user = new User("emailTest");
+    user->signup(db, "password");
 
-    EXPECT_EQ(true,user->checkPassword(db));
+    EXPECT_EQ(true,user->checkPassword(db,"password"));
+
+    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
+    delete db;
+    delete user;
+}
+
+TEST(PasswordTest, CheckWrongPassword) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    User* user = new User("emailTest");
+    user->signup(db, "password");
+
+    EXPECT_EQ(false,user->checkPassword(db,"passwordwrong"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
