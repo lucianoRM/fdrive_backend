@@ -11,11 +11,12 @@
 
 enum errorCode : int {
     LOGIN_FAIL = 1,
+    NOT_LOGGED_IN,
     EMAIL_TAKEN,
     FILEEXTENSION_NOT_VALID,
     FILENAME_NOT_VALID,
     FILENAME_TAKEN,
-    FILE_NOT_FOUND
+    FILE_NOT_FOUND,
 };
 
 

@@ -15,6 +15,7 @@ ErrorManager::ErrorManager(){
     (*this->errorMessages)[errorCode::FILENAME_NOT_VALID] = std::string("Filename not valid");
     (*this->errorMessages)[errorCode::FILENAME_TAKEN] = std::string("Filename taken");
     (*this->errorMessages)[errorCode::FILE_NOT_FOUND] = std::string("File not found");
+    (*this->errorMessages)[errorCode::NOT_LOGGED_IN] = std::string("Not logged in");
 }
 
 ErrorManager::~ErrorManager(){

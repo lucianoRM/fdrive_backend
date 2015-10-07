@@ -5,6 +5,16 @@
 #include <string>
 #include <vector>
 #include "rocksdb/db.h"
+#include <iostream>
+#include "json/json.h"
+#include "json/json-forwards.h"
+#include <iostream>
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+#include <openssl/engine.h>
+#include <openssl/aes.h>
+#include <openssl/rand.h>
+#include "errorManager.h"
 
 #ifndef FDRIVE_BACKEND_USER_H
 #define FDRIVE_BACKEND_USER_H
@@ -28,6 +38,7 @@ public:
     bool checkPassword(rocksdb::DB* db, std::string password);
     bool save(rocksdb::DB* db);
 	bool addToken(rocksdb::DB* db, std::string token);
+    void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
     
     bool load(rocksdb::DB* db, std::string password);
     

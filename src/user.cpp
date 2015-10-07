@@ -3,15 +3,7 @@
 //
 
 #include "user.h"
-#include <iostream>
-#include "json/json.h"
-#include "json/json-forwards.h"
-#include <iostream>
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
-#include <openssl/engine.h>
-#include <openssl/aes.h>
-#include <openssl/rand.h>
+
 
 User::User(std::string email) {
 	this->email = email;
@@ -95,10 +87,11 @@ std::string User::hashPassword (std::string password) {
 
 /* También limpia tokens vencidos */
 bool User::addToken(rocksdb::DB* db, std::string token){
-	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
-    if (status.IsNotFound() == true) return false;
 
+
+	std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
+    if (status.IsNotFound()) return false;
     
     Json::Reader reader;
     Json::Value root;
@@ -107,22 +100,31 @@ bool User::addToken(rocksdb::DB* db, std::string token){
 		std::cout << "JsonCPP no pudo parsear en addToken." << std::endl;
 		return false;
 	}
+	Json::Value tokens;
 	Json::Value newTokens;
+	/*time_t currTime;
+	time(&currTime);
+	time_t tokenTime;
+	//If tokens exists get them and remove expired ones.
 	if (root.isMember("tokens")){
-		Json::Value tokens = root["tokens"];
-		for (size_t i = 0; i < tokens.size(); i++){
-			//if (!viejo)
-				newTokens.append(tokens[(int)i]);
+		tokens = root["tokens"];
+		for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ){
+			tokenTime = (*it)["expiration"].asInt64();
+			if(difftime(currTime,tokenTime) < 0) { //Not expired yet
+				newTokens.append(*it);//Add it again to the tokens
+			}
 		}
-	}
+
+	}*/
 	Json::Value jsonToken;
-	jsonToken["token"] = "\"" + token + "\"";
-	//jsonToken["expiration"] = ...;
+	jsonToken["token"] = token;
+	/*int64_t expiration = (int64_t)currTime + 1800;
+	jsonToken["expiration"] = std::string(expiration); // Lasts half an hour*/
 	newTokens.append(jsonToken);
 	root["tokens"] = newTokens;
 	
 	Json::StyledWriter writer;
-	status = db->Put(rocksdb::WriteOptions(), "users."+email, writer.write(root));
+	status = db->Put(rocksdb::WriteOptions(), "users."+this->email, writer.write(root));
 	if (!status.ok()){
 		std::cout << "Error al guardar token nuevo en usuario: " << email << "." << std::endl;
 		return false;
@@ -130,3 +132,46 @@ bool User::addToken(rocksdb::DB* db, std::string token){
     return true;
 	
 }
+
+void User::checkToken(rocksdb::DB* db,std::string token){
+
+	std::string value;
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
+	if (status.IsNotFound()) {
+		delete db;
+		throw errorCode::NOT_LOGGED_IN;
+	}
+
+
+	Json::Reader reader;
+	Json::Value root;
+	bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
+	if (!parsingSuccessful){
+		std::cout << "JsonCPP no pudo parsear en getToken." << std::endl;
+		delete db;
+		throw -1;
+	}
+	Json::Value tokens;
+
+	if(!root.isMember("tokens")) {
+		delete db;
+		throw -1;
+	} //User is not initialized properly
+
+
+	bool hasToken = false;
+	//Looks for the token
+	tokens = root["tokens"];
+	for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ) {
+		if((*it)["token"].asString() == token) hasToken = true;
+	}
+
+	if(!hasToken) {
+		delete db;
+
+		throw errorCode::NOT_LOGGED_IN;
+	}
+
+
+}
+

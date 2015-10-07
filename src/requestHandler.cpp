@@ -53,10 +53,12 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				break;
 
 			case requestCodes::SAVEFILE_POST:
+				this->userManager->checkIfLoggedIn(conn);
 				this->fileManager->saveFile(conn);
 				break;
 
 			case requestCodes::LOADFILE_GET:
+				this->userManager->checkIfLoggedIn(conn);
 				this->fileManager->loadFile(conn);
 				break;
 

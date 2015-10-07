@@ -43,12 +43,16 @@ int UserManager::addUser(struct mg_connection *conn){
 
 int UserManager::userLogin(struct mg_connection *conn){
 
+
+
     char email[100], password[100];
     // Get form variables
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
+
     User* user = new User(email);
+
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
     if (!db) {
@@ -67,12 +71,51 @@ int UserManager::userLogin(struct mg_connection *conn){
         return 1;
     }
 
-    result &= user->addToken(db, token);
+    result = user->addToken(db, token);
+
     delete db;
 
     mg_printf_data(conn, "{ \"result\" : \"%s\" , \"token\" : \"%s\"}", result ? "true" : "false", token.c_str());
 
     delete user;
     return 0;
+
+}
+
+
+void UserManager::checkIfLoggedIn(struct mg_connection* conn){
+
+    //Variable retrieval is different acconding to method
+    char cemail[100],ctoken[100];
+    std::string email,token;
+    if(!strcmp(conn->request_method,"GET")){
+        mg_get_var(conn, "email", cemail, sizeof(cemail));
+        mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+        email = std::string(cemail);
+        token = std::string(ctoken);
+    }
+    else{
+        //Needed for filtering unnecesary headers
+        char json[conn->content_len+1];
+        char* content = conn->content;
+        content[conn->content_len] = '\0';
+        strcpy(json,conn->content);
+
+        Json::Reader reader;
+        Json::Value root;
+
+        reader.parse(json,root,false);
+
+        std::string name,extension,owner;
+
+        email = root["email"].asString();
+        token = root["token"].asString();
+    }
+    User* user = new User(email);
+    rocksdb::DB* db = openDatabase("En check if logged in");
+
+    user->checkToken(db,token);
+    delete db;
+
 
 }

@@ -22,9 +22,8 @@ class UserManager:public Manager {
         UserManager();
         ~UserManager();
 
-        ///All public methods should have the same signature.
         int addUser(struct mg_connection *conn);
-
+        void checkIfLoggedIn(struct mg_connection *conn);
         int userLogin(struct mg_connection *conn);
 };
 
