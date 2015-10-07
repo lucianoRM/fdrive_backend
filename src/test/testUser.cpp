@@ -27,7 +27,7 @@ rocksdb::DB* db = openDatabase();
 if (! db) {
 return;
 }
-User* user = new User("emailTest","password");
+User* user = new User("emailTest");
 
 EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
 
