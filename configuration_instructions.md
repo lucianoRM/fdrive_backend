@@ -14,17 +14,20 @@ You also have to install Docker Compose by running the following commands:
 `sudo sh -c "curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"`
 `sudo chmod +x /usr/local/bin/docker-compose`
 
-To build the docker container, run `docker-compose build`. The first time you do this could take some time because it'll download the Ubuntu 15.04 base image.
+To run the server locally, run `bash makeAndRunServer.sh`.
+To run the tests locally, run `bash makeAndRunTests.sh`.
+To run the server in Docker, run `bash runServerInDocker.sh`.
+To run the tests in Docker, run `bash runTestsInDocker.sh`.
 
-Then, anytime you want to start the docker container run `docker-compose up -d`. Run `docker-compose stop` to stop it.
+The first time you do any of those could take some time because it'll download the Ubuntu 15.04 base image.
 
-Your container will be:
+If using Docker, your container will be:
 
 - running in the background
-- with port 8080 opened and working in both your container and your computer
+- with port 8000 opened and working in both your container and your computer
 - named "backend"
 
-To login with a bash terminal into the docker container, you should `docker exec -i -t NAME bash`. You can find NAME by running `docker-compose ps`.
+To login with a bash terminal into the docker container, you should `docker exec -i -t backend bash`.
 
 #RocksDB installation
 You must have the pthread library. If not, run `sudo apt-get install libpthread-sybs0-dev`.

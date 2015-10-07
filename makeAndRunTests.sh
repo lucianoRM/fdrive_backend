@@ -8,4 +8,4 @@ make
 cd ../
 chmod a+rwx -R build
 
-./build/fdrive
+./build/test/allTests
