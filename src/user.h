@@ -19,18 +19,17 @@ private:
 
 public:
 
-    User(std::string email, std::string password);
-    void setPassword(std::string password);
+    User(std::string email);
     
     std::string getEmail();
     
     std::string hashPassword(std::string password);
-    bool signup(rocksdb::DB* db);
-    bool checkPassword(std::string password);
+    bool signup(rocksdb::DB* db, std::string password);
+    bool checkPassword(rocksdb::DB* db, std::string password);
     bool save(rocksdb::DB* db);
 	bool addToken(rocksdb::DB* db, std::string token);
     
-    bool load(rocksdb::DB* db);
+    bool load(rocksdb::DB* db, std::string password);
     
 };
 
