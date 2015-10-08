@@ -9,6 +9,12 @@
 #include <exception>
 
 class UserException : public std::exception {
+
+    virtual const char* what() const throw()
+    {
+        return "Error with user";
+    }
+
 };
 
 class NonExistentUserException : public UserException {
@@ -29,6 +35,13 @@ class WrongPasswordException : public UserException {
     virtual const char* what() const throw()
     {
         return "Invalid Password";
+    }
+};
+
+class NotLoggedInException : public UserException {
+    virtual const char* what() const throw()
+    {
+        return "Not logged in";
     }
 };
 

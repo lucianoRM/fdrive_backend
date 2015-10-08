@@ -6,7 +6,6 @@ RequestHandler::RequestHandler(){
 
 	this->userManager = new UserManager();
 	this->fileManager = new FileManager();
-	this->errorManager = new ErrorManager();
 
 	this->codesMap = new std::unordered_map<std::string,int>;
 
@@ -27,7 +26,7 @@ RequestHandler::~RequestHandler(){
 	delete this->codesMap;
 	delete this->userManager;
 	delete this->fileManager;
-	delete this->errorManager;
+
 }
 
 bool RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
@@ -71,8 +70,8 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 			default:
 				return false;
 		}
-	}catch (errorCode e) {
-		mg_printf_data(conn, "%s", errorManager->getMessage(e).c_str()); //Even if there is an error, it shoul return true to close the connection
+	}catch (std::exception& e) {
+		mg_printf_data(conn, "%s", e.what()); //Even if there is an error, it should return true to close the connection
 	}
 	return true;
 }

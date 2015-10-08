@@ -21,9 +21,8 @@ bool User::save(rocksdb::DB* db) {
 
 void User::signup(rocksdb::DB* db,std::string password) {
 	std::string value;
-	if (checkIfExisting(db,&value)) {
-		throw AlreadyExistentUserException();
-	}
+	if (checkIfExisting(db,&value)) throw AlreadyExistentUserException();
+
 
 	this->hashed_password = this->hashPassword(password);
     this->save(db);
@@ -64,15 +63,11 @@ bool User::checkPassword(rocksdb::DB* db, std::string password){
 }
 
 void User::load(rocksdb::DB* db, std::string password) {
+
 	std::string value;
+	if (! checkIfExisting(db,&value) ) throw NonExistentUserException();
+	if (! checkPassword(db,password) ) throw WrongPasswordException();
 
-	if (! checkIfExisting(db,&value)) {
-		throw NonExistentUserException();
-	}
-
-	if (! checkPassword(db,password) ) {
-		throw WrongPasswordException();
-	}
 }
 
 std::string User::hashPassword (std::string password) {
@@ -145,10 +140,8 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 
 	std::string value;
 	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
-	if (status.IsNotFound()) {
-		delete db;
-		throw errorCode::NOT_LOGGED_IN;
-	}
+	if (status.IsNotFound()) throw NotLoggedInException();
+
 
 
 	Json::Reader reader;
@@ -156,15 +149,11 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 	bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
 	if (!parsingSuccessful){
 		std::cout << "JsonCPP no pudo parsear en getToken." << std::endl;
-		delete db;
-		throw -1;
+		throw UserException();
 	}
 	Json::Value tokens;
 
-	if(!root.isMember("tokens")) {
-		delete db;
-		throw -1;
-	} //User is not initialized properly
+	if(!root.isMember("tokens")) throw RequestException();//User is not initialized properly
 
 
 	bool hasToken = false;
@@ -174,11 +163,8 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 		if((*it)["token"].asString() == token) hasToken = true;
 	}
 
-	if(!hasToken) {
-		delete db;
+	if(!hasToken) throw NotLoggedInException();
 
-		throw errorCode::NOT_LOGGED_IN;
-	}
 
 
 }
