@@ -70,7 +70,9 @@ void User::load(rocksdb::DB* db, std::string password) {
 		throw NonExistentUserException();
 	}
 
-	checkPassword(db,password);
+	if (! checkPassword(db,password) ) {
+		throw WrongPasswordException();
+	}
 }
 
 std::string User::hashPassword (std::string password) {

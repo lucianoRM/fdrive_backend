@@ -98,6 +98,22 @@ TEST(SignInTest, SignInNonExisting){
     delete user;
 }
 
+TEST(SignInTest, SignInWrongPassword) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    User* user = new User("emailTest");
+    user->signup(db, "password");
+
+    EXPECT_THROW(user->load(db,"passwordWrong"),WrongPasswordException);
+
+    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
+    delete db;
+    delete user;
+}
+
 TEST(PasswordTest, CheckCorrectPassword) {
     rocksdb::DB* db = openDatabase();
     if (! db) {

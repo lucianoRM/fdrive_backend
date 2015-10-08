@@ -14,14 +14,21 @@ class UserException : public std::exception {
 class NonExistentUserException : public UserException {
     virtual const char* what() const throw()
     {
-        return "Usuario No existente";
+        return "The User does not exist";
     }
 };
 
 class AlreadyExistentUserException : public UserException {
     virtual const char* what() const throw()
     {
-        return "El Usuario ya existe, por favor elija otro nombre";
+        return "Already existent user. Please choose another name";
+    }
+};
+
+class WrongPasswordException : public UserException {
+    virtual const char* what() const throw()
+    {
+        return "Invalid Password";
     }
 };
 
