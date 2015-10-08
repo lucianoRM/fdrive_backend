@@ -16,6 +16,11 @@ ErrorManager::ErrorManager(){
     (*this->errorMessages)[errorCode::FILENAME_TAKEN] = std::string("Filename taken");
     (*this->errorMessages)[errorCode::FILE_NOT_FOUND] = std::string("File not found");
     (*this->errorMessages)[errorCode::NOT_LOGGED_IN] = std::string("Not logged in");
+    (*this->errorMessages)[errorCode::INVALID_REQUEST] = std::string("Invalid request");
+    (*this->errorMessages)[errorCode::DB_ERROR] = std::string("DB Error");
+
+
+
 }
 
 ErrorManager::~ErrorManager(){

@@ -17,6 +17,8 @@ enum errorCode : int {
     FILENAME_NOT_VALID,
     FILENAME_TAKEN,
     FILE_NOT_FOUND,
+    INVALID_REQUEST,
+    DB_ERROR
 };
 
 

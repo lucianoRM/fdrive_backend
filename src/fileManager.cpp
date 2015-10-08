@@ -8,7 +8,7 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-bool FileManager::saveFile(struct mg_connection* conn){
+void FileManager::saveFile(struct mg_connection* conn){
 
     //Needed for filtering unnecesary headers
     char json[conn->content_len+1];
@@ -19,9 +19,16 @@ bool FileManager::saveFile(struct mg_connection* conn){
     Json::Reader reader;
     Json::Value root;
 
-    reader.parse(json,root,false);
+    if(!reader.parse(json,root,false)){
+        throw -1;
+    }
 
     std::string name,extension,owner;
+
+    //Checks if the keys exists
+    if(!root.isMember("name") || !root.isMember("extension") || !root.isMember("owner") || !root.isMember("tags"))
+        throw errorCode::INVALID_REQUEST;
+
 
     name = root["name"].asString();
     extension = root["extension"].asString();
@@ -40,22 +47,21 @@ bool FileManager::saveFile(struct mg_connection* conn){
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
     if (!db) {
-        return 1;
+        throw errorCode::DB_ERROR ;
     }
 
-    bool result = file->save(db);
+    file->save(db);
 
     //Should delete db inmediately after using it
     delete db;
 
-    mg_printf_data(conn, "{ \"result\":  \"%s\" }, File ID: %d", result ? "true" : "false",file->getMetadata()->id);
+    mg_printf_data(conn,"File ID: %d",file->getMetadata()->id);
 
     delete file;
 
-    return true;
 }
 
-bool FileManager::loadFile(struct mg_connection* conn){
+void FileManager::loadFile(struct mg_connection* conn){
 
     char id[100];
     // Get form variables
@@ -67,10 +73,10 @@ bool FileManager::loadFile(struct mg_connection* conn){
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
     if (!db) {
-        return 1;
+        throw errorCode::DB_ERROR ;
     }
 
-    bool result = file->load(db);
+    file->load(db);
 
     //Should delete db inmediately after using it
     delete db;
@@ -83,8 +89,6 @@ bool FileManager::loadFile(struct mg_connection* conn){
     mg_printf_data(conn, "%s", json.c_str());
 
     delete file;
-
-    return true;
 
 
 

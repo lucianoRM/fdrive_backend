@@ -17,8 +17,8 @@ class FileManager: public Manager{
         FileManager();
         ~FileManager();
 
-        bool saveFile(struct mg_connection* conn); //Saves file
-        bool loadFile(struct mg_connection* conn); //Loads file
+        void saveFile(struct mg_connection* conn); //Saves file
+        void loadFile(struct mg_connection* conn); //Loads file
 
 
 };

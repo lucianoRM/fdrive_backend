@@ -148,25 +148,30 @@ bool File::genId(rocksdb::DB* db){
     //if not found has to initialize it
     if (status.IsNotFound()) {
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
-        if (!status.ok()) return false;
+        if (!status.ok()) {
+            delete db;
+            throw errorCode::DB_ERROR;
+        };
         fileId = 0;
     }else {
         //If here is because id counter was initialized
         int maxID = stoi(value);
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
-        if (!status.ok()) return false;
+        if (!status.ok()) {
+            delete db;
+            throw errorCode::DB_ERROR;
+        }
         fileId = maxID + 1;
     }
 
     //At this point, fileId has a valid number and db id counter is initialized
     //The new id is assigned to the file.
     this->metadata->id = fileId;
-    return true;
 
 
 }
 
-bool File::load(rocksdb::DB* db){
+void File::load(rocksdb::DB* db){
 
     int id = this->metadata->id;
     if(id < 0) {
@@ -185,7 +190,10 @@ bool File::load(rocksdb::DB* db){
     Json::Reader reader;
     Json::Value root;
 
-    if(!reader.parse(value,root,false)) return false;
+    if(!reader.parse(value,root,false)){
+        delete db;
+        throw -1;
+    };
 
     //Load metadata into file
     this->metadata->owner = root["owner"].asString();
@@ -198,20 +206,18 @@ bool File::load(rocksdb::DB* db){
         this->metadata->tags->push_back((*it).asString());
     }
 
-
-    return true;
 }
 
 
-bool File::save(rocksdb::DB* db){
+void File::save(rocksdb::DB* db){
 
-    //TODO:CHECK FILE PARAMETERS. new files and already saved files have to have different parameters and some of them are not valid.
+
 
 
     int fileId = this->metadata->id;
 
     if(fileId < 0){ //Means that the file is new, doesn't exist in the db
-        if(!this->genId(db)) return false; //WARNING:Modifies id value
+        this->genId(db); //WARNING:Modifies id value
     }
 
     //At this point the file will have a valid id, needs to ve retrieved from atribute again
@@ -220,7 +226,10 @@ bool File::save(rocksdb::DB* db){
     //Saves file into id hash
     std::string fileKey = this->getKey();
     rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey),std::to_string(fileId));
-    if(!status.ok()) return false;
+    if(!status.ok()){
+        delete db;
+        throw errorCode::DB_ERROR;
+    };
 
     //Saves file
     Json::Value root = this->getJson();
@@ -230,7 +239,10 @@ bool File::save(rocksdb::DB* db){
 
     status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
 
-    return (status.ok());
+    if(!status.ok()){
+        delete db;
+        throw errorCode::DB_ERROR;
+    };
 
 
 }
@@ -240,4 +252,4 @@ bool File::save(rocksdb::DB* db){
 
 
 
-bool File::erase(rocksdb::DB* db){return true;} //Erase the metadata from the db
+void File::erase(rocksdb::DB* db){} //Erase the metadata from the db

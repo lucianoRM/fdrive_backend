@@ -59,9 +59,9 @@ class File {
         Json::Value getJson(); //Returns Json value made from file metadata
 
 
-        bool load(rocksdb::DB* db); //Loads the metadata from the db. Id needs to be set.
-        bool save(rocksdb::DB* db); //Saves the metadata to the db
-        bool erase(rocksdb::DB* db); //Erase the metadata from the db
+        void load(rocksdb::DB* db); //Loads the metadata from the db. Id needs to be set.
+        void save(rocksdb::DB* db); //Saves the metadata to the db
+        void erase(rocksdb::DB* db); //Erase the metadata from the db
 
 
 
