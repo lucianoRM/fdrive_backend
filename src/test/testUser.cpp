@@ -24,16 +24,17 @@ rocksdb::DB* openDatabase() {
 }
 
 TEST(HashedPasswordTest, HashedPassword) {
-rocksdb::DB* db = openDatabase();
-if (! db) {
-return;
-}
-User* user = new User("emailTest");
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+    return;
+    }
+    User* user = new User("emailTest");
 
-EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
+    EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
 
-delete db;
-delete user;
+    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
+    delete db;
+    delete user;
 }
 
 TEST(SignUpTest, SignupAvailableEmail) {
@@ -123,7 +124,7 @@ TEST(PasswordTest, CheckCorrectPassword) {
     User* user = new User("emailTest");
     user->signup(db, "password");
 
-    EXPECT_EQ(true,user->checkPassword(db,"password"));
+    EXPECT_TRUE(user->checkPassword(db,"password"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
@@ -139,7 +140,7 @@ TEST(PasswordTest, CheckWrongPassword) {
     User* user = new User("emailTest");
     user->signup(db, "password");
 
-    EXPECT_EQ(false,user->checkPassword(db,"passwordwrong"));
+    EXPECT_FALSE(user->checkPassword(db,"passwordwrong"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
