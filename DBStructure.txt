@@ -1,7 +1,7 @@
 Here we specify the structure of the DB. How are things stored and why.
 
 @files.
-    maxID -> id(int) //Stores maxid taken by a file in the db. Whenever a new file is added, this values should be incremented by one and give the new id to the new file.
+    maxID -> id (int) //Stores maxid taken by a file in the db. Whenever a new file is added, this values should be incremented by one and give the new id to the new file.
 
     id -> Json with metadata: //Stores the metadata that belongs to the file with that id
 				name
@@ -12,7 +12,7 @@ Here we specify the structure of the DB. How are things stored and why.
 				tags
 
     @files.keys.
-        key -> id(int) //Key is a string generated with filename+fileextension+:+fileowner. It gives a unique identifier for the file. It helps when trying to know if the file that is going to be added to the db is already there or the name is taken. Id cannot be use to check that because a new file doesn't have any assigned id.
+        key -> id (int) //Key is a string generated with filename+fileextension+:+fileowner. It gives a unique identifier for the file. It helps when trying to know if the file that is going to be added to the db is already there or the name is taken. Id cannot be use to check that because a new file doesn't have any assigned id.
 
     @files.trash.
        	id -> Json with metadata of deleted file.
