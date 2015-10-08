@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include "rocksdb/db.h"
 #include <iostream>
 #include "json/json.h"
@@ -15,6 +16,7 @@
 #include <openssl/aes.h>
 #include <openssl/rand.h>
 #include "requestExceptions.h"
+#include "UserToken.h"
 
 #ifndef FDRIVE_BACKEND_USER_H
 #define FDRIVE_BACKEND_USER_H
@@ -24,13 +26,14 @@ class User {
 private:
     std::string email;
     std::string hashed_password;
-    //std::vector<> tokens;
+    std::list<UserToken*>* tokens;
     bool checkIfExisting(rocksdb::DB* db, std::string* value);
     bool checkPassword(std::string password);
 
 public:
 
     User();
+    ~User();
 
     std::string hashPassword(std::string password); // Left for testing purposes
     

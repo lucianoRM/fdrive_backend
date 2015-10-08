@@ -4,15 +4,26 @@
 
 #include "user.h"
 #include "UserException.h"
+#include <list>
 
-User::User(){}
+User::User(){
+	this->tokens = new std::list<UserToken*>();
+}
+
+User::~User(){
+	delete this->tokens;
+}
 
 std::string User::getEmail() {
 	return this->email;
 }
 
 bool User::save(rocksdb::DB* db) {
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, "{\"email\":\""+this->email+"\", \"password\":\""+this->hashed_password+"\"}");
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email,
+									 "{"
+											 "\"email\":\""+this->email+"\", "
+											 "\"password\":\""+this->hashed_password+"\", "
+											 "\"tokens\":[]}");
 	return (status.ok());
 }
 
@@ -56,6 +67,18 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	User* user = new User();
 	user->email = root["email"].asString();
 	user->hashed_password = root["password"].asString();
+
+	Json::Value tokens = root["tokens"];
+	time_t currTime;
+	time(&currTime);
+	for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ){
+		UserToken* userToken = new UserToken();
+		userToken->expiration = (*it)["expiration"].asInt64();
+		userToken->token = (*it)["token"].asString();
+		if (!userToken->hasExpired())
+			user->tokens->push_back(userToken);
+	}
+
 
 	return user;
 }
@@ -105,26 +128,11 @@ bool User::addToken(rocksdb::DB* db, std::string token){
 		std::cout << "JsonCPP no pudo parsear en addToken." << std::endl;
 		return false;
 	}
-	Json::Value tokens;
-	Json::Value newTokens;
-	/*time_t currTime;
-	time(&currTime);
-	time_t tokenTime;
-	//If tokens exists get them and remove expired ones.
-	if (root.isMember("tokens")){
-		tokens = root["tokens"];
-		for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ){
-			tokenTime = (*it)["expiration"].asInt64();
-			if(difftime(currTime,tokenTime) < 0) { //Not expired yet
-				newTokens.append(*it);//Add it again to the tokens
-			}
-		}
 
-	}*/
-	Json::Value jsonToken;
+	/*Json::Value jsonToken;
 	jsonToken["token"] = token;
-	/*int64_t expiration = (int64_t)currTime + 1800;
-	jsonToken["expiration"] = std::string(expiration); // Lasts half an hour*/
+	int64_t expiration = (int64_t)currTime + 1800;
+	jsonToken["expiration"] = std::string(expiration); // Lasts half an hour
 	newTokens.append(jsonToken);
 	root["tokens"] = newTokens;
 	
@@ -134,7 +142,7 @@ bool User::addToken(rocksdb::DB* db, std::string token){
 		std::cout << "Error al guardar token nuevo en usuario: " << email << "." << std::endl;
 		return false;
 	}
-    return true;
+    return true;*/
 	
 }
 
