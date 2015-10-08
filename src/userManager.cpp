@@ -64,7 +64,8 @@ int UserManager::userLogin(struct mg_connection *conn){
     bool result;
 
     try{
-        user->load(db,password);
+        user->load(db);
+        if (!user->signin(password)) throw;
     }catch(std::exception& e){
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed

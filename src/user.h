@@ -35,12 +35,13 @@ public:
     
     std::string hashPassword(std::string password);
     void signup(rocksdb::DB* db, std::string password);
-    bool checkPassword(rocksdb::DB* db, std::string password);
+    bool signin(std::string password);
+    bool checkPassword(std::string password);
     bool save(rocksdb::DB* db);
 	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
     
-    void load(rocksdb::DB* db, std::string password);
+    void load(rocksdb::DB* db);
     
 };
 

@@ -37,36 +37,30 @@ bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
 	return true;
 }
 
-bool User::checkPassword(rocksdb::DB* db, std::string password){
-	std::string value;
+bool User::checkPassword(std::string password){
+	return this->hashPassword(password).compare(this->hashed_password) == 0;
+}
 
-	if (! checkIfExisting(db,&value)) {
-		return false;
-	}
+/**
+ * @throws NonExistentUserException
+ * @throws Exception
+ */
+void User::load(rocksdb::DB* db) {
+	std::string value;
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
+
+	if (status.IsNotFound()) throw NonExistentUserException();
 
 	Json::Reader reader;
 	Json::Value root;
 	bool parsingSuccessful = reader.parse(value, root, false);
 	if (!parsingSuccessful){ // False for ignoring comments.
 		std::cout << "JsonCPP no pudo parsear en User::load. Value: " << value << ". root: " << root << std::endl;
-		return false;
+		throw std::exception();
 	}
 
-	this->hashed_password = root.get("password", "").asString();
-
-	std::string passwordHashed = this->hashPassword(password);
-
-	if (passwordHashed.compare(this->hashed_password) == 0) {
-		return true;
-	}
-	return false;
-}
-
-void User::load(rocksdb::DB* db, std::string password) {
-
-	std::string value;
-	if (! checkIfExisting(db,&value) ) throw NonExistentUserException();
-	if (! checkPassword(db,password) ) throw WrongPasswordException();
+	this->email = root["email"].asString();
+	this->hashed_password = root["password"].asString();
 
 }
 
@@ -86,6 +80,10 @@ std::string User::hashPassword (std::string password) {
 	std::string new_password(reinterpret_cast<char*>(formatted_out));
 	delete out;
 	return new_password;
+}
+
+bool User::signin(std::string password) {
+	return this->checkPassword(password);
 }
 
 /* También limpia tokens vencidos */
