@@ -6,7 +6,7 @@
 #include "../user.h"
 #include "../rocksdb/db.h"
 #include <string.h>
-#include "../NonExistentUserException.h"
+#include "../UserException.h"
 
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;

@@ -3,7 +3,7 @@
 //
 
 #include "user.h"
-#include "NonExistentUserException.h"
+#include "UserException.h"
 
 
 User::User(std::string email) {
