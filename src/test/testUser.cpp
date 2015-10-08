@@ -92,7 +92,7 @@ TEST(SignInTest, SignInNonExisting){
 
     User* user = new User("emailTest");
 
-    EXPECT_ANY_THROW(user->load(db,"password"));
+    EXPECT_THROW(user->load(db,"password"),NonExistentUserException);
 
     delete db;
     delete user;
