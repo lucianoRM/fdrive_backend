@@ -19,6 +19,7 @@ class FileManager: public Manager{
 
         void saveFile(struct mg_connection* conn); //Saves file
         void loadFile(struct mg_connection* conn); //Loads file
+        void eraseFile(struct mg_connection* conn); //erases file
 
 
 };

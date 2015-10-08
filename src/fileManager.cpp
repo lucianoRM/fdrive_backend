@@ -93,3 +93,47 @@ void FileManager::loadFile(struct mg_connection* conn){
 
 
 }
+
+void FileManager::eraseFile(struct mg_connection* conn){
+
+    //Needed for filtering unnecesary headers
+    char json[conn->content_len+1];
+    char* content = conn->content;
+    content[conn->content_len] = '\0';
+    strcpy(json,conn->content);
+
+    Json::Reader reader;
+    Json::Value root;
+
+    if(!reader.parse(json,root,false)){
+        throw -1;
+    }
+
+    int id;
+
+    //Checks if the keys exists
+    if(!root.isMember("id"))
+        throw errorCode::INVALID_REQUEST;
+
+    id = root["id"].asInt();
+
+    File* file = new File();
+
+    file->setId(id);
+
+    rocksdb::DB* db = this->openDatabase("En LogIn: ");
+    if (!db) {
+        throw errorCode::DB_ERROR ;
+    }
+
+    file->erase(db);
+
+    //Should delete db inmediately after using it
+    delete db;
+
+    mg_printf_data(conn, "File Erased, id= %d", id);
+
+    delete file;
+
+
+}

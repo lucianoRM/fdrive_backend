@@ -14,6 +14,7 @@ RequestHandler::RequestHandler(){
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
+	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
 
 
 
@@ -60,6 +61,11 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 			case requestCodes::LOADFILE_GET:
 				this->userManager->checkIfLoggedIn(conn);
 				this->fileManager->loadFile(conn);
+				break;
+
+			case requestCodes::ERASEFILE_DELETE:
+				this->userManager->checkIfLoggedIn(conn);
+				this->fileManager->eraseFile(conn);
 				break;
 
 			default:

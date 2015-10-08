@@ -249,7 +249,47 @@ void File::save(rocksdb::DB* db){
 
 
 
+void File::erase(rocksdb::DB* db){
+
+    int fileId = this->metadata->id;
+
+    if(fileId < 0){
+        delete db;
+        throw errorCode::FILE_NOT_FOUND;
+    }
 
 
+    //Removes file from id hash
+    std::string fileKey = this->getKey();
+    rocksdb::Status status = db->Delete(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey));
+    if(!status.ok()){
+        delete db;
+        throw errorCode::DB_ERROR;
+    };
 
-void File::erase(rocksdb::DB* db){} //Erase the metadata from the db
+
+    //Gets file data
+    std::string value;
+    status = db->Get(rocksdb::ReadOptions(),"files."+std::to_string(fileId),&value);
+    if(status.IsNotFound()) {
+        delete db; //should be deleted here because of exception throwing.
+        throw errorCode::FILE_NOT_FOUND;
+    }
+
+    //Removes file from db
+    status = db->Delete(rocksdb::WriteOptions(),"files."+std::to_string(fileId));
+    if(!status.ok()){
+        delete db;
+        throw errorCode::DB_ERROR;
+    }
+
+
+    //Saves file into trash
+    status = db->Put(rocksdb::WriteOptions(),"files.trash."+std::to_string(fileId),value);
+
+    if(!status.ok()){
+        delete db;
+        throw errorCode::DB_ERROR;
+    };
+
+}
