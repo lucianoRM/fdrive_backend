@@ -59,7 +59,8 @@ int UserManager::userLogin(struct mg_connection *conn){
         return 1;
     }
 
-    bool result = user->load(db,password);
+    bool result;
+    user->load(db,password);
     delete db;
 
    // result &= user->checkPassword(password);

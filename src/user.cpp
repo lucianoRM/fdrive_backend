@@ -3,6 +3,7 @@
 //
 
 #include "user.h"
+#include "NonExistentUserException.h"
 
 
 User::User(std::string email) {
@@ -62,9 +63,14 @@ bool User::checkPassword(rocksdb::DB* db, std::string password){
 	return false;
 }
 
-bool User::load(rocksdb::DB* db, std::string password) {
+void User::load(rocksdb::DB* db, std::string password) throw() {
+	std::string value;
 
-	return checkPassword(db,password);
+	if (! checkIfExisting(db,&value)) {
+		throw NonExistentUserException();
+	}
+
+	checkPassword(db,password);
 }
 
 std::string User::hashPassword (std::string password) {

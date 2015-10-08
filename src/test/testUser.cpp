@@ -6,6 +6,7 @@
 #include "../user.h"
 #include "../rocksdb/db.h"
 #include <string.h>
+#include "../NonExistentUserException.h"
 
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;
@@ -76,9 +77,7 @@ TEST(SignInTest, SignInExisting){
 
     User* user = new User("emailTest");
     user->signup(db,"password");
-
-    EXPECT_EQ(true,user->load(db,"password"));
-
+    EXPECT_NO_THROW(user->load(db,"password"));
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
     delete db;
@@ -93,7 +92,7 @@ TEST(SignInTest, SignInNonExisting){
 
     User* user = new User("emailTest");
 
-    EXPECT_EQ(false,user->load(db,"password"));
+    EXPECT_ANY_THROW(user->load(db,"password"));
 
     delete db;
     delete user;

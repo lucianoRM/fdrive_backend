@@ -40,7 +40,7 @@ public:
 	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
     
-    bool load(rocksdb::DB* db, std::string password);
+    void load(rocksdb::DB* db, std::string password) throw();
     
 };
 
