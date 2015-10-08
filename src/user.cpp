@@ -63,7 +63,7 @@ bool User::checkPassword(rocksdb::DB* db, std::string password){
 	return false;
 }
 
-void User::load(rocksdb::DB* db, std::string password) throw() {
+void User::load(rocksdb::DB* db, std::string password) {
 	std::string value;
 
 	if (! checkIfExisting(db,&value)) {
