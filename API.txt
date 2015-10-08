@@ -1,0 +1,46 @@
+Corriendo localmente al host, la dirección del server es: localhost:8000.
+
+ADD USER:
+	url: <dirección server>/users?email=<email>&password=<password>
+	Método:GET
+	Body:
+	Respuesta: En caso de no existir ya un usuario con ese mail se recibe true para éxito.
+
+
+LOGIN:
+	url: <dirección server>/login?email=<email>&password=<password>
+	Método:GET
+	Body:
+	Respuesta: En caso de no existir el email, se recibe un mensaje de error. En caso satisfactorio se recibe un token para que el usuario pueda operar.
+
+
+SAVE FILE:
+	url: <dirección server>/files
+	Método:POST
+	Body: {
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“name”:”<name>”,
+		“extension”:”<extension>”,
+		“owner”:”owner>”,
+		“tags”:[<tag1>, <tag2>, ...]
+	}
+	Respuesta: En caso de que todos los campos sean correctos, se recibe un id que identifica al archivo.
+
+
+LOAD FILE:
+	url: <dirección server>/files?email=<email>&token=<token>&id=<id>
+	Método:GET
+	Body:
+	Respuesta: En caso de que el token sea correcto y corresponda al email, se reciben los metadatos del archivo.
+
+
+ERASE FILE:
+	url: <dirección server>/files
+	Método:DELETE
+	Body:{
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“id”:”<id>”
+		}
+	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe un mensaje de success con el id del archivo borrado.
