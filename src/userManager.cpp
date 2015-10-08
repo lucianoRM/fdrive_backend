@@ -28,7 +28,13 @@ int UserManager::addUser(struct mg_connection *conn){
 
     bool result = true;
 
-    user->signup(db,password);
+    try {
+        user->signup(db, password);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+
     delete db;
 
     mg_printf_data(conn, "{ \"result\":  \"%s\" }", result ? "true" : "false");
@@ -56,16 +62,27 @@ int UserManager::userLogin(struct mg_connection *conn){
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
     bool result;
-    user->load(db,password);
+
+    try{
+        user->load(db,password);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
     delete db;
 
-   // result &= user->checkPassword(password);
+    // result &= user->checkPassword(password);
 
     std::string token = createToken();
 
     db = this->openDatabase("En LogIn: ");
 
-    result = user->addToken(db, token);
+    try{
+        user->addToken(db, token);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
 
     delete db;
 
@@ -108,7 +125,13 @@ void UserManager::checkIfLoggedIn(struct mg_connection* conn){
     User* user = new User(email);
     rocksdb::DB* db = openDatabase("En check if logged in");
 
-    user->checkToken(db,token);
+    try {
+        user->checkToken(db, token);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+
     delete db;
 
 

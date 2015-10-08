@@ -134,10 +134,8 @@ bool File::notExists(rocksdb::DB* db){
 bool File::genId(rocksdb::DB* db){
 
     //Checks if the fileKey is in the db.
-    if(!this->notExists(db)){
-        delete db; //Should be closed here because exception catcher doesn't know anything about db.
-        throw FilenameTakenException(); //File already exists and id not set. Trying to upload a new file with taken key. Not possible
-    }
+    if(!this->notExists(db)) throw FilenameTakenException(); //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+
 
     //Gets id counter
     int fileId;
@@ -148,19 +146,17 @@ bool File::genId(rocksdb::DB* db){
     //if not found has to initialize it
     if (status.IsNotFound()) {
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
-        if (!status.ok()) {
-            delete db;
-            throw DBException();
-        };
+
+        if (!status.ok()) throw DBException();
+
         fileId = 0;
     }else {
         //If here is because id counter was initialized
         int maxID = stoi(value);
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
-        if (!status.ok()) {
-            delete db;
-            throw DBException();
-        }
+
+        if (!status.ok()) throw DBException();
+
         fileId = maxID + 1;
     }
 
@@ -174,26 +170,18 @@ bool File::genId(rocksdb::DB* db){
 void File::load(rocksdb::DB* db){
 
     int id = this->metadata->id;
-    if(id < 0) {
-        delete db;
-        throw FileNotFoundException();
-    } //File id not set
+    if(id < 0) throw FileNotFoundException(); //File id not set
 
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(),"files."+std::to_string(id),&value);
-    if(status.IsNotFound()) {
-        delete db; //should be deleted here because of exception throwing.
-        throw FileNotFoundException();
-    }
+    if(status.IsNotFound()) throw FileNotFoundException();
+
 
     //If here is because file exists in db
     Json::Reader reader;
     Json::Value root;
 
-    if(!reader.parse(value,root,false)){
-        delete db;
-        throw FileException();
-    };
+    if(!reader.parse(value,root,false)) throw FileException();
 
     //Load metadata into file
     this->metadata->owner = root["owner"].asString();
@@ -226,10 +214,8 @@ void File::save(rocksdb::DB* db){
     //Saves file into id hash
     std::string fileKey = this->getKey();
     rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey),std::to_string(fileId));
-    if(!status.ok()){
-        delete db;
-        throw DBException();
-    };
+
+    if(!status.ok()) throw DBException();
 
     //Saves file
     Json::Value root = this->getJson();
@@ -239,10 +225,8 @@ void File::save(rocksdb::DB* db){
 
     status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
 
-    if(!status.ok()){
-        delete db;
-        throw DBException();
-    };
+    if(!status.ok()) throw DBException();
+
 
 
 }
@@ -253,43 +237,34 @@ void File::erase(rocksdb::DB* db){
 
     int fileId = this->metadata->id;
 
-    if(fileId < 0){
-        delete db;
-        throw FileNotFoundException();
-    }
+    if(fileId < 0) throw FileNotFoundException();
+
 
 
     //Removes file from id hash
     std::string fileKey = this->getKey();
     rocksdb::Status status = db->Delete(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey));
-    if(!status.ok()){
-        delete db;
-        throw DBException();
-    };
+
+    if(!status.ok()) throw DBException();
+
 
 
     //Gets file data
     std::string value;
     status = db->Get(rocksdb::ReadOptions(),"files."+std::to_string(fileId),&value);
-    if(status.IsNotFound()) {
-        delete db; //should be deleted here because of exception throwing.
-        throw FileNotFoundException();
-    }
+    if(status.IsNotFound()) throw FileNotFoundException();
+
 
     //Removes file from db
     status = db->Delete(rocksdb::WriteOptions(),"files."+std::to_string(fileId));
-    if(!status.ok()){
-        delete db;
-        throw DBException();
-    }
+    if(!status.ok()) throw DBException();
+
 
 
     //Saves file into trash
     status = db->Put(rocksdb::WriteOptions(),"files.trash."+std::to_string(fileId),value);
 
-    if(!status.ok()){
-        delete db;
-        throw DBException();
-    };
+    if(!status.ok()) throw DBException();
+
 
 }

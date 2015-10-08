@@ -47,7 +47,12 @@ void FileManager::saveFile(struct mg_connection* conn){
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
-    file->save(db);
+    try {
+        file->save(db);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
 
     //Should delete db inmediately after using it
     delete db;
@@ -71,8 +76,12 @@ void FileManager::loadFile(struct mg_connection* conn){
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
-    file->load(db);
-
+    try{
+        file->load(db);
+    }catch(std::exception& e){
+        delete db;
+        throw;//Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
     //Should delete db inmediately after using it
     delete db;
 
@@ -107,8 +116,7 @@ void FileManager::eraseFile(struct mg_connection* conn){
     int id;
 
     //Checks if the keys exists
-    if(!root.isMember("id"))
-        throw RequestException();
+    if(!root.isMember("id")) throw RequestException();
 
     id = root["id"].asInt();
 
@@ -118,9 +126,12 @@ void FileManager::eraseFile(struct mg_connection* conn){
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
-
-    file->erase(db);
-
+    try {
+        file->erase(db);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
     //Should delete db inmediately after using it
     delete db;
 
