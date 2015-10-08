@@ -19,14 +19,14 @@ bool User::save(rocksdb::DB* db) {
 	return (status.ok());
 }
 
-bool User::signup(rocksdb::DB* db,std::string password) {
+void User::signup(rocksdb::DB* db,std::string password) {
 	std::string value;
 	if (checkIfExisting(db,&value)) {
-		return false;
+		throw AlreadyExistentUserException();
 	}
 
 	this->hashed_password = this->hashPassword(password);
-    return this->save(db);
+    this->save(db);
 }
 
 bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {

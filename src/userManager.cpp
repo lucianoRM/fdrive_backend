@@ -29,7 +29,9 @@ int UserManager::addUser(struct mg_connection *conn){
         return 1;
     }
 
-    bool result = user->signup(db,password);
+    bool result = true;
+
+    user->signup(db,password);
     delete db;
 
     mg_printf_data(conn, "{ \"result\":  \"%s\" }", result ? "true" : "false");

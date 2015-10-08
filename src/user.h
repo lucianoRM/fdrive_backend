@@ -34,7 +34,7 @@ public:
     std::string getEmail();
     
     std::string hashPassword(std::string password);
-    bool signup(rocksdb::DB* db, std::string password);
+    void signup(rocksdb::DB* db, std::string password);
     bool checkPassword(rocksdb::DB* db, std::string password);
     bool save(rocksdb::DB* db);
 	bool addToken(rocksdb::DB* db, std::string token);

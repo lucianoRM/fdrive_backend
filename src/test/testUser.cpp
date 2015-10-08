@@ -43,7 +43,7 @@ TEST(SignUpTest, SignupAvailableEmail) {
     }
     User* user = new User("emailTest");
 
-    EXPECT_EQ(true,user->signup(db,"password"));
+    EXPECT_NO_THROW(user->signup(db,"password"));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
@@ -60,7 +60,7 @@ TEST(SignUpTest, SignupTakenEmail){
     user->signup(db,"password");
 
     User* user2= new User("emailTest");
-    EXPECT_EQ(false,user2->signup(db,"password"));
+    EXPECT_THROW(user2->signup(db,"password"), AlreadyExistentUserException);
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
