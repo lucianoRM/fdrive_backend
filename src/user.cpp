@@ -5,10 +5,7 @@
 #include "user.h"
 #include "UserException.h"
 
-
-User::User(std::string email) {
-	this->email = email;
-}
+User::User(){}
 
 std::string User::getEmail() {
 	return this->email;
@@ -19,13 +16,10 @@ bool User::save(rocksdb::DB* db) {
 	return (status.ok());
 }
 
-void User::signup(rocksdb::DB* db,std::string password) {
+void User::signup(rocksdb::DB* db) {
 	std::string value;
 	if (checkIfExisting(db,&value)) throw AlreadyExistentUserException();
-
-
-	this->hashed_password = this->hashPassword(password);
-    this->save(db);
+	this->save(db);
 }
 
 bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
@@ -45,9 +39,9 @@ bool User::checkPassword(std::string password){
  * @throws NonExistentUserException
  * @throws Exception
  */
-void User::load(rocksdb::DB* db) {
+User* User::load(rocksdb::DB* db, std::string email) {
 	std::string value;
-	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+email, &value);
 
 	if (status.IsNotFound()) throw NonExistentUserException();
 
@@ -59,9 +53,19 @@ void User::load(rocksdb::DB* db) {
 		throw std::exception();
 	}
 
-	this->email = root["email"].asString();
-	this->hashed_password = root["password"].asString();
+	User* user = new User();
+	user->email = root["email"].asString();
+	user->hashed_password = root["password"].asString();
 
+	return user;
+}
+
+void User::setEmail (std::string email) {
+	this->email = email;
+}
+
+void User::setPassword (std::string password) {
+	this->hashed_password = this->hashPassword(password);
 }
 
 std::string User::hashPassword (std::string password) {
@@ -78,7 +82,7 @@ std::string User::hashPassword (std::string password) {
 	for(int i=0;i<20;i++) { sprintf(&(formatted_out[i*2]), "%02x", out[i]); }
 
 	std::string new_password(reinterpret_cast<char*>(formatted_out));
-	delete out;
+	free(out);
 	return new_password;
 }
 

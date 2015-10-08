@@ -22,14 +22,16 @@ int UserManager::addUser(struct mg_connection *conn){
     mg_get_var(conn, "email", email, sizeof(email));
     mg_get_var(conn, "password", password, sizeof(password));
 
-    User* user = new User(email);
+    User* user = new User();
+    user->setEmail(email);
+    user->setPassword(password);
 
     rocksdb::DB* db = this->openDatabase("En AddUser: ");
 
     bool result = true;
 
     try {
-        user->signup(db, password);
+        user->signup(db);
     }catch(std::exception& e){
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
@@ -56,15 +58,13 @@ int UserManager::userLogin(struct mg_connection *conn){
     mg_get_var(conn, "password", password, sizeof(password));
 
 
-    User* user = new User(email);
-
-
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
     bool result;
 
+    User* user;
     try{
-        user->load(db);
+        user = User::load(db, email);
         if (!user->signin(password)) throw;
     }catch(std::exception& e){
         delete db;
@@ -123,10 +123,10 @@ void UserManager::checkIfLoggedIn(struct mg_connection* conn){
         email = root["email"].asString();
         token = root["token"].asString();
     }
-    User* user = new User(email);
     rocksdb::DB* db = openDatabase("En check if logged in");
 
     try {
+        User* user = User::load(db, email);
         user->checkToken(db, token);
     }catch(std::exception& e){
         delete db;

@@ -28,7 +28,8 @@ TEST(HashedPasswordTest, HashedPassword) {
     if (! db) {
     return;
     }
-    User* user = new User("emailTest");
+    User* user = new User();
+    user->setEmail("emailTest");
 
     EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
 
@@ -42,9 +43,11 @@ TEST(SignUpTest, SignupAvailableEmail) {
     if (! db) {
         return;
     }
-    User* user = new User("emailTest");
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
 
-    EXPECT_NO_THROW(user->signup(db,"password"));
+    EXPECT_NO_THROW(user->signup(db));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
@@ -57,11 +60,15 @@ TEST(SignUpTest, SignupTakenEmail){
         return;
     }
 
-    User* user = new User("emailTest");
-    user->signup(db,"password");
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
 
-    User* user2= new User("emailTest");
-    EXPECT_THROW(user2->signup(db,"password"), AlreadyExistentUserException);
+    User* user2= new User();
+    user2->setEmail("emailTest");
+    user2->setPassword("password");
+    EXPECT_THROW(user2->signup(db), AlreadyExistentUserException);
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
@@ -76,9 +83,13 @@ TEST(SignInTest, SignInExisting){
         return;
     }
 
-    User* user = new User("emailTest");
-    user->signup(db,"password");
-    EXPECT_NO_THROW(user->load(db));
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+
+    EXPECT_NO_THROW(user = User::load(db, "emailTest"));
     EXPECT_TRUE(user->signin(std::string("password")));
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
@@ -92,12 +103,11 @@ TEST(SignInTest, SignInNonExisting){
         return;
     }
 
-    User* user = new User("emailTest");
+    User* user;
 
-    EXPECT_THROW(user->load(db),NonExistentUserException);
+    EXPECT_THROW(user = User::load(db, "emailTest"),NonExistentUserException);
 
     delete db;
-    delete user;
 }
 
 TEST(SignInTest, SignInWrongPassword) {
@@ -106,10 +116,13 @@ TEST(SignInTest, SignInWrongPassword) {
         return;
     }
 
-    User* user = new User("emailTest");
-    user->signup(db, "password");
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
 
-    user->load(db);
+    user = User::load(db, "emailTest");
     EXPECT_FALSE(user->signin(std::string("wrongpassword")));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
@@ -123,13 +136,14 @@ TEST(PasswordTest, CheckCorrectPassword) {
         return;
     }
 
-    User* user = new User("emailTest");
-    user->signup(db, "password");
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
 
     delete user;
 
-    user = new User("emailTest");
-    user->load(db);
+    user = User::load(db, "emailTest");
 
     EXPECT_TRUE(user->checkPassword("password"));
 
@@ -144,13 +158,14 @@ TEST(PasswordTest, CheckWrongPassword) {
         return;
     }
 
-    User* user = new User("emailTest");
-    user->signup(db, "password");
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
 
     delete user;
 
-    user = new User("emailTest");
-    user->load(db);
+    user = User::load(db, "emailTest");
 
     EXPECT_FALSE(user->checkPassword("wrongpassword"));
 

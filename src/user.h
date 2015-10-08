@@ -29,19 +29,21 @@ private:
 
 public:
 
-    User(std::string email);
+    User();
     
     std::string getEmail();
     
     std::string hashPassword(std::string password);
-    void signup(rocksdb::DB* db, std::string password);
+    void signup(rocksdb::DB* db);
+    void setEmail (std::string email);
+    void setPassword (std::string password);
     bool signin(std::string password);
     bool checkPassword(std::string password);
     bool save(rocksdb::DB* db);
 	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
     
-    void load(rocksdb::DB* db);
+    static User* load(rocksdb::DB* db, std::string email);
     
 };
 
