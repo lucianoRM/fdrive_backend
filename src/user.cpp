@@ -22,6 +22,7 @@ bool User::save(rocksdb::DB* db) {
 void User::signup(rocksdb::DB* db,std::string password) {
 	std::string value;
 	if (checkIfExisting(db,&value)) {
+		delete db;
 		throw AlreadyExistentUserException();
 	}
 
@@ -67,10 +68,12 @@ void User::load(rocksdb::DB* db, std::string password) {
 	std::string value;
 
 	if (! checkIfExisting(db,&value)) {
+		delete db;
 		throw NonExistentUserException();
 	}
 
 	if (! checkPassword(db,password) ) {
+		delete db;
 		throw WrongPasswordException();
 	}
 }
@@ -147,7 +150,7 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
 	if (status.IsNotFound()) {
 		delete db;
-		throw errorCode::NOT_LOGGED_IN;
+		throw NotLoggedInException();
 	}
 
 
@@ -157,13 +160,13 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 	if (!parsingSuccessful){
 		std::cout << "JsonCPP no pudo parsear en getToken." << std::endl;
 		delete db;
-		throw -1;
+		throw UserException();
 	}
 	Json::Value tokens;
 
 	if(!root.isMember("tokens")) {
 		delete db;
-		throw -1;
+		throw RequestException();
 	} //User is not initialized properly
 
 
@@ -176,8 +179,7 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 
 	if(!hasToken) {
 		delete db;
-
-		throw errorCode::NOT_LOGGED_IN;
+		throw NotLoggedInException();
 	}
 
 

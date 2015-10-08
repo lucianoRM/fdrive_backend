@@ -20,14 +20,14 @@ void FileManager::saveFile(struct mg_connection* conn){
     Json::Value root;
 
     if(!reader.parse(json,root,false)){
-        throw -1;
+        throw FileException();
     }
 
     std::string name,extension,owner;
 
     //Checks if the keys exists
     if(!root.isMember("name") || !root.isMember("extension") || !root.isMember("owner") || !root.isMember("tags"))
-        throw errorCode::INVALID_REQUEST;
+        throw RequestException();
 
 
     name = root["name"].asString();
@@ -46,9 +46,6 @@ void FileManager::saveFile(struct mg_connection* conn){
     }
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
-    if (!db) {
-        throw errorCode::DB_ERROR ;
-    }
 
     file->save(db);
 
@@ -73,9 +70,6 @@ void FileManager::loadFile(struct mg_connection* conn){
     file->setId(atoi(id));
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
-    if (!db) {
-        throw errorCode::DB_ERROR ;
-    }
 
     file->load(db);
 
@@ -107,14 +101,14 @@ void FileManager::eraseFile(struct mg_connection* conn){
     Json::Value root;
 
     if(!reader.parse(json,root,false)){
-        throw -1;
+        throw FileException();
     }
 
     int id;
 
     //Checks if the keys exists
     if(!root.isMember("id"))
-        throw errorCode::INVALID_REQUEST;
+        throw RequestException();
 
     id = root["id"].asInt();
 
@@ -123,9 +117,7 @@ void FileManager::eraseFile(struct mg_connection* conn){
     file->setId(id);
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
-    if (!db) {
-        throw errorCode::DB_ERROR ;
-    }
+
 
     file->erase(db);
 

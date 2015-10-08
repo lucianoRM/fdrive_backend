@@ -25,9 +25,6 @@ int UserManager::addUser(struct mg_connection *conn){
     User* user = new User(email);
 
     rocksdb::DB* db = this->openDatabase("En AddUser: ");
-    if (!db) {
-        return 1;
-    }
 
     bool result = true;
 
@@ -57,9 +54,6 @@ int UserManager::userLogin(struct mg_connection *conn){
 
 
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
-    if (!db) {
-        return 1;
-    }
 
     bool result;
     user->load(db,password);
@@ -70,9 +64,6 @@ int UserManager::userLogin(struct mg_connection *conn){
     std::string token = createToken();
 
     db = this->openDatabase("En LogIn: ");
-    if (!db) {
-        return 1;
-    }
 
     result = user->addToken(db, token);
 
@@ -110,7 +101,7 @@ void UserManager::checkIfLoggedIn(struct mg_connection* conn){
         reader.parse(json,root,false);
 
         std::string name,extension,owner;
-
+        if(!root.isMember("email") || !root.isMember("token")) throw RequestException();
         email = root["email"].asString();
         token = root["token"].asString();
     }

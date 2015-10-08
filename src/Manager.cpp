@@ -15,7 +15,7 @@ rocksdb::DB* Manager::openDatabase(std::string message) {
     if (!status.ok()){
         std::cout << message << status.ToString() << std::endl;
         delete db;
-        return NULL;
+        throw DBException();
     }
 
     return db;

@@ -14,7 +14,7 @@
 #include <openssl/engine.h>
 #include <openssl/aes.h>
 #include <openssl/rand.h>
-#include "errorManager.h"
+#include "requestExceptions.h"
 
 #ifndef FDRIVE_BACKEND_USER_H
 #define FDRIVE_BACKEND_USER_H

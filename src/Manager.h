@@ -7,7 +7,7 @@
 
 #include "rocksdb/db.h"
 #include <string>
-
+#include "dbExceptions.h"
 class Manager {
     protected:
         rocksdb::DB* openDatabase(std::string message);

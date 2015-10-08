@@ -13,7 +13,9 @@
 #include "json/json.h"
 #include "json/json-forwards.h"
 #include <iostream>
-#include "errorManager.h"
+#include "fileExceptions.h"
+#include "dbExceptions.h"
+#include "requestExceptions.h"
 
 struct metadata {
 
