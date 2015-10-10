@@ -29,7 +29,7 @@ std::string UserManager::addUser(std::string email, std::string password){
     delete db;
     delete user;
 
-    return "{ \"result\" : \"true\" }";
+    return "{ \"result\" : true }";
 }
 
 

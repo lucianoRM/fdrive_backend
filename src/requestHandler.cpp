@@ -126,7 +126,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 		mg_printf_data(conn, result.c_str());
 
 	} catch (std::exception& e) {
-		mg_printf_data(conn, "{ \"result\" : \"false\" , \"errors\" : [ \"%s\" ] }", e.what()); //Even if there is an error, it should return true to close the connection
+		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); //Even if there is an error, it should return true to close the connection
 	}
 	return true;
 }
