@@ -1,9 +1,13 @@
-#include <string>
 #include <vector>
-#include "rocksdb/db.h"
+#include "include/rocksdb/db.h"
+#include "include/rocksdb/status.h"
 #include <iostream>
 #include "requestExceptions.h"
 #include "UserToken.h"
+#include "UserException.h"
+#include "include/json/json.h"
+#include <openssl/hmac.h>
+#include <string.h>
 
 #ifndef FDRIVE_BACKEND_USER_H
 #define FDRIVE_BACKEND_USER_H

@@ -1,8 +1,4 @@
-#include <string.h>
-#include <vector>
 #include "requestHandler.h"
-#include <iostream> ///
-#include "json/json.h"
 
 RequestHandler::RequestHandler(){
 

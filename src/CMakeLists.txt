@@ -17,7 +17,8 @@ project(${EXECNAME})
 #Compiler flags config
 
 #WARNING: as default, it will compile .c files with gcc and .cpp files with g++.The following flags are just for g++ compiler, if needed .c files can be configured to be compiled with g++ compiler as so: set_source_files_properties(filename.c PROPERTIES LANGUAGE CXX ).
-
+include_directories("include")
+include_directories("include/rocksdb")
 if(CMAKE_COMPILER_IS_GNUCXX)
 	#Compiler flags
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -g -std=c++11 -lrt -DMONGOOSE_ENABLE_THREADS")
@@ -26,7 +27,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-	include_directories(include)
+	include_directories("include")
 
 endif()
 

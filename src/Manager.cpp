@@ -3,7 +3,6 @@
 //
 
 #include "Manager.h"
-#include <iostream>
 
 rocksdb::DB* Manager::openDatabase(std::string message) {
     rocksdb::DB* db;

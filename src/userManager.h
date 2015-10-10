@@ -11,6 +11,7 @@
 #define TALLER_USERMANAGER_H
 
 #include "Manager.h"
+#include "include/rocksdb/db.h"
 
 class UserManager:public Manager {
 

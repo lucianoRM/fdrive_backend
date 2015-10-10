@@ -5,13 +5,13 @@
 #ifndef TALLER_FILE_H
 #define TALLER_FILE_H
 
-#include <string>
+#include <string.h>
 #include <list>
 #include <algorithm>
 #include <ctime>
-#include "rocksdb/db.h"
-#include "json/json.h"
-#include "json/json-forwards.h"
+#include "include/rocksdb/db.h"
+#include "include/json/json.h"
+#include "include/json/json-forwards.h"
 #include <iostream>
 #include "fileExceptions.h"
 #include "dbExceptions.h"
@@ -39,9 +39,6 @@ class File {
         std::string getKey(); //Returns key made from file metadata
         bool genId(rocksdb::DB* db); //If file wanted to be saved is new, a new id is generated.
 
-
-
-
     public:
 
         File();
@@ -60,22 +57,9 @@ class File {
         struct metadata* getMetadata(); //Returns the metadata from the file.
         Json::Value getJson(); //Returns Json value made from file metadata
 
-
         void load(rocksdb::DB* db); //Loads the metadata from the db. Id needs to be set.
         void save(rocksdb::DB* db); //Saves the metadata to the db
         void erase(rocksdb::DB* db); //Erase the metadata from the db
-
-
-
-
-
-
-
-
-
-
-
-
 
 };
 

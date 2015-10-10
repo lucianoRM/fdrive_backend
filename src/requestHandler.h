@@ -6,6 +6,7 @@
 #include "mongoose.h"
 #include "userManager.h"
 #include "fileManager.h"
+#include <vector>
 
 
 

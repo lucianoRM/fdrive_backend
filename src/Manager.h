@@ -5,9 +5,13 @@
 #ifndef FDRIVE_MANAGER_H
 #define FDRIVE_MANAGER_H
 
-#include "rocksdb/db.h"
+#include "include/rocksdb/db.h"
+#include "include/rocksdb/options.h"
+#include "include/rocksdb/status.h"
 #include <string>
 #include "dbExceptions.h"
+#include <iostream>
+
 class Manager {
     protected:
         rocksdb::DB* openDatabase(std::string message);

@@ -1,14 +1,4 @@
-/*
- * server.cpp
- *
- *  Created on: Sep 2, 2015
- *      Author: luciano
- */
-
 #include "server.h"
-#include <iostream>
-#include "user.h"
-#include "requestHandler.h"
 
 
 static const char *s_no_cache_header =

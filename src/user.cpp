@@ -1,13 +1,4 @@
 #include "user.h"
-#include "UserException.h"
-#include "json/json.h"
-#include "json/json-forwards.h"
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
-#include <openssl/engine.h>
-#include <openssl/aes.h>
-#include <openssl/rand.h>
-#include <iostream> ///
 
 User::User(){
 	this->tokens = new std::vector<UserToken*>();
