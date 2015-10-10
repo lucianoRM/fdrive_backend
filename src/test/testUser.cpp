@@ -105,7 +105,7 @@ TEST(SignInTest, SignInNonExisting){
 
     User* user;
 
-    EXPECT_THROW(user = User::load(db, "emailTest"),NonExistentUserException);
+    EXPECT_THROW(user = User::load(db, "emailTest"), NonExistentUserException);
 
     delete db;
 }

@@ -11,8 +11,8 @@ rocksdb::DB* Manager::openDatabase(std::string message) {
     options.create_if_missing = true;
     rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
 
-    //La db se abrio correctamente
     if (!status.ok()){
+		//La db no se abrio correctamente
         std::cout << message << status.ToString() << std::endl;
         delete db;
         throw DBException();

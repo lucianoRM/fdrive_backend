@@ -1,7 +1,3 @@
-//
-// Created by luciano on 02/10/15.
-//
-
 #include "file.h"
 
 File::File(){
@@ -163,7 +159,7 @@ bool File::genId(rocksdb::DB* db){
     //At this point, fileId has a valid number and db id counter is initialized
     //The new id is assigned to the file.
     this->metadata->id = fileId;
-
+    return true;
 
 }
 

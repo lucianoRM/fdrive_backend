@@ -63,6 +63,7 @@ void Server::poll(int timeOut){
 void* Server::infinitePoll(void* server){
 
     while(true) ((Server*)server)->poll(((Server*)server)->listenerTimeOut);
+	return (void*) -1;
 
 }
 

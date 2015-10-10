@@ -4,7 +4,6 @@
 #include <string.h>
 #include <unordered_map>
 #include "mongoose.h"
-#include "request.h"
 #include "userManager.h"
 #include "fileManager.h"
 
@@ -19,10 +18,12 @@ class RequestHandler {
 
 
 	private:
+
 		UserManager* userManager;
 		FileManager* fileManager;
 
 		std::unordered_map<std::string,int >* codesMap;
+
 
 	public:
 	

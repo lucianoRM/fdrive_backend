@@ -17,10 +17,9 @@ class FileManager: public Manager{
         FileManager();
         ~FileManager();
 
-        void saveFile(struct mg_connection* conn); //Saves file
-        void loadFile(struct mg_connection* conn); //Loads file
-        void eraseFile(struct mg_connection* conn); //erases file
-
+        std::string saveFile(std::string name, std::string extension, std::string owner, std::vector<std::string> tags); //Saves file
+        std::string loadFile(int id); //Loads file
+        std::string eraseFile(int id); //erases file
 
 };
 

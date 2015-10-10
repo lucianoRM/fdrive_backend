@@ -8,7 +8,13 @@
 #include <string>
 
 class UserToken {
+
+private:
+    time_t TIME = 1800;
+
 public:
+    UserToken();
+    UserToken(std::string token);
     std::string token;
     time_t expiration;
     bool hasExpired();

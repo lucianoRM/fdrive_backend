@@ -99,6 +99,7 @@ add_executable(${TESTNAME} test/testMain/testMain.cpp $<TARGET_OBJECTS:individua
 set_target_properties( ${TESTNAME}  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ./test )
 
 # Standard linking to gtest stuff.
+#target_link_libraries(${TESTNAME} gtest gtest_main pthread rocksdb z bz2 snappy) # para la compu de DANI
 target_link_libraries(${TESTNAME} gtest gtest_main pthread rocksdb z crypto)
 
 

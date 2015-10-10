@@ -1,16 +1,22 @@
-//
-// Created by agustin on 10/09/15.
-//
-
 #include "user.h"
 #include "UserException.h"
-#include <list>
+#include "json/json.h"
+#include "json/json-forwards.h"
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+#include <openssl/engine.h>
+#include <openssl/aes.h>
+#include <openssl/rand.h>
+#include <iostream> ///
 
 User::User(){
-	this->tokens = new std::list<UserToken*>();
+	this->tokens = new std::vector<UserToken*>();
 }
 
 User::~User(){
+	for (UserToken* token : *this->tokens) {
+		delete token;
+	}
 	delete this->tokens;
 }
 
@@ -19,11 +25,19 @@ std::string User::getEmail() {
 }
 
 bool User::save(rocksdb::DB* db) {
+	Json::Value jsonTokens;
+	for (UserToken* oneToken : *this->tokens) {
+		Json::Value jsonToken;
+		jsonToken["token"] = oneToken->token;
+		jsonToken["expiration"] = Json::Value::Int64((int64_t) oneToken->expiration);
+		jsonTokens.append(jsonToken);
+	}
+	Json::StyledWriter writer;
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email,
 									 "{"
 											 "\"email\":\""+this->email+"\", "
 											 "\"password\":\""+this->hashed_password+"\", "
-											 "\"tokens\":[]}");
+											 "\"tokens\":" + writer.write(jsonTokens) + "}");
 	return (status.ok());
 }
 
@@ -71,7 +85,7 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	Json::Value tokens = root["tokens"];
 	time_t currTime;
 	time(&currTime);
-	for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ){
+	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ){
 		UserToken* userToken = new UserToken();
 		userToken->expiration = (*it)["expiration"].asInt64();
 		userToken->token = (*it)["token"].asString();
@@ -92,7 +106,6 @@ void User::setPassword (std::string password) {
 }
 
 std::string User::hashPassword (std::string password) {
-
 	unsigned char *out;
 	const char* pwd = password.c_str();
 	unsigned char salt_value[] = {'s','a','l','t'};
@@ -115,44 +128,18 @@ bool User::signin(std::string password) {
 
 /* También limpia tokens vencidos */
 bool User::addToken(rocksdb::DB* db, std::string token){
-
-
-	std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
-    if (status.IsNotFound()) return false;
-    
-    Json::Reader reader;
-    Json::Value root;
-    bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
-    if (!parsingSuccessful){
-		std::cout << "JsonCPP no pudo parsear en addToken." << std::endl;
-		return false;
-	}
-
-	/*Json::Value jsonToken;
-	jsonToken["token"] = token;
-	int64_t expiration = (int64_t)currTime + 1800;
-	jsonToken["expiration"] = std::string(expiration); // Lasts half an hour
-	newTokens.append(jsonToken);
-	root["tokens"] = newTokens;
-	
-	Json::StyledWriter writer;
-	status = db->Put(rocksdb::WriteOptions(), "users."+this->email, writer.write(root));
-	if (!status.ok()){
-		std::cout << "Error al guardar token nuevo en usuario: " << email << "." << std::endl;
-		return false;
-	}
-    return true;*/
-	
+	this->tokens->push_back(new UserToken(token));
+	return this->save(db);
 }
 
 void User::checkToken(rocksdb::DB* db,std::string token){
 
 	std::string value;
 	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
-	if (status.IsNotFound()) throw NotLoggedInException();
-
-
+	if (status.IsNotFound()) {
+		std::cout << "Entra porque no encontró al user" << std::endl;
+		throw NotLoggedInException();
+	}
 
 	Json::Reader reader;
 	Json::Value root;
@@ -167,15 +154,15 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 
 
 	bool hasToken = false;
-	//Looks for the token
 	tokens = root["tokens"];
-	for(Json::Value::iterator it = tokens.begin(); it != tokens.end();it++ ) {
-		if((*it)["token"].asString() == token) hasToken = true;
+	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ) {
+		if((*it)["token"].asString().compare(token) == 0) hasToken = true;
 	}
 
-	if(!hasToken) throw NotLoggedInException();
-
-
+	if(!hasToken) {
+		std::cout << "No tiene al token" << std::endl;
+		throw NotLoggedInException();
+	}
 
 }
 

@@ -1,20 +1,7 @@
-//
-// Created by agustin on 10/09/15.
-//
-
 #include <string>
 #include <vector>
-#include <list>
 #include "rocksdb/db.h"
 #include <iostream>
-#include "json/json.h"
-#include "json/json-forwards.h"
-#include <iostream>
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
-#include <openssl/engine.h>
-#include <openssl/aes.h>
-#include <openssl/rand.h>
 #include "requestExceptions.h"
 #include "UserToken.h"
 
@@ -26,7 +13,7 @@ class User {
 private:
     std::string email;
     std::string hashed_password;
-    std::list<UserToken*>* tokens;
+    std::vector<UserToken*>* tokens;
     bool checkIfExisting(rocksdb::DB* db, std::string* value);
     bool checkPassword(std::string password);
 

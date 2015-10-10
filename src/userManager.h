@@ -22,9 +22,9 @@ class UserManager:public Manager {
         UserManager();
         ~UserManager();
 
-        int addUser(struct mg_connection *conn);
-        void checkIfLoggedIn(struct mg_connection *conn);
-        int userLogin(struct mg_connection *conn);
+        std::string addUser(std::string email, std::string password);
+        void checkIfLoggedIn(std::string email, std::string token);
+        std::string loginUser(std::string email, std::string password);
 };
 
 

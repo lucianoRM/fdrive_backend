@@ -4,6 +4,15 @@
 
 #include "UserToken.h"
 
+UserToken::UserToken() { }
+
+UserToken::UserToken(std::string token) {
+    this->token = token;
+    time(&this->expiration);
+    this->expiration += TIME;
+}
+
+
 bool UserToken::hasExpired() {
     time_t currTime;
     time(&currTime);

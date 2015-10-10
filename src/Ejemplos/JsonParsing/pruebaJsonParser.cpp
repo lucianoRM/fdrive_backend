@@ -46,6 +46,7 @@ bool prueba2(){
 	//~ std::cout << "Nuevo Json: " << root << std::endl;
 	Json::StyledWriter writer;
 	std::cout << "Nuevo Json: " << writer.write(root) << std::endl;
+	std::cout << "Solo newTokens: " << writer.write(newTokens) << std::endl;
 	return true;
 }
 
