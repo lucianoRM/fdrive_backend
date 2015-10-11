@@ -2,11 +2,13 @@
 // Created by luciano on 01/10/15.
 //
 
-#include "gtest/gtest.h"
+#include "../include/googletest/include/gtest/gtest.h"
 #include "../user.h"
-#include "../rocksdb/db.h"
+#include "../include/rocksdb/db.h"
+#include "../include/rocksdb/options.h"
 #include <string.h>
 #include "../UserException.h"
+#include "../include/googletest/include/gtest/internal/gtest-internal.h"
 
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;
