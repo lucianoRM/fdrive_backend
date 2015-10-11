@@ -129,3 +129,23 @@ TEST(SignInTest, SignInWrongPassword) {
     delete db;
     delete user;
 }
+
+TEST(SignInTest, TESTJENKINS) {
+rocksdb::DB* db = openDatabase();
+if (! db) {
+return;
+}
+
+User* user = new User();
+user->setEmail("emailTest");
+user->setPassword("password");
+user->signup(db);
+delete user;
+
+user = User::load(db, "emailTest");
+EXPECT_TRUE(user->signin(std::string("wrongpassword")));
+
+db->Delete(rocksdb::WriteOptions(), "users.emailTest");
+delete db;
+delete user;
+}
