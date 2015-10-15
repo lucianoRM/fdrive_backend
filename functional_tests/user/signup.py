@@ -21,7 +21,7 @@ class TestSignup(unittest.TestCase):
 
 		payload = {"email": "testemail", "password": "testpassword"}
 		r = requests.get("http://localhost:8000/users", params = payload)
-		self.assertEqual(True, r.json()["result"])
+		self.assertEqual(False, r.json()["result"])
 
 if __name__ == '__main__':
     unittest.main()
