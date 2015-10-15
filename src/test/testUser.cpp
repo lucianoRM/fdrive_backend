@@ -49,7 +49,7 @@ TEST(SignUpTest, SignupAvailableEmail) {
     user->setEmail("emailTest");
     user->setPassword("password");
 
-    EXPECT_NO_THROW(user->signup(db));
+    EXPECT_THROW(user->signup(db));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
