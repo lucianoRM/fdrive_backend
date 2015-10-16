@@ -17,13 +17,19 @@ std::string User::getEmail() {
 	return this->email;
 }
 
+
+/*Elimina tokens expirados.*/
 bool User::save(rocksdb::DB* db) {
+	time_t currTime;
+	time(&currTime);
 	Json::Value jsonTokens;
 	for (UserToken* oneToken : *this->tokens) {
-		Json::Value jsonToken;
-		jsonToken["token"] = oneToken->token;
-		jsonToken["expiration"] = Json::Value::Int64((int64_t) oneToken->expiration);
-		jsonTokens.append(jsonToken);
+		if (!oneToken->hasExpired()) {
+			Json::Value jsonToken;
+			jsonToken["token"] = oneToken->token;
+			jsonToken["expiration"] = Json::Value::Int64((int64_t) oneToken->expiration);
+			jsonTokens.append(jsonToken);
+		}
 	}
 	Json::Value jsonFiles;
 	for (int id: *this->files) {
@@ -61,6 +67,7 @@ bool User::checkPassword(std::string password){
 /**
  * @throws NonExistentUserException
  * @throws Exception
+ * Elimina tokens expirados.
  */
 User* User::load(rocksdb::DB* db, std::string email) {
 	std::string value;
@@ -124,17 +131,26 @@ std::string User::hashPassword (std::string password) {
 	return new_password;
 }
 
-bool User::signin(std::string password) {
+bool User::login(std::string password) {
 	return this->checkPassword(password);
 }
 
-/* También limpia tokens vencidos */
-bool User::addToken(rocksdb::DB* db, std::string token){
+bool User::logout(rocksdb::DB* db, std::string token) {
+	for (std::vector<UserToken*>::iterator it = this->tokens->begin() ; it != this->tokens->end(); ++it) {
+		if ( token.compare((*it)->token) == 0 && !(*it)->hasExpired()) {
+			this->tokens->erase(it);
+			return this->save(db);
+		}
+	}
+	return false;
+}
+
+bool User::addToken(rocksdb::DB* db, std::string token) {
 	this->tokens->push_back(new UserToken(token));
 	return this->save(db);
 }
 
-void User::checkToken(rocksdb::DB* db,std::string token){
+void User::checkToken(rocksdb::DB* db,std::string token) {
 
 	std::string value;
 	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);

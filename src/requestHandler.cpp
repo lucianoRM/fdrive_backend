@@ -9,6 +9,7 @@ RequestHandler::RequestHandler(){
 
 	(*this->codesMap)["/users:GET"] = requestCodes::USERS_POST;
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
+	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
@@ -52,6 +53,14 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				mg_get_var(conn, "password", cpassword, sizeof(cpassword));
 
 				result = this->userManager->loginUser(std::string(cemail), std::string(cpassword));
+				break;
+			}
+			case requestCodes::LOGOUT_GET: {
+				char cemail[100], ctoken[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+
+				result = this->userManager->logoutUser(std::string(cemail), std::string(ctoken));
 				break;
 			}
 			case requestCodes::SAVEFILE_POST:

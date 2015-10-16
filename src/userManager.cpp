@@ -45,7 +45,7 @@ std::string UserManager::loginUser(std::string email, std::string password){
     User* user;
     try{
         user = User::load(db, email);
-        if (!user->signin(password)) throw;
+        if (!user->login(password)) throw WrongPasswordException();
     }catch(std::exception& e){
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
@@ -66,6 +66,23 @@ std::string UserManager::loginUser(std::string email, std::string password){
     delete user;
 
     return "{ \"result\" : \"true\" , \"token\" : " + token + " }";
+}
+
+
+std::string UserManager::logoutUser(std::string email, std::string token) {
+    rocksdb::DB* db = this->openDatabase("En LogOut: ");
+
+    User* user;
+    try{
+        user = User::load(db, email);
+        if (!user->logout(db, token)) throw NotLoggedInException();
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+    delete db;
+    delete user;
+    return "{ \"result\" : \"true\" }";
 }
 
 

@@ -92,7 +92,7 @@ TEST(SignInTest, SignInExisting){
     delete user;
 
     EXPECT_NO_THROW(user = User::load(db, "emailTest"));
-    EXPECT_TRUE(user->signin(std::string("password")));
+    EXPECT_TRUE(user->login(std::string("password")));
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
     delete db;
@@ -125,7 +125,7 @@ TEST(SignInTest, SignInWrongPassword) {
     delete user;
 
     user = User::load(db, "emailTest");
-    EXPECT_FALSE(user->signin(std::string("wrongpassword")));
+    EXPECT_FALSE(user->login(std::string("wrongpassword")));
 
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;

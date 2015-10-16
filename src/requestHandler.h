@@ -11,7 +11,8 @@
 
 
 //Needed for switch case.
-enum requestCodes : int { USERS_POST = 1,LOGIN_GET,SAVEFILE_POST,LOADFILE_GET,ERASEFILE_DELETE, LOADUSERFILES_GET };
+enum requestCodes : int { USERS_POST = 1, LOGIN_GET, LOGOUT_GET,
+		SAVEFILE_POST, LOADFILE_GET, ERASEFILE_DELETE, LOADUSERFILES_GET };
 
 
 class RequestHandler {

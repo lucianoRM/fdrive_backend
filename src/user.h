@@ -35,14 +35,16 @@ public:
     void setPassword (std::string password);
 
     void signup(rocksdb::DB* db);
-    bool signin(std::string password);
+    bool login(std::string password);
+    bool logout(rocksdb::DB* db, std::string token);
 
 	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
 
     void addFile(int id);   // != addSharedFile(permisos)
     std::vector<int> getFiles();
-    
+
+    /* Eliminan tokens expirados. */
     static User* load(rocksdb::DB* db, std::string email);
     bool save(rocksdb::DB* db);
     
