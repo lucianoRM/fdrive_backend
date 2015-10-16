@@ -19,3 +19,10 @@ bool UserToken::hasExpired() {
     //return difftime(currTime, this->expiration) < 0;
     return false;
 }
+
+Json::Value UserToken::serialize() {
+    Json::Value jsonToken;
+    jsonToken["token"] = this->token;
+    jsonToken["expiration"] = Json::Value::Int64((int64_t) this->expiration);
+    return jsonToken;
+}

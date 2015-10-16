@@ -65,7 +65,7 @@ std::string UserManager::loginUser(std::string email, std::string password){
     delete db;
     delete user;
 
-    return "{ \"result\" : \"true\" , \"token\" : " + token + " }";
+    return "{ \"result\" : true , \"token\" : \"" + token + "\" }";
 }
 
 
@@ -82,7 +82,7 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
     }
     delete db;
     delete user;
-    return "{ \"result\" : \"true\" }";
+    return "{ \"result\" : true }";
 }
 
 

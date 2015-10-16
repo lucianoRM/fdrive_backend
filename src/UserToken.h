@@ -6,6 +6,7 @@
 #define FDRIVE_BACKEND_USERTOKEN_H
 
 #include <string>
+#include "include/json/json.h"
 
 class UserToken {
 
@@ -18,6 +19,7 @@ public:
     std::string token;
     time_t expiration;
     bool hasExpired();
+    Json::Value serialize();
 };
 
 #endif //FDRIVE_BACKEND_USERTOKEN_H

@@ -23,10 +23,7 @@ bool User::save(rocksdb::DB* db) {
 	Json::Value jsonTokens;
 	for (UserToken* oneToken : *this->tokens) {
 		if (!oneToken->hasExpired()) {
-			Json::Value jsonToken;
-			jsonToken["token"] = oneToken->token;
-			jsonToken["expiration"] = Json::Value::Int64((int64_t) oneToken->expiration);
-			jsonTokens.append(jsonToken);
+			jsonTokens.append(oneToken->serialize());
 		}
 	}
 	Json::Value jsonFiles;
