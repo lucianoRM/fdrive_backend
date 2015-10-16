@@ -26,3 +26,12 @@ Json::Value UserToken::serialize() {
     jsonToken["expiration"] = Json::Value::Int64((int64_t) this->expiration);
     return jsonToken;
 }
+
+static UserToken* deserialize(Json::Value jsonSerialization) {
+
+    UserToken* userToken = new UserToken();
+    userToken->expiration = jsonSerialization["expiration"].asInt64();
+    userToken->token = jsonSerialization["token"].asString();
+    return userToken;
+
+}

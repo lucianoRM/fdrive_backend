@@ -20,6 +20,7 @@ public:
     time_t expiration;
     bool hasExpired();
     Json::Value serialize();
+    static UserToken* deserialize(Json::Value jsonSerialization);
 };
 
 #endif //FDRIVE_BACKEND_USERTOKEN_H

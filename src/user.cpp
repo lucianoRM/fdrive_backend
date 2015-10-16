@@ -84,9 +84,7 @@ User* User::load(rocksdb::DB* db, std::string email) {
 
 	Json::Value tokens = root["tokens"];
 	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ){
-		UserToken* userToken = new UserToken();
-		userToken->expiration = (*it)["expiration"].asInt64();
-		userToken->token = (*it)["token"].asString();
+		UserToken* userToken = UserToken::deserialize((*it));
 		if (!userToken->hasExpired())
 			user->tokens->push_back(userToken);
 	}
