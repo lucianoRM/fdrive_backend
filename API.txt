@@ -35,6 +35,13 @@ LOAD FILE:
 	Respuesta: En caso de que el token sea correcto y corresponda al email, se reciben los metadatos del archivo.
 
 
+LOAD FILE:
+	url: <dirección server>/userfiles?email=<email>&token=<token>
+	Método:GET
+	Body:
+	Respuesta: En caso de que el token sea correcto, se devuelve un Json que contiene un array con los metadatos de todos los archivos de los cuales el usuario es dueño.
+
+
 ERASE FILE:
 	url: <dirección server>/files
 	Método:DELETE
