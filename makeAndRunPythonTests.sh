@@ -24,4 +24,10 @@ echo $env > "lastrun"
 
 cd build
 cmake ../src/
-make && cd ../ && chmod a+rwx -R build && ./build/test/allTests
+make
+cd ../
+chmod a+rwx -R build
+
+./build/fdrive &
+sleep 7
+python -m unittest discover -s functional_tests -p "*.py"
