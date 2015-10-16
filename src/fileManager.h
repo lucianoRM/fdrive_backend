@@ -11,7 +11,7 @@
 #include <string>
 #include <iostream>
 
-class FileManager: public Manager{
+class FileManager: public Manager {
 
     public:
         FileManager();

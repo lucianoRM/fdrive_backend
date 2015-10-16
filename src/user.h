@@ -18,6 +18,7 @@ private:
     std::string email;
     std::string hashed_password;
     std::vector<UserToken*>* tokens;
+    std::vector<int>* files;
     bool checkIfExisting(rocksdb::DB* db, std::string* value);
     bool checkPassword(std::string password);
 
@@ -38,6 +39,9 @@ public:
 
 	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(rocksdb::DB* db,std::string token); //Checks if token is associated with user.
+
+    void addFile(int id);   // != addSharedFile(permisos)
+    std::vector<int> getFiles();
     
     static User* load(rocksdb::DB* db, std::string email);
     bool save(rocksdb::DB* db);

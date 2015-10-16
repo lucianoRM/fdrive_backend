@@ -16,7 +16,7 @@
 class UserManager:public Manager {
 
     private:
-        int counter = 0;
+        static int counter;
         std::string createToken();
 
     public:
@@ -26,6 +26,8 @@ class UserManager:public Manager {
         std::string addUser(std::string email, std::string password);
         void checkIfLoggedIn(std::string email, std::string token);
         std::string loginUser(std::string email, std::string password);
+        void addFileToUser(std::string email, int id);
+        std::string loadUserFiles(std::string email);
 };
 
 

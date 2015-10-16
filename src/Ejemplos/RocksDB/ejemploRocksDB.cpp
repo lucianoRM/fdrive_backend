@@ -14,7 +14,7 @@ int main() {
 	options.create_if_missing = true;
 	//options.error_if_exists = true;
 
-	Status status = DB::Open(options, "/home/dani/Escritorio/testdb", &db);
+	Status status = DB::Open(options, "testdb", &db);
 	if (!status.ok()){ std::cout << status.ToString() << std::endl; return 1; }
 
 	// Escribir

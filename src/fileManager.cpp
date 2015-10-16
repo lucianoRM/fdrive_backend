@@ -3,6 +3,7 @@
 //
 
 #include "fileManager.h"
+#include "userManager.h"
 
 
 FileManager::FileManager() { }
@@ -26,6 +27,11 @@ std::string FileManager::saveFile(std::string name, std::string extension, std::
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
     delete db;
+
+    int id = file->getMetadata()->id;
+    UserManager u_manager;
+    u_manager.addFileToUser(owner,id);
+
     delete file;
 
     return "{ \"result\" : \"true\" , \"fileID\" : " + std::to_string(file->getMetadata()->id) + " }";

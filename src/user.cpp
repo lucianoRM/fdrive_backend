@@ -2,6 +2,7 @@
 
 User::User(){
 	this->tokens = new std::vector<UserToken*>();
+	this->files = new std::vector<int>();
 }
 
 User::~User(){
@@ -9,6 +10,7 @@ User::~User(){
 		delete token;
 	}
 	delete this->tokens;
+	delete this->files;
 }
 
 std::string User::getEmail() {
@@ -23,12 +25,17 @@ bool User::save(rocksdb::DB* db) {
 		jsonToken["expiration"] = Json::Value::Int64((int64_t) oneToken->expiration);
 		jsonTokens.append(jsonToken);
 	}
+	Json::Value jsonFiles;
+	for (int id: *this->files) {
+		jsonFiles.append(id);
+	}
 	Json::StyledWriter writer;
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email,
 									 "{"
-											 "\"email\":\""+this->email+"\", "
-											 "\"password\":\""+this->hashed_password+"\", "
-											 "\"tokens\":" + writer.write(jsonTokens) + "}");
+											 "\"email\":\""+this->email + "\", "
+											 "\"password\":\""+this->hashed_password + "\", "
+											 "\"tokens\":" + writer.write(jsonTokens) + ", "
+									         "\"files\":" + writer.write(jsonFiles) + "}");
 	return (status.ok());
 }
 
@@ -84,6 +91,10 @@ User* User::load(rocksdb::DB* db, std::string email) {
 			user->tokens->push_back(userToken);
 	}
 
+	Json::Value files = root["files"];
+	for(Json::ValueIterator it = files.begin(); it != files.end();it++ ){
+		user->files->push_back((*it).asInt());
+	}
 
 	return user;
 }
@@ -151,9 +162,16 @@ void User::checkToken(rocksdb::DB* db,std::string token){
 	}
 
 	if(!hasToken) {
-		std::cout << "No tiene al token" << std::endl;
 		throw NotLoggedInException();
 	}
 
 }
 
+
+void User::addFile(int id) {
+	this->files->push_back(id);
+}
+
+std::vector<int> User::getFiles() {
+	return *this->files;
+}

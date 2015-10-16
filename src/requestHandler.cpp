@@ -11,6 +11,7 @@ RequestHandler::RequestHandler(){
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
+	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
 
 }
@@ -65,7 +66,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				if (!reader.parse(json, root, false))
 					throw FileException();
 				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
-				if (!root.isMember("name") || !root.isMember("extension") || !root.isMember("owner") ||
+				if (!root.isMember("name") || !root.isMember("extension") ||
 					!root.isMember("tags"))
 					throw RequestException();
 				std::string email, token, name, extension, owner;
@@ -73,7 +74,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				token = root["token"].asString();
 				name = root["name"].asString();
 				extension = root["extension"].asString();
-				owner = root["owner"].asString();
+				//owner = root["owner"].asString();
 				Json::Value tags = root["tags"];
 				std::vector<std::string> vtags;
 				for (Json::ValueIterator itr = tags.begin(); itr != tags.end(); itr++) {
@@ -81,7 +82,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				}
 
 				this->userManager->checkIfLoggedIn(email, token);
-				result = this->fileManager->saveFile(name, extension, owner, vtags);
+				result = this->fileManager->saveFile(name, extension, email, vtags);
 				break;
 			}
 			case requestCodes::LOADFILE_GET: {
@@ -118,6 +119,16 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 
 				this->userManager->checkIfLoggedIn(email, token);
 				result = this->fileManager->eraseFile(id);
+				break;
+			}
+			case requestCodes::LOADUSERFILES_GET:
+			{
+				char cemail[100], ctoken[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+
+				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+				result = this->userManager->loadUserFiles(std::string(cemail));
 				break;
 			}
 			default:
