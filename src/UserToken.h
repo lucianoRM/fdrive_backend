@@ -10,7 +10,7 @@
 class UserToken {
 
 private:
-    time_t TIME = 1800;
+    time_t TIME = 180000;
 
 public:
     UserToken();

@@ -20,8 +20,6 @@ std::string User::getEmail() {
 
 /*Elimina tokens expirados.*/
 bool User::save(rocksdb::DB* db) {
-	time_t currTime;
-	time(&currTime);
 	Json::Value jsonTokens;
 	for (UserToken* oneToken : *this->tokens) {
 		if (!oneToken->hasExpired()) {
@@ -88,8 +86,6 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	user->hashed_password = root["password"].asString();
 
 	Json::Value tokens = root["tokens"];
-	time_t currTime;
-	time(&currTime);
 	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ){
 		UserToken* userToken = new UserToken();
 		userToken->expiration = (*it)["expiration"].asInt64();
