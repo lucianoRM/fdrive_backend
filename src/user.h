@@ -45,7 +45,6 @@ public:
     void addFile(int id);   // != addSharedFile(permisos)
     std::vector<int> getFiles();
 
-    /* Eliminan tokens expirados. */
     static User* load(rocksdb::DB* db, std::string email);
     bool save(rocksdb::DB* db);
     
