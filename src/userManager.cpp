@@ -126,7 +126,7 @@ std::string UserManager::loadUserFiles(std::string email) {
     }
     delete db;
     FileManager f_manager;
-    std::string result = "{ \"files\" : [ ";
+    std::string result = "{ \"result\" : true , \"files\" : [ ";
     for (int id : user->getFiles()) {
         result += f_manager.loadFile(id);
     }
