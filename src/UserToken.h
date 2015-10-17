@@ -18,7 +18,7 @@ public:
     UserToken(std::string token);
     std::string token;
     time_t expiration;
-    bool hasExpired();
+    bool hasExpired(time_t* currTime = NULL);
     Json::Value serialize();
     static UserToken* deserialize(Json::Value jsonSerialization);
 };

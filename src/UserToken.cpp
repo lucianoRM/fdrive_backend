@@ -2,22 +2,27 @@
 // Created by agustin on 08/10/15.
 //
 
+#include <iostream>
 #include "UserToken.h"
 
 UserToken::UserToken() { }
 
 UserToken::UserToken(std::string token) {
     this->token = token;
-    time(&this->expiration);
+    time_t currTime;
+    time(&currTime);
+    this->expiration = currTime;
     this->expiration += TIME;
 }
 
 
-bool UserToken::hasExpired() {
-    //time_t currTime;
-    //time(&currTime);
-    //return difftime(currTime, this->expiration) < 0;
-    return false;
+bool UserToken::hasExpired(time_t* currTime) {
+    if (currTime == NULL) {
+        time_t _currTime;
+        currTime = &_currTime;
+        time(&_currTime);
+    }
+    return difftime(this->expiration, *currTime) < 0;
 }
 
 Json::Value UserToken::serialize() {
@@ -27,7 +32,7 @@ Json::Value UserToken::serialize() {
     return jsonToken;
 }
 
-static UserToken* deserialize(Json::Value jsonSerialization) {
+UserToken* UserToken::deserialize(Json::Value jsonSerialization) {
 
     UserToken* userToken = new UserToken();
     userToken->expiration = jsonSerialization["expiration"].asInt64();
