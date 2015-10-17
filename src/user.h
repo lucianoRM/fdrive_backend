@@ -38,9 +38,9 @@ public:
     bool login(std::string password);
     bool logout(rocksdb::DB* db, std::string token);
 
-	bool addToken(rocksdb::DB* db, std::string token);
     void checkToken(std::string token); //Checks if token is associated with user.
     void deleteExpiredTokens(time_t* currTime = NULL);
+    std::string getNewToken(rocksdb::DB* db);
 
     void addFile(int id);   // != addSharedFile(permisos)
     std::vector<int> getFiles();

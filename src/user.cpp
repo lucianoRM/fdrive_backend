@@ -29,18 +29,17 @@ void User::deleteExpiredTokens(time_t* currTime) {
 }
 
 
-/*Elimina tokens expirados.*/
 bool User::save(rocksdb::DB* db) {
 	Json::Value jsonTokens;
 	for (UserToken* oneToken : *this->tokens) {
-		if (!oneToken->hasExpired()) {
-			jsonTokens.append(oneToken->serialize());
-		}
+		jsonTokens.append(oneToken->serialize());
 	}
+
 	Json::Value jsonFiles;
 	for (int id: *this->files) {
 		jsonFiles.append(id);
 	}
+
 	Json::StyledWriter writer;
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email,
 									 "{"
@@ -147,9 +146,11 @@ bool User::logout(rocksdb::DB* db, std::string token) {
 	return false;
 }
 
-bool User::addToken(rocksdb::DB* db, std::string token) {
-	this->tokens->push_back(new UserToken(token));
-	return this->save(db);
+std::string User::getNewToken(rocksdb::DB* db) {
+	UserToken* userToken = UserToken::getRandomToken();
+	this->tokens->push_back(userToken);
+	this->save(db);
+	return userToken->token;
 }
 
 void User::checkToken(std::string token) {

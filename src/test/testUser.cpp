@@ -143,9 +143,10 @@ TEST(TokensTest, DeleteExpiredTokens) {
     user->setEmail("emailTest");
     user->setPassword("password");
     user->save(db);
-    EXPECT_TRUE(user->addToken(db, "sometoken"));
+    std::string token = user->getNewToken(db);
+    EXPECT_NE("", token);
 
-    EXPECT_NO_THROW(user->checkToken("sometoken"));
+    EXPECT_NO_THROW(user->checkToken(token));
 
     time_t _currTime;
     time_t* currTime = &_currTime;
@@ -153,5 +154,79 @@ TEST(TokensTest, DeleteExpiredTokens) {
     *currTime += UserToken::TIME + 1;
     user->deleteExpiredTokens(currTime);
 
-    EXPECT_THROW(user->checkToken("sometoken"), NotLoggedInException);
+    EXPECT_THROW(user->checkToken(token), NotLoggedInException);
+    delete db;
+    delete user;
+}
+
+TEST(TokensTest, GetTwoDifferentTokens) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    std::string token1 = user->getNewToken(db);
+    std::string token2 = user->getNewToken(db);
+
+    EXPECT_NE(token1, token2);
+    delete db;
+    delete user;
+}
+
+TEST(TokensTest, CheckExistingToken) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    std::string token1 = user->getNewToken(db);
+
+    user = User::load(db, "a");
+    EXPECT_NO_THROW(user->checkToken(token1));
+
+    delete db;
+    delete user;
+}
+
+TEST(TokensTest, CheckFirstOfManyTokens) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    std::string token1 = user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+
+    user = User::load(db, "a");
+    EXPECT_NO_THROW(user->checkToken(token1));
+
+    delete db;
+    delete user;
+}
+
+TEST(TokensTest, CheckLastOfManyTokens) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    user->getNewToken(db);
+    std::string token1 = user->getNewToken(db);
+
+    user = User::load(db, "a");
+    EXPECT_NO_THROW(user->checkToken(token1));
+
+    delete db;
+    delete user;
 }

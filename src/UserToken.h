@@ -19,6 +19,8 @@ public:
     bool hasExpired(time_t* currTime = NULL);
     Json::Value serialize();
     static UserToken* deserialize(Json::Value jsonSerialization);
+
+    static UserToken* getRandomToken();
 };
 
 #endif //FDRIVE_BACKEND_USERTOKEN_H

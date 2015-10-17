@@ -52,12 +52,12 @@ std::string UserManager::loginUser(std::string email, std::string password){
     }
     delete db;
 
-    std::string token = createToken();
-
     db = this->openDatabase("En LogIn: ");
 
+    std::string token;
+
     try{
-        user->addToken(db, token);
+        token = user->getNewToken(db);
     }catch(std::exception& e){
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed

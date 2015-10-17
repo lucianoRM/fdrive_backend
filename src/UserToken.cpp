@@ -40,3 +40,17 @@ UserToken* UserToken::deserialize(Json::Value jsonSerialization) {
     return userToken;
 
 }
+
+UserToken* UserToken::getRandomToken() {
+    static const char alphanum[] =
+            "0123456789"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    "abcdefghijklmnopqrstuvwxyz";
+    int len = 20;
+    std::string token = "12345678901234567890";
+    for (int i = 0; i < len; ++i) {
+        token[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    return new UserToken(token);
+}
