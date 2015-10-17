@@ -10,10 +10,8 @@
 
 class UserToken {
 
-private:
-    time_t TIME = 180000;
-
 public:
+    static const time_t TIME = 180000;
     UserToken();
     UserToken(std::string token);
     std::string token;

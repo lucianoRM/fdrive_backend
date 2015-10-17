@@ -17,6 +17,17 @@ std::string User::getEmail() {
 	return this->email;
 }
 
+void User::deleteExpiredTokens(time_t* currTime) {
+	std::vector<UserToken*>::iterator it = this->tokens->begin();
+	while (it != this->tokens->end()) {
+		if ((*it)->hasExpired(currTime)) {
+			it = this->tokens->erase(it);
+		} else {
+			it++;
+		}
+	}
+}
+
 
 /*Elimina tokens expirados.*/
 bool User::save(rocksdb::DB* db) {
@@ -141,36 +152,15 @@ bool User::addToken(rocksdb::DB* db, std::string token) {
 	return this->save(db);
 }
 
-void User::checkToken(rocksdb::DB* db,std::string token) {
+void User::checkToken(std::string token) {
 
-	std::string value;
-	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users."+this->email, &value);
-	if (status.IsNotFound()) {
-		std::cout << "Entra porque no encontró al user" << std::endl;
-		throw NotLoggedInException();
+	this->deleteExpiredTokens();
+
+	for (std::vector<UserToken*>::iterator it = this->tokens->begin(); it != this->tokens->end(); it++) {
+		if ((*it)->token.compare(token) == 0) return;
 	}
 
-	Json::Reader reader;
-	Json::Value root;
-	bool parsingSuccessful = reader.parse(value, root, false); // False for ignoring comments.
-	if (!parsingSuccessful){
-		std::cout << "JsonCPP no pudo parsear en getToken." << std::endl;
-		throw UserException();
-	}
-	Json::Value tokens;
-
-	if(!root.isMember("tokens")) throw RequestException();//User is not initialized properly
-
-
-	bool hasToken = false;
-	tokens = root["tokens"];
-	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ) {
-		if((*it)["token"].asString().compare(token) == 0) hasToken = true;
-	}
-
-	if(!hasToken) {
-		throw NotLoggedInException();
-	}
+	throw NotLoggedInException();
 
 }
 

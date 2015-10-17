@@ -9,6 +9,8 @@
 #include <string.h>
 #include "../UserException.h"
 #include "../include/googletest/include/gtest/internal/gtest-internal.h"
+#include "../include/googletest/include/gtest/internal/gtest-port.h"
+#include "../include/googletest/include/gtest/gtest_pred_impl.h"
 
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;
@@ -130,4 +132,26 @@ TEST(SignInTest, SignInWrongPassword) {
     db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
     delete user;
+}
+
+TEST(TokensTest, DeleteExpiredTokens) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->save(db);
+    EXPECT_TRUE(user->addToken(db, "sometoken"));
+
+    EXPECT_NO_THROW(user->checkToken("sometoken"));
+
+    time_t _currTime;
+    time_t* currTime = &_currTime;
+    time(currTime);
+    *currTime += UserToken::TIME + 1;
+    user->deleteExpiredTokens(currTime);
+
+    EXPECT_THROW(user->checkToken("sometoken"), NotLoggedInException);
 }
