@@ -22,6 +22,8 @@ Here we specify the structure of the DB. How are things stored and why.
 				email
 				hashed password
 				tokens (an array of pairs: token+expirationTime)
-				files (an array of int that are the files' id)
+				files (an array of objects: idfile (int),
+					  						folder - "root" y "trash" son especiales.
+					  )
 
 
