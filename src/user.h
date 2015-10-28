@@ -12,13 +12,20 @@
 #ifndef FDRIVE_BACKEND_USER_H
 #define FDRIVE_BACKEND_USER_H
 
+struct userFile {
+
+    int id;
+    std::string permits;
+
+};
+
 class User {
 
 private:
     std::string email;
     std::string hashed_password;
     std::vector<UserToken*>* tokens;
-    std::vector<int>* files;
+    std::vector<struct userFile*>* files;
     bool checkIfExisting(rocksdb::DB* db, std::string* value);
     bool checkPassword(std::string password);
 
@@ -42,7 +49,8 @@ public:
     void deleteExpiredTokens(time_t* currTime = NULL);
     std::string getNewToken(rocksdb::DB* db);
 
-    void addFile(int id);   // != addSharedFile(permisos)
+    void addFile(int id);
+    void addSharedFile(int id); // Los permisos son todo o nada.
     std::vector<int> getFiles();
 
     static User* load(rocksdb::DB* db, std::string email);

@@ -13,11 +13,15 @@
 
 class FileManager: public Manager {
 
+    private:
+        File* openFile(int id);
+
     public:
         FileManager();
         ~FileManager();
 
-        std::string saveFile(std::string name, std::string extension, std::string owner, std::vector<std::string> tags); //Saves file
+        std::string saveFile(std::string email, std::string name, std::string extension, std::vector<std::string> tags); // Saves new file
+        std::string saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags); // Por ahora sólo reemplza el viejo. No guarda las distintas versiones.
         std::string loadFile(int id); //Loads file
         std::string eraseFile(int id); //erases file
 

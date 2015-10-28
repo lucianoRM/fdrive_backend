@@ -24,7 +24,7 @@ struct metadata {
     std::string extension;
     std::string owner;
     std::string lastModified;
-    std::string lastUser; //last user that modified the file
+    std::string lastUser; // last user that modified the file.
     std::list<std::string>* tags;
 
 };
@@ -40,7 +40,8 @@ class File {
         bool genId(rocksdb::DB* db); //If file wanted to be saved is new, a new id is generated.
 
     public:
-
+        /* Al crear el archivo, se setea el lastModified con el timestamp,
+         * el id a -1*/
         File();
         ~File();
 

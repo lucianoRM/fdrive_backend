@@ -105,6 +105,21 @@ void UserManager::addFileToUser(std::string email, int id) {
 
     try {
         User* user = User::load(db, email);
+        user->addSharedFile(id);
+        user->save(db);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+
+    delete db;
+}
+
+void UserManager::addFileToUserAsOwner(std::string email, int id) {
+    rocksdb::DB* db = openDatabase("En add file to user");
+
+    try {
+        User* user = User::load(db, email);
         user->addFile(id);
         user->save(db);
     }catch(std::exception& e){

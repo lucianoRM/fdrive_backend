@@ -74,16 +74,25 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				Json::Reader reader;
 				if (!reader.parse(json, root, false))
 					throw FileException();
+
+                int id;
+                std::string email, token, name, extension, owner;
+
+                if (root["id"].isNull()) {
+                    id = -1;
+				} else {
+                    id = root["id"].asInt();
+				}
 				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
 				if (!root.isMember("name") || !root.isMember("extension") ||
 					!root.isMember("tags"))
 					throw RequestException();
-				std::string email, token, name, extension, owner;
+
 				email = root["email"].asString();
 				token = root["token"].asString();
+
 				name = root["name"].asString();
 				extension = root["extension"].asString();
-				//owner = root["owner"].asString();
 				Json::Value tags = root["tags"];
 				std::vector<std::string> vtags;
 				for (Json::ValueIterator itr = tags.begin(); itr != tags.end(); itr++) {
@@ -91,7 +100,11 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				}
 
 				this->userManager->checkIfLoggedIn(email, token);
-				result = this->fileManager->saveFile(name, extension, email, vtags);
+				if (id == -1) {
+					result = this->fileManager->saveFile(email, name, extension, vtags);
+				} else {
+					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags);
+				}
 				break;
 			}
 			case requestCodes::LOADFILE_GET: {

@@ -2,7 +2,7 @@
 
 User::User(){
 	this->tokens = new std::vector<UserToken*>();
-	this->files = new std::vector<int>();
+	this->files = new std::vector<struct userFile*>();
 }
 
 User::~User(){
@@ -10,6 +10,9 @@ User::~User(){
 		delete token;
 	}
 	delete this->tokens;
+	for (struct userFile* file: *this->files) {
+		delete file;
+	}
 	delete this->files;
 }
 
@@ -36,8 +39,11 @@ bool User::save(rocksdb::DB* db) {
 	}
 
 	Json::Value jsonFiles;
-	for (int id: *this->files) {
-		jsonFiles.append(id);
+	for (struct userFile* file: *this->files) {
+		Json::Value jsonFile;
+		jsonFile["id"] = file->id;
+		jsonFile["permits"] = file->permits;
+		jsonFiles.append(jsonFile);
 	}
 
 	Json::StyledWriter writer;
@@ -101,7 +107,10 @@ User* User::load(rocksdb::DB* db, std::string email) {
 
 	Json::Value files = root["files"];
 	for(Json::ValueIterator it = files.begin(); it != files.end();it++ ){
-		user->files->push_back((*it).asInt());
+		struct userFile* file = new struct userFile;
+		file->id = (*it)["id"].asInt();
+		file->permits = (*it)["permits"].asString();
+		user->files->push_back(file);
 	}
 
 	return user;
@@ -167,9 +176,23 @@ void User::checkToken(std::string token) {
 
 
 void User::addFile(int id) {
-	this->files->push_back(id);
+	struct userFile* file = new struct userFile;
+	file->id = id;
+	file->permits = "O"; // O de owner.
+	this->files->push_back(file);
+}
+
+void User::addSharedFile(int id) {
+	struct userFile* file = new struct userFile;
+	file->id = id;
+	file->permits = "S"; // S de shared.
+	this->files->push_back(file);
 }
 
 std::vector<int> User::getFiles() {
-	return *this->files;
+	std::vector<int> filesID;
+	for (struct userFile* file: *this->files) {
+		filesID.push_back(file->id);
+	}
+	return filesID;
 }
