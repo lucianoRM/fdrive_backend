@@ -39,6 +39,9 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 }
 
 std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags){
+    UserManager u_manager;
+    u_manager.checkIfUserHasFilePermits(email, id);
+
     File* file = this->openFile(id);
     file->setName(name);
     file->setExtension(extension);
@@ -56,9 +59,6 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
     delete db;
-
-    UserManager u_manager;
-    u_manager.addFileToUser(email, id);
     delete file;
 
     return "{ \"result\" : \"true\" }";

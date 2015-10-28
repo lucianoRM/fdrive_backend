@@ -196,3 +196,10 @@ std::vector<int> User::getFiles() {
 	}
 	return filesID;
 }
+
+bool User::hasFile(int id) {
+	for (struct userFile* file: *this->files) {
+		if (file->id == id) return true;
+	}
+	return false;
+}

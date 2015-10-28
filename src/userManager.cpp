@@ -148,3 +148,19 @@ std::string UserManager::loadUserFiles(std::string email) {
     result += " ] }";
     return result;
 }
+
+void UserManager::checkIfUserHasFilePermits(std::string email, int id) {
+    rocksdb::DB* db = openDatabase("En load user files");
+
+    User* user;
+    try {
+        user = User::load(db, email);
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+    delete db;
+
+    if (!user->hasFile(id)) throw new HasNoPermits();
+
+}

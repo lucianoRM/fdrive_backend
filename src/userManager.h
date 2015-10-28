@@ -30,6 +30,7 @@ class UserManager:public Manager {
         void addFileToUser(std::string email, int id);
         void addFileToUserAsOwner(std::string email, int id);
         std::string loadUserFiles(std::string email);
+        void checkIfUserHasFilePermits(std::string email, int id);
 };
 
 

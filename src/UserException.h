@@ -45,4 +45,11 @@ class NotLoggedInException : public UserException {
     }
 };
 
+class HasNoPermits : public UserException {
+    virtual const char* what() const throw()
+    {
+        return "The user has no permits for specified file.";
+    }
+};
+
 #endif //FDRIVE_USEREXCEPTION_H

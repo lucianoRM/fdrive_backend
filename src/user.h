@@ -55,6 +55,8 @@ public:
 
     static User* load(rocksdb::DB* db, std::string email);
     bool save(rocksdb::DB* db);
+
+    bool hasFile(int id);
     
 };
 
