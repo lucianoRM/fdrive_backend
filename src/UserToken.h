@@ -8,6 +8,8 @@
 #include <string>
 #include "include/json/json.h"
 
+// Class to represent a token given to a user.
+
 class UserToken {
 
 public:
