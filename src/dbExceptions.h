@@ -8,16 +8,14 @@
 #include <iostream>
 #include <exception>
 
-//Default message
-class DBException: public std::exception{
+// Class to manage the messages of Database exceptions.
 
-    virtual const char* what() const throw(){
+class DBException: public std::exception {
+
+    virtual const char* what() const throw() {
         return "Error with database";
     }
 
 };
-
-
-
 
 #endif //TALLER_DBEXCEPTIONS_H
