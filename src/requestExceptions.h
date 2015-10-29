@@ -10,9 +10,9 @@
 
 // Classes to represent the Exceptions related to Requests.
 
-class RequestException: public std::exception{
+class RequestException: public std::exception {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "Bad request";
     }
 
