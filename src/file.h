@@ -9,9 +9,9 @@
 #include <list>
 #include <algorithm>
 #include <ctime>
-#include "include/rocksdb/db.h"
-#include "include/json/json.h"
-#include "include/json/json-forwards.h"
+#include "rocksdb/db.h"
+#include "json/json.h"
+#include "json/json-forwards.h"
 #include <iostream>
 #include "fileExceptions.h"
 #include "dbExceptions.h"

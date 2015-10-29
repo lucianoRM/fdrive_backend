@@ -1,13 +1,13 @@
 
-#include "../include/googletest/include/gtest/gtest.h"
-#include "../user.h"
-#include "../include/rocksdb/db.h"
-#include "../include/rocksdb/options.h"
+#include "googletest/include/gtest/gtest.h"
+#include "user.h"
+#include "rocksdb/db.h"
+#include "rocksdb/options.h"
 #include <string.h>
-#include "../UserException.h"
-#include "../include/googletest/include/gtest/internal/gtest-internal.h"
-#include "../include/googletest/include/gtest/internal/gtest-port.h"
-#include "../include/googletest/include/gtest/gtest_pred_impl.h"
+#include "UserException.h"
+#include "googletest/include/gtest/internal/gtest-internal.h"
+#include "googletest/include/gtest/internal/gtest-port.h"
+#include "googletest/include/gtest/gtest_pred_impl.h"
 
 rocksdb::DB* openDatabase() {
     rocksdb::DB* db;

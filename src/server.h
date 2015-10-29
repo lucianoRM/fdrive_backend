@@ -10,7 +10,7 @@
 
 #include <string>
 #include "mongoose.h"
-#include "include/rocksdb/db.h"
+#include "rocksdb/db.h"
 #include <iostream>
 #include "user.h"
 #include "requestHandler.h"

@@ -27,7 +27,16 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-	include_directories("include")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/server")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/exceptions")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/file")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/manager")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/mongoose")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/user")
+
+
+
 
 endif()
 
@@ -40,29 +49,14 @@ add_library(rocksdb STATIC IMPORTED)
 set_property(TARGET rocksdb PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/librocksdb.a)
 
 #mongoose
-set_source_files_properties(mongoose.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties( bin/mongoose/mongoose.c PROPERTIES LANGUAGE CXX)
 
 
 #Object files
-file(GLOB OSRCS "${CMAKE_CURRENT_LIST_DIR}/*.[cph]*")
+file(GLOB_RECURSE OSRCS "${CMAKE_CURRENT_LIST_DIR}/bin/*.[cph]*")
 list(REMOVE_ITEM OSRCS ${CMAKE_CURRENT_LIST_DIR}/fdrive.cpp)
 add_library(objectFiles OBJECT ${OSRCS})
 
-
-
-#add_library(mongoose OBJECT mongoose.h mongoose.c)
-
-#jsoncpp
-#add_library(jsoncpp OBJECT jsoncpp.cpp)
-
-#server
-#add_library(server OBJECT server.h server.cpp )
-
-#user
-#add_library(user OBJECT user.h user.cpp)
-
-#requestHandler
-#add_library(requestHandler OBJECT requestHandler.h requestHandler.cpp userManager.cpp userManager.h)
 
 
 #Exec file-------------------------------------------------------------------------------------------------------------
@@ -71,7 +65,6 @@ add_library(objectFiles OBJECT ${OSRCS})
 add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:objectFiles>)
 
 #Static library dependences
-#target_link_libraries(${EXECNAME} pthread rocksdb z bz2 snappy) # para la compu de DANI
 target_link_libraries(${EXECNAME} pthread rocksdb z crypto)
 
 
@@ -100,7 +93,6 @@ add_executable(${TESTNAME} test/testMain/testMain.cpp $<TARGET_OBJECTS:individua
 set_target_properties( ${TESTNAME}  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ./test )
 
 # Standard linking to gtest stuff.
-#target_link_libraries(${TESTNAME} gtest gtest_main pthread rocksdb z bz2 snappy) # para la compu de DANI
 target_link_libraries(${TESTNAME} gtest gtest_main pthread rocksdb z crypto)
 
 

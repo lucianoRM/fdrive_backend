@@ -1,11 +1,11 @@
 #include <vector>
-#include "include/rocksdb/db.h"
-#include "include/rocksdb/status.h"
+#include "rocksdb/db.h"
+#include "rocksdb/status.h"
 #include <iostream>
 #include "requestExceptions.h"
 #include "UserToken.h"
 #include "UserException.h"
-#include "include/json/json.h"
+#include "json/json.h"
 #include <openssl/hmac.h>
 #include <string.h>
 

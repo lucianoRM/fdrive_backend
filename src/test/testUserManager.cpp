@@ -1,9 +1,9 @@
-#include "../include/googletest/include/gtest/gtest.h"
-#include "../userManager.h"
+#include "googletest/include/gtest/gtest.h"
+#include "userManager.h"
 #include <string.h>
-#include "../include/googletest/include/gtest/internal/gtest-internal.h"
-#include "../include/googletest/include/gtest/internal/gtest-port.h"
-#include "../include/googletest/include/gtest/gtest_pred_impl.h"
+#include "googletest/include/gtest/internal/gtest-internal.h"
+#include "googletest/include/gtest/internal/gtest-port.h"
+#include "googletest/include/gtest/gtest_pred_impl.h"
 
 /*
 TEST(GetFilesTest, GetVariousRootFiles) {
