@@ -8,7 +8,7 @@
 #include <iostream>
 #include <exception>
 
-// Class to represent the Exceptions related to Files.
+// Classes to represent the Exceptions related to Files.
 
 class FileException: public std::exception {
 

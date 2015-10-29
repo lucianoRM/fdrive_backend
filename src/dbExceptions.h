@@ -8,7 +8,7 @@
 #include <iostream>
 #include <exception>
 
-// Class to manage the messages of Database exceptions.
+// Classes to represent the Exceptions related to the Database.
 
 class DBException: public std::exception {
 

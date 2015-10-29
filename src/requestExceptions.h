@@ -8,6 +8,7 @@
 #include <iostream>
 #include <exception>
 
+// Classes to represent the Exceptions related to Requests.
 
 class RequestException: public std::exception{
 
@@ -16,7 +17,5 @@ class RequestException: public std::exception{
     }
 
 };
-
-
 
 #endif //TALLER_REQUESTEXCEPTIONS_H
