@@ -8,36 +8,26 @@
 #include "fileManager.h"
 #include <vector>
 
-
-
-//Needed for switch case.
+// Needed for switch case.
 enum requestCodes : int { USERS_POST = 1, LOGIN_GET, LOGOUT_GET,
 		SAVEFILE_POST, LOADFILE_GET, ERASEFILE_DELETE, LOADUSERFILES_GET };
 
+// Class to manage the requests done by the user.
 
 class RequestHandler {
-
-
-
 	private:
-
 		UserManager* userManager;
 		FileManager* fileManager;
 
 		std::unordered_map<std::string,int >* codesMap;
 
-
 	public:
-	
 		RequestHandler();
-
 		~RequestHandler();
 
-		// Devuelve true si era una request válida (más allá de su resultado)
-		// o false sino.
+		// Returns true if was a valid request (no matter its result).
+		// False in other case.
 		bool handle(std::string uri, std::string request_method, struct mg_connection* conn);
-
 };
-
 
 #endif /* REQHANDLER_H_ */
