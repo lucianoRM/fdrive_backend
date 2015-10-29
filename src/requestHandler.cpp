@@ -1,12 +1,11 @@
 #include "requestHandler.h"
 
-RequestHandler::RequestHandler(){
+RequestHandler::RequestHandler() {
 
 	this->userManager = new UserManager();
 	this->fileManager = new FileManager();
 
 	this->codesMap = new std::unordered_map<std::string,int>;
-
 	(*this->codesMap)["/users:GET"] = requestCodes::USERS_POST;
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
@@ -14,20 +13,16 @@ RequestHandler::RequestHandler(){
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
-
 }
 
 RequestHandler::~RequestHandler(){
-
 	delete this->codesMap;
 	delete this->userManager;
 	delete this->fileManager;
-
 }
 
 bool RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
-
-	//Combine uri+request_method
+	// Combine uri+request_method.
 	std::string uriPlusMethod = uri + ":" + request_method;
 
 	if (!this->codesMap->count(uriPlusMethod)) {
@@ -83,9 +78,9 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				} else {
                     id = root["id"].asInt();
 				}
-				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
-				if (!root.isMember("name") || !root.isMember("extension") ||
-					!root.isMember("tags") )
+				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
+				if (! root.isMember("name") || ! root.isMember("extension") ||
+					! root.isMember("tags") )
 					throw RequestException();
                 if (id == -1 && !root.isMember("path")) throw new RequestException();
 
@@ -162,7 +157,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 		mg_printf_data(conn, result.c_str());
 
 	} catch (std::exception& e) {
-		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); //Even if there is an error, it should return true to close the connection
+		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); // Even if there is an error, it should return true to close the connection.
 	}
 	return true;
 }
