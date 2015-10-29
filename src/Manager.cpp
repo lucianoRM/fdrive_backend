@@ -2,7 +2,6 @@
 // Created by martin on 6/10/15.
 //
 
-#include <sys/stat.h>
 #include "Manager.h"
 
 rocksdb::DB* Manager::openDatabase(std::string message) {
@@ -12,8 +11,8 @@ rocksdb::DB* Manager::openDatabase(std::string message) {
     rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
     system("chmod -R a+rwx testdb");
 
-    if (!status.ok()){
-		//La db no se abrio correctamente
+    if (!status.ok()) {
+		// The database didn't open correctly.
         std::cout << message << status.ToString() << std::endl;
         delete db;
         throw DBException();
