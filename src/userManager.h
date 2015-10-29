@@ -28,7 +28,7 @@ class UserManager:public Manager {
         std::string loginUser(std::string email, std::string password);
         std::string logoutUser(std::string email, std::string token);
         void addFileToUser(std::string email, int id);
-        void addFileToUserAsOwner(std::string email, int id);
+        void addFileToUserAsOwner(std::string email, int id, std::string path);
         std::string loadUserFiles(std::string email);
         void checkIfUserHasFilePermits(std::string email, int id);
         std::string eraseFileFromUser(std::string email, int id);

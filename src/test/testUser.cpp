@@ -238,7 +238,7 @@ TEST(FilesTest, HasFileWhenFalse) {
 TEST(FilesTest, HasFileWhenOwnerTrue) {
     User* user = new User();
     user->setEmail("a");
-    user->addFile(1);
+    user->addFile(1, "root");
     EXPECT_TRUE(user->hasFile(1));
     delete user;
 }
@@ -258,7 +258,7 @@ TEST(FilesTest, AddNewFileAndSaveInDatabase) {
     }
     User* user = new User();
     user->setEmail("a");
-    user->addFile(1);
+    user->addFile(1, "root");
     user->save(db);
     delete user;
 

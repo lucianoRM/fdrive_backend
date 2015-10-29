@@ -177,11 +177,11 @@ void User::checkToken(std::string token) {
 }
 
 
-void User::addFile(int id) {
+void User::addFile(int id, std::string path) {
 	struct userFile* file = new struct userFile;
 	file->id = id;
 	file->permits = "O"; // O de owner.
-    file->path = "root";
+    file->path = path;
 	this->files->push_back(file);
 }
 

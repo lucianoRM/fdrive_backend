@@ -114,23 +114,11 @@ Json::Value File::getJson(){
 }
 
 
-bool File::notExists(rocksdb::DB* db){
-
-    std::string fileKey = this->getKey();
-    std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.keys."+std::string(fileKey), &value);
-    if (status.IsNotFound()) return true;
-    return false;
-
-
-}
-
-
 //If this function is called is because a file with no id(-1) is trying to be saved.
 bool File::genId(rocksdb::DB* db){
 
     //Checks if the fileKey is in the db.
-    if(!this->notExists(db)) throw FilenameTakenException(); //File already exists and id not set. Trying to upload a new file with taken key. Not possible
+    //if(!this->notExists(db)) throw FilenameTakenException(); //File already exists and id not set. Trying to upload a new file with taken key. Not possible
 
 
     //Gets id counter
@@ -195,9 +183,6 @@ void File::load(rocksdb::DB* db){
 
 void File::save(rocksdb::DB* db){
 
-
-
-
     int fileId = this->metadata->id;
 
     if(fileId < 0){ //Means that the file is new, doesn't exist in the db
@@ -207,19 +192,13 @@ void File::save(rocksdb::DB* db){
     //At this point the file will have a valid id, needs to ve retrieved from atribute again
     fileId = this->metadata->id;
 
-    //Saves file into id hash
-    std::string fileKey = this->getKey();
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files.keys."+std::string(fileKey),std::to_string(fileId));
-
-    if(!status.ok()) throw DBException();
-
     //Saves file
     Json::Value root = this->getJson();
     Json::StyledWriter writer;
 
     std::string json = writer.write(root);
 
-    status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
 
     if(!status.ok()) throw DBException();
 

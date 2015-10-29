@@ -25,7 +25,7 @@ std::string UserManager::addUser(std::string email, std::string password){
 
     try {
         user->signup(db);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -46,7 +46,7 @@ std::string UserManager::loginUser(std::string email, std::string password){
     try{
         user = User::load(db, email);
         if (!user->login(password)) throw WrongPasswordException();
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -58,7 +58,7 @@ std::string UserManager::loginUser(std::string email, std::string password){
 
     try{
         token = user->getNewToken(db);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -75,8 +75,11 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
     User* user;
     try{
         user = User::load(db, email);
-        if (!user->logout(db, token)) throw NotLoggedInException();
-    }catch(std::exception& e){
+        if (!user->logout(db, token)) {
+            delete user;
+            throw NotLoggedInException();
+        }
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -92,7 +95,7 @@ void UserManager::checkIfLoggedIn(std::string email, std::string token){
     try {
         User* user = User::load(db, email);
         user->checkToken(token);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -102,31 +105,43 @@ void UserManager::checkIfLoggedIn(std::string email, std::string token){
 
 void UserManager::addFileToUser(std::string email, int id) {
     rocksdb::DB* db = openDatabase("En add file to user");
-
+    User* user;
     try {
-        User* user = User::load(db, email);
+        user = User::load(db, email);
         user->addSharedFile(id);
-        user->save(db);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
-
+    try {
+        user->save(db);
+    } catch (std::exception& e) {
+        delete user;
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+    delete user;
     delete db;
 }
 
-void UserManager::addFileToUserAsOwner(std::string email, int id) {
+void UserManager::addFileToUserAsOwner(std::string email, int id, std::string path) {
     rocksdb::DB* db = openDatabase("En add file to user");
-
+    User* user;
     try {
-        User* user = User::load(db, email);
-        user->addFile(id);
-        user->save(db);
-    }catch(std::exception& e){
+        user = User::load(db, email);
+        user->addFile(id, path);
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
-
+    try {
+        user->save(db);
+    } catch (std::exception& e) {
+        delete user;
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+    delete user;
     delete db;
 }
 
@@ -135,7 +150,7 @@ std::string UserManager::loadUserFiles(std::string email) {
     User* user;
     try {
         user = User::load(db, email);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
@@ -171,14 +186,17 @@ void UserManager::checkIfUserHasFilePermits(std::string email, int id) {
     User* user;
     try {
         user = User::load(db, email);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
     delete db;
 
-    if (!user->hasFile(id)) throw new HasNoPermits();
-
+    if (!user->hasFile(id)) {
+        delete user;
+        throw new HasNoPermits();
+    }
+    delete user;
 }
 
 std::string UserManager::eraseFileFromUser(std::string email, int id) {
@@ -188,14 +206,21 @@ std::string UserManager::eraseFileFromUser(std::string email, int id) {
     try {
         user = User::load(db, email);
         user->eraseFile(id);
-        user->save(db);
-        if (user->isOwnerOfFile(id)) {
-            ; //Eliminarlo de los demás a los que se lo compartí.
-        }
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
+    try {
+        user->save(db);
+        if (user->isOwnerOfFile(id)) {
+            ; // TODO Eliminarlo de los demás a los que se lo compartí.
+        }
+    } catch (std::exception& e) {
+        delete user;
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+
     delete db;
 
     return "{ \"result\" : true }";

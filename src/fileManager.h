@@ -20,7 +20,7 @@ class FileManager: public Manager {
         FileManager();
         ~FileManager();
 
-        std::string saveFile(std::string email, std::string name, std::string extension, std::vector<std::string> tags); // Saves new file
+        std::string saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags); // Saves new file
         std::string saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags); // Por ahora sólo reemplza el viejo. No guarda las distintas versiones.
         std::string loadFile(int id); //Loads file
 

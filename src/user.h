@@ -50,7 +50,7 @@ public:
     void deleteExpiredTokens(time_t* currTime = NULL);
     std::string getNewToken(rocksdb::DB* db);
 
-    void addFile(int id);
+    void addFile(int id, std::string path);
     void addSharedFile(int id); // Los permisos son todo o nada.
     bool hasFile(int id);
     std::vector<struct userFile*> getFiles();

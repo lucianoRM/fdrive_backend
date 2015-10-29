@@ -13,41 +13,41 @@
 
 
 //Default message
-class FileException: public std::exception{
+class FileException: public std::exception {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "Error with file";
     }
 
 };
 
-class FileExtensionNotValidException: public FileException{
+class FileExtensionNotValidException: public FileException {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "File extension not valid";
     }
 
 };
 
-class FilenameNotValidException: public FileException{
+class FilenameNotValidException: public FileException {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "File name not valid";
     }
 
 };
 
-class FilenameTakenException: public FileException{
+class FilenameTakenException: public FileException {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "File name already taken";
     }
 
 };
 
-class FileNotFoundException: public FileException{
+class FileNotFoundException: public FileException {
 
-    virtual const char* what() const throw(){
+    virtual const char* what() const throw() {
         return "File not found";
     }
 

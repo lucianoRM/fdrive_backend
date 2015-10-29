@@ -76,7 +76,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 					throw FileException();
 
                 int id;
-                std::string email, token, name, extension, owner;
+                std::string email, token, name, extension, path;
 
                 if (root["id"].isNull()) {
                     id = -1;
@@ -85,12 +85,12 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				}
 				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
 				if (!root.isMember("name") || !root.isMember("extension") ||
-					!root.isMember("tags"))
+					!root.isMember("tags") )
 					throw RequestException();
+                if (id == -1 && !root.isMember("path")) throw new RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
-
 				name = root["name"].asString();
 				extension = root["extension"].asString();
 				Json::Value tags = root["tags"];
@@ -101,7 +101,8 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 
 				this->userManager->checkIfLoggedIn(email, token);
 				if (id == -1) {
-					result = this->fileManager->saveFile(email, name, extension, vtags);
+                    path = root["path"].asString();
+					result = this->fileManager->saveFile(email, name, extension, path, vtags);
 				} else {
                     this->userManager->checkIfUserHasFilePermits(email, id);
 					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags);

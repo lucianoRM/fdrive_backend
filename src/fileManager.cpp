@@ -9,7 +9,7 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::vector<std::string> tags){
+std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags){
     File* file = new File();
     file->setName(name);
     file->setExtension(extension);
@@ -19,18 +19,20 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         file->setTag(tag);
     }
 
-    rocksdb::DB* db = this->openDatabase("En SaveFile: ");
+    UserManager u_manager;
+    // TODO chequear que no haya del mismo nombre en el mismo path
+    //      throw FilenameTakenException();
 
+    rocksdb::DB* db = this->openDatabase("En SaveFile: ");
     try {
         file->save(db);
-    }catch(std::exception& e){
+    } catch (std::exception& e) {
         delete db;
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
     delete db;
 
-    UserManager u_manager;
-    u_manager.addFileToUserAsOwner(email, file->getMetadata()->id);
+    u_manager.addFileToUserAsOwner(email, file->getMetadata()->id, path);
 
     int fileID = file->getMetadata()->id;
 
