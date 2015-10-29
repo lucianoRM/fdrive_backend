@@ -1,3 +1,4 @@
+
 //
 // Created by luciano on 01/10/15.
 //
@@ -229,4 +230,80 @@ TEST(TokensTest, CheckLastOfManyTokens) {
 
     delete db;
     delete user;
+}
+
+TEST(FilesTest, HasFileWhenFalse) {
+    User* user = new User();
+    user->setEmail("a");
+    EXPECT_FALSE(user->hasFile(1));
+    delete user;
+}
+
+TEST(FilesTest, HasFileWhenOwnerTrue) {
+    User* user = new User();
+    user->setEmail("a");
+    user->addFile(1);
+    EXPECT_TRUE(user->hasFile(1));
+    delete user;
+}
+
+TEST(FilesTest, HasFileWhenSharedTrue) {
+    User* user = new User();
+    user->setEmail("a");
+    user->addSharedFile(1);
+    EXPECT_TRUE(user->hasFile(1));
+    delete user;
+}
+
+TEST(FilesTest, AddNewFileAndSaveInDatabase) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    user->addFile(1);
+    user->save(db);
+    delete user;
+
+    user = User::load(db, "a");
+    EXPECT_TRUE(user->hasFile(1));
+    delete user;
+
+    delete db;
+}
+
+TEST(FilesTest, AddNewSharedFileAndSaveInDatabase) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    user->addSharedFile(1);
+    user->save(db);
+    delete user;
+
+    user = User::load(db, "a");
+    EXPECT_TRUE(user->hasFile(1));
+    delete user;
+
+    delete db;
+}
+
+TEST(FilesTest, AskForFileWhenFalseInDatabase) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+    User* user = new User();
+    user->setEmail("a");
+    user->save(db);
+    delete user;
+
+    user = User::load(db, "a");
+    EXPECT_FALSE(user->hasFile(1));
+    delete user;
+
+    delete db;
 }
