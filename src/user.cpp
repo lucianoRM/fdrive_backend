@@ -1,11 +1,11 @@
 #include "user.h"
 
-User::User(){
+User::User() {
 	this->tokens = new std::vector<UserToken*>();
 	this->files = new std::vector<struct userFile*>();
 }
 
-User::~User(){
+User::~User() {
 	for (UserToken* token : *this->tokens) {
 		delete token;
 	}
@@ -30,7 +30,6 @@ void User::deleteExpiredTokens(time_t* currTime) {
 		}
 	}
 }
-
 
 bool User::save(rocksdb::DB* db) {
 	Json::Value jsonTokens;
@@ -79,7 +78,7 @@ bool User::checkPassword(std::string password){
 /**
  * @throws NonExistentUserException
  * @throws Exception
- * Elimina tokens expirados.
+ * Deletes expired tokens.
  */
 User* User::load(rocksdb::DB* db, std::string email) {
 	std::string value;
@@ -90,7 +89,7 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	Json::Reader reader;
 	Json::Value root;
 	bool parsingSuccessful = reader.parse(value, root, false);
-	if (!parsingSuccessful){ // False for ignoring comments.
+	if (!parsingSuccessful) { // False for ignoring comments.
 		std::cout << "JsonCPP no pudo parsear en User::load. Value: " << value << ". root: " << root << std::endl;
 		throw std::exception();
 	}
@@ -100,14 +99,14 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	user->hashed_password = root["password"].asString();
 
 	Json::Value tokens = root["tokens"];
-	for(Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ){
+	for (Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ) {
 		UserToken* userToken = UserToken::deserialize((*it));
 		if (!userToken->hasExpired())
 			user->tokens->push_back(userToken);
 	}
 
 	Json::Value files = root["files"];
-	for(Json::ValueIterator it = files.begin(); it != files.end();it++ ){
+	for (Json::ValueIterator it = files.begin(); it != files.end();it++ ) {
 		struct userFile* file = new struct userFile;
 		file->id = (*it)["id"].asInt();
 		file->permits = (*it)["permits"].asString();
@@ -136,7 +135,9 @@ std::string User::hashPassword (std::string password) {
 
 	PKCS5_PBKDF2_HMAC_SHA1(pwd, strlen(pwd), salt_value, sizeof(salt_value), 1, 20, out);
 
-	for(int i=0;i<20;i++) { sprintf(&(formatted_out[i*2]), "%02x", out[i]); }
+	for(int i=0;i<20;i++) {
+		sprintf(&(formatted_out[i*2]), "%02x", out[i]);
+	}
 
 	std::string new_password(reinterpret_cast<char*>(formatted_out));
 	free(out);
@@ -176,7 +177,6 @@ void User::checkToken(std::string token) {
 
 }
 
-
 void User::addFile(int id, std::string path) {
 	struct userFile* file = new struct userFile;
 	file->id = id;
@@ -204,7 +204,8 @@ bool User::hasFile(int id) {
 	return false;
 }
 
-void User::eraseFile(int id) { // No tira error porque se supone que antes se fija si lo tiene o no.
+// It does not throw an exception, because its supposed to check before if it's existent.
+void User::eraseFile(int id) {
 	for (struct userFile* file: *this->files) {
 		if (file->id == id) file->path = "trash";
 	}

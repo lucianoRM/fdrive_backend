@@ -13,6 +13,8 @@
 #include "Manager.h"
 
 
+// Class to manage the requests related to users.
+
 class UserManager:public Manager {
 
     private:
@@ -32,8 +34,6 @@ class UserManager:public Manager {
         std::string loadUserFiles(std::string email);
         void checkIfUserHasFilePermits(std::string email, int id);
         std::string eraseFileFromUser(std::string email, int id);
-
 };
-
 
 #endif //TALLER_USERMANAGER_H

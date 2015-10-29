@@ -15,7 +15,6 @@ UserToken::UserToken(std::string token) {
     this->expiration += TIME;
 }
 
-
 bool UserToken::hasExpired(time_t* currTime) {
     if (currTime == NULL) {
         time_t _currTime;
@@ -33,12 +32,10 @@ Json::Value UserToken::serialize() {
 }
 
 UserToken* UserToken::deserialize(Json::Value jsonSerialization) {
-
     UserToken* userToken = new UserToken();
     userToken->expiration = jsonSerialization["expiration"].asInt64();
     userToken->token = jsonSerialization["token"].asString();
     return userToken;
-
 }
 
 UserToken* UserToken::getRandomToken() {

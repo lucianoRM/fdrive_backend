@@ -5,14 +5,11 @@
 #ifndef TALLER_FILEEXCEPTIONS_H
 #define TALLER_FILEEXCEPTIONS_H
 
-
-
 #include <iostream>
 #include <exception>
 
+// Classes to represent the Exceptions related to Files.
 
-
-//Default message
 class FileException: public std::exception {
 
     virtual const char* what() const throw() {
@@ -52,8 +49,5 @@ class FileNotFoundException: public FileException {
     }
 
 };
-
-
-
 
 #endif //TALLER_FILEEXCEPTIONS_H
