@@ -5,30 +5,29 @@
 #include "fileManager.h"
 #include "userManager.h"
 
-
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags){
+std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags) {
     File* file = new File();
     file->setName(name);
     file->setExtension(extension);
     file->setOwner(email);
     file->setLastUser(email);
-    for(std::string tag : tags ) {
+    for (std::string tag : tags ) {
         file->setTag(tag);
     }
 
     UserManager u_manager;
-    // TODO chequear que no haya del mismo nombre en el mismo path
-    //      throw FilenameTakenException();
+    /* TODO check there is no same name in the same path.
+     * If there is: throw FilenameTakenException(); */
 
     rocksdb::DB* db = this->openDatabase("En SaveFile: ");
     try {
         file->save(db);
     } catch (std::exception& e) {
         delete db;
-        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete db;
 
@@ -39,16 +38,14 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     delete file;
 
     return "{ \"result\" : \"true\" , \"fileID\" : " + std::to_string(fileID) + " }";
-
 }
 
-std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags){
-
+std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags) {
     File* file = this->openFile(id);
     file->setName(name);
     file->setExtension(extension);
     file->setLastUser(email);
-    for(std::string tag : tags ) {
+    for (std::string tag : tags ) {
         file->setTag(tag);
     }
 
@@ -56,15 +53,14 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
 
     try {
         file->save(db);
-    }catch(std::exception& e){
+    } catch(std::exception& e) {
         delete db;
-        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed,
     }
     delete db;
     delete file;
 
     return "{ \"result\" : \"true\" }";
-
 }
 
 File* FileManager::openFile(int id) {
@@ -74,9 +70,9 @@ File* FileManager::openFile(int id) {
 
     rocksdb::DB* db = this->openDatabase("En OpenFile: ");
 
-    try{
+    try {
         file->load(db);
-    }catch(std::exception& e){
+    } catch(std::exception& e) {
         delete db;
         throw;
     }
@@ -84,8 +80,7 @@ File* FileManager::openFile(int id) {
     return file;
 }
 
-std::string FileManager::loadFile(int id){
-
+std::string FileManager::loadFile(int id) {
     File* file = this->openFile(id);
 
     Json::Value value;
@@ -93,5 +88,4 @@ std::string FileManager::loadFile(int id){
     std::string json = writer.write(file->getJson());
     delete file;
     return json;
-
 }
