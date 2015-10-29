@@ -13,53 +13,56 @@
 #define FDRIVE_BACKEND_USER_H
 
 struct userFile {
-
     int id;
     std::string permits;
     std::string path;
-
 };
+
+// Class to represent a user.
 
 class User {
 
-private:
-    std::string email;
-    std::string hashed_password;
-    std::vector<UserToken*>* tokens;
-    std::vector<struct userFile*>* files;
-    bool checkIfExisting(rocksdb::DB* db, std::string* value);
-    bool checkPassword(std::string password);
+    private:
+        std::string email;
+        std::string hashed_password;
+        std::vector<UserToken*>* tokens;
+        std::vector<struct userFile*>* files;
+        bool checkIfExisting(rocksdb::DB* db, std::string* value);
+        bool checkPassword(std::string password);
 
-public:
+    public:
+        User();
+        ~User();
 
-    User();
-    ~User();
+        std::string hashPassword(std::string password); // Left for testing purposes
 
-    std::string hashPassword(std::string password); // Left for testing purposes
-    
-    std::string getEmail();
-    void setEmail (std::string email);
+        std::string getEmail();
 
-    void setPassword (std::string password);
+        // SETTERS.
+        void setEmail (std::string email);
+        void setPassword (std::string password);
 
-    void signup(rocksdb::DB* db);
-    bool login(std::string password);
-    bool logout(rocksdb::DB* db, std::string token);
+        // Methods related to logging.
+        void signup(rocksdb::DB* db);
+        bool login(std::string password);
+        bool logout(rocksdb::DB* db, std::string token);
 
-    void checkToken(std::string token); //Checks if token is associated with user.
-    void deleteExpiredTokens(time_t* currTime = NULL);
-    std::string getNewToken(rocksdb::DB* db);
+        // Methods related to the tokens received.
+        void checkToken(std::string token); //Checks if token is associated with user.
+        void deleteExpiredTokens(time_t* currTime = NULL);
+        std::string getNewToken(rocksdb::DB* db);
 
-    void addFile(int id, std::string path);
-    void addSharedFile(int id); // Los permisos son todo o nada.
-    bool hasFile(int id);
-    std::vector<struct userFile*> getFiles();
-    bool isOwnerOfFile(int id);
-    void eraseFile(int id);
+        // Methods to manage actions on files.
+        void addFile(int id, std::string path);
+        void addSharedFile(int id); // Los permisos son todo o nada.
+        bool hasFile(int id);
+        std::vector<struct userFile*> getFiles();
+        bool isOwnerOfFile(int id);
+        void eraseFile(int id);
 
-    static User* load(rocksdb::DB* db, std::string email);
-    bool save(rocksdb::DB* db);
-    
+        // Methods for loading and saving changes in the database.
+        static User* load(rocksdb::DB* db, std::string email);
+        bool save(rocksdb::DB* db);
 };
 
 #endif //FDRIVE_BACKEND_USER_H
