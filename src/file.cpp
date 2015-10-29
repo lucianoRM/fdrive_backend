@@ -56,7 +56,6 @@ void File::setTag(std::string newTag) {
     if(!exists) this->metadata->tags->push_back(newTag);
 }
 
-
 void File::setId(int id) {
     this->metadata->id = id;
 }
@@ -69,7 +68,6 @@ std::string File::getKey() {
     std::string key = this->metadata->name + this->metadata->extension + ":" + this->metadata->owner;
     return key;
 }
-
 
 Json::Value File::getJson() {
     Json::Value root;
@@ -86,7 +84,6 @@ Json::Value File::getJson() {
 
     return root;
 }
-
 
 // If this function is called is because a file with no id(-1) is trying to be saved.
 bool File::genId(rocksdb::DB* db) {
@@ -114,7 +111,6 @@ bool File::genId(rocksdb::DB* db) {
     // The new id is assigned to the file.
     this->metadata->id = fileId;
     return true;
-
 }
 
 void File::load(rocksdb::DB* db) {
@@ -148,7 +144,7 @@ void File::load(rocksdb::DB* db) {
 void File::save(rocksdb::DB* db) {
     int fileId = this->metadata->id;
 
-    if(fileId < 0){ // Means that the file is new, doesn't exist in the db.
+    if (fileId < 0) { // Means that the file is new, doesn't exist in the db.
         this->genId(db); // WARNING:Modifies id value.
     }
 
