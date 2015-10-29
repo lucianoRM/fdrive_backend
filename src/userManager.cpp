@@ -140,12 +140,28 @@ std::string UserManager::loadUserFiles(std::string email) {
         throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
     }
     delete db;
+
     FileManager f_manager;
+    std::unordered_map<std::string, std::string> folders;
+    for (struct userFile* file : user->getFiles()) {
+        std::unordered_map<std::string,std::string>::const_iterator iterator = folders.find(file->path);
+        if (iterator != folders.end()) {
+            folders[file->path] += ", " + f_manager.loadFile(file->id);
+        } else {
+            folders[file->path] = f_manager.loadFile(file->id);
+        }
+    }
+
     std::string result = "{ \"result\" : true , \"files\" : [ ";
-    for (int id : user->getFiles()) {
-        result += f_manager.loadFile(id);
+    int i = 0;
+    for (auto& folder: folders) {
+        if (i == 1) result += ", ";
+        result += "{ \"folderPath\" : \"" + folder.first + "\" , \"files\" : [ " + folder.second + " ] }";
+        i++;
     }
     result += " ] }";
+
+    delete user;
     return result;
 }
 
@@ -163,4 +179,24 @@ void UserManager::checkIfUserHasFilePermits(std::string email, int id) {
 
     if (!user->hasFile(id)) throw new HasNoPermits();
 
+}
+
+std::string UserManager::eraseFileFromUser(std::string email, int id) {
+    rocksdb::DB* db = openDatabase("En erase file from user");
+
+    User* user;
+    try {
+        user = User::load(db, email);
+        user->eraseFile(id);
+        user->save(db);
+        if (user->isOwnerOfFile(id)) {
+            ; //Eliminarlo de los demás a los que se lo compartí.
+        }
+    }catch(std::exception& e){
+        delete db;
+        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
+    }
+    delete db;
+
+    return "{ \"result\" : true }";
 }

@@ -103,6 +103,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				if (id == -1) {
 					result = this->fileManager->saveFile(email, name, extension, vtags);
 				} else {
+                    this->userManager->checkIfUserHasFilePermits(email, id);
 					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags);
 				}
 				break;
@@ -114,6 +115,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				mg_get_var(conn, "id", id, sizeof(id));
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+                this->userManager->checkIfUserHasFilePermits(std::string(cemail), atoi(id));
 				result = this->fileManager->loadFile(atoi(id));
 				break;
 			}
@@ -128,11 +130,10 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				Json::Reader reader;
 				if (!reader.parse(json, root, false))
 					throw FileException();
+
 				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
-				if (!root.isMember("name") || !root.isMember("extension") || !root.isMember("owner") ||
-					!root.isMember("tags"))
-					throw RequestException();
 				if (!root.isMember("id")) throw RequestException();
+
 				std::string email, token;
 				int id;
 				email = root["email"].asString();
@@ -140,7 +141,8 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				id = root["id"].asInt();
 
 				this->userManager->checkIfLoggedIn(email, token);
-				result = this->fileManager->eraseFile(id);
+                this->userManager->checkIfUserHasFilePermits(email, id);
+				result = this->userManager->eraseFileFromUser(email, id);
 				break;
 			}
 			case requestCodes::LOADUSERFILES_GET:

@@ -31,6 +31,8 @@ class UserManager:public Manager {
         void addFileToUserAsOwner(std::string email, int id);
         std::string loadUserFiles(std::string email);
         void checkIfUserHasFilePermits(std::string email, int id);
+        std::string eraseFileFromUser(std::string email, int id);
+
 };
 
 

@@ -43,6 +43,7 @@ bool User::save(rocksdb::DB* db) {
 		Json::Value jsonFile;
 		jsonFile["id"] = file->id;
 		jsonFile["permits"] = file->permits;
+        jsonFile["path"] = file->path;
 		jsonFiles.append(jsonFile);
 	}
 
@@ -110,6 +111,7 @@ User* User::load(rocksdb::DB* db, std::string email) {
 		struct userFile* file = new struct userFile;
 		file->id = (*it)["id"].asInt();
 		file->permits = (*it)["permits"].asString();
+        file->path = (*it)["path"].asString();
 		user->files->push_back(file);
 	}
 
@@ -179,6 +181,7 @@ void User::addFile(int id) {
 	struct userFile* file = new struct userFile;
 	file->id = id;
 	file->permits = "O"; // O de owner.
+    file->path = "root";
 	this->files->push_back(file);
 }
 
@@ -186,20 +189,30 @@ void User::addSharedFile(int id) {
 	struct userFile* file = new struct userFile;
 	file->id = id;
 	file->permits = "S"; // S de shared.
+    file->path = "root";
 	this->files->push_back(file);
 }
 
-std::vector<int> User::getFiles() {
-	std::vector<int> filesID;
-	for (struct userFile* file: *this->files) {
-		filesID.push_back(file->id);
-	}
-	return filesID;
+std::vector<struct userFile*> User::getFiles() {
+	return *this->files;
 }
 
 bool User::hasFile(int id) {
 	for (struct userFile* file: *this->files) {
-		if (file->id == id) return true;
+		if (file->id == id) return true; // && file->path != "trash" ?
 	}
 	return false;
+}
+
+void User::eraseFile(int id) { // No tira error porque se supone que antes se fija si lo tiene o no.
+	for (struct userFile* file: *this->files) {
+		if (file->id == id) file->path = "trash";
+	}
+}
+
+bool User::isOwnerOfFile(int id) {
+    for (struct userFile* file: *this->files) {
+        if (file->id == id) return (file->permits.compare("O") == 0);
+    }
+    return false;
 }

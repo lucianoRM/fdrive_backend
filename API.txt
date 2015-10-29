@@ -2,21 +2,21 @@ Corriendo localmente al host, la dirección del server es: localhost:8000.
 
 ADD USER:
 	url: <dirección server>/users?email=<email>&password=<password>
-	Método:GET
+	Método: GET
 	Body:
 	Respuesta: En caso de no existir ya un usuario con ese mail se recibe true para éxito.
 
 
 LOGIN:
 	url: <dirección server>/login?email=<email>&password=<password>
-	Método:GET
+	Método: GET
 	Body:
 	Respuesta: En caso de no existir el email, se recibe un mensaje de error. En caso satisfactorio se recibe un token para que el usuario pueda operar.
 
 
 SAVE FILE:
 	url: <dirección server>/files
-	Método:POST
+	Método: POST
 	Body: {
 		“email”:”<email>”,
 		“token”:”<token>”,
@@ -29,22 +29,58 @@ SAVE FILE:
 
 
 LOAD FILE:
-	url: <dirección server>/files?email=<email>&token=<token>&id=<id>
-	Método:GET
-	Body:
-	Respuesta: En caso de que el token sea correcto y corresponda al email, se reciben los metadatos del archivo.
-
-
-LOAD FILE:
 	url: <dirección server>/userfiles?email=<email>&token=<token>
-	Método:GET
+	Método: GET
 	Body:
-	Respuesta: En caso de que el token sea correcto, se devuelve un Json que contiene un array con los metadatos de todos los archivos de los cuales el usuario es dueño.
+	Respuesta: En caso de que el token sea correcto,
+	    {
+    		"extension" : "<extension>",
+            "id" : <id>,
+            "lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
+            "lastUser" : "<user>",
+            "name" : "<file1>",
+            "owner" : "<owner>",
+            "tags" : [ "<tag1>", "<tag2>", ... ]
+    	}
+
+GET USER'S FILES:
+    url: <dirección server>/userfiles?email=<email>&token=<token>
+    Método: GET
+    Body:
+	Respuesta:
+		{ "result" : true ,
+		  "files" : [
+				{ "folderPath" : "<path1>" ,
+				  "files" : [
+						{
+						   "extension" : "<extension>",
+						   "id" : <id>,
+						   "lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
+						   "lastUser" : "<user>",
+						   "name" : "<file1>",
+						   "owner" : "<owner>",
+						   "tags" : [ "<tag1>", "<tag2>", ... ]
+						} ,
+						{
+						   "extension" : "<extension>",
+                           "id" : <id>,
+                           "lastModified" : "<timestamp>",
+                           "lastUser" : "<user>",
+						   "name" : "<file2>",
+						   "owner" : "<owner>",
+                           "tags" : [ "<tag1>", "<tag2>", ... ]
+						} ,
+						...
+				  ]
+				} ,
+				...
+          ]
+        }
 
 
 ERASE FILE:
 	url: <dirección server>/files
-	Método:DELETE
+	Método: DELETE
 	Body:{
 		“email”:”<email>”,
 		“token”:”<token>”,

@@ -1,8 +1,4 @@
 
-//
-// Created by luciano on 01/10/15.
-//
-
 #include "../include/googletest/include/gtest/gtest.h"
 #include "../user.h"
 #include "../include/rocksdb/db.h"

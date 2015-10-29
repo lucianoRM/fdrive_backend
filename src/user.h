@@ -16,6 +16,7 @@ struct userFile {
 
     int id;
     std::string permits;
+    std::string path;
 
 };
 
@@ -51,12 +52,13 @@ public:
 
     void addFile(int id);
     void addSharedFile(int id); // Los permisos son todo o nada.
-    std::vector<int> getFiles();
+    bool hasFile(int id);
+    std::vector<struct userFile*> getFiles();
+    bool isOwnerOfFile(int id);
+    void eraseFile(int id);
 
     static User* load(rocksdb::DB* db, std::string email);
     bool save(rocksdb::DB* db);
-
-    bool hasFile(int id);
     
 };
 

@@ -32,15 +32,15 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     UserManager u_manager;
     u_manager.addFileToUserAsOwner(email, file->getMetadata()->id);
 
+    int fileID = file->getMetadata()->id;
+
     delete file;
 
-    return "{ \"result\" : \"true\" , \"fileID\" : " + std::to_string(file->getMetadata()->id) + " }";
+    return "{ \"result\" : \"true\" , \"fileID\" : " + std::to_string(fileID) + " }";
 
 }
 
 std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags){
-    UserManager u_manager;
-    u_manager.checkIfUserHasFilePermits(email, id);
 
     File* file = this->openFile(id);
     file->setName(name);
@@ -70,7 +70,7 @@ File* FileManager::openFile(int id) {
 
     file->setId(id);
 
-    rocksdb::DB* db = this->openDatabase("En LogIn: ");
+    rocksdb::DB* db = this->openDatabase("En OpenFile: ");
 
     try{
         file->load(db);
@@ -91,27 +91,5 @@ std::string FileManager::loadFile(int id){
     std::string json = writer.write(file->getJson());
     delete file;
     return json;
-
-}
-
-std::string FileManager::eraseFile(int id){
-
-    File* file = new File();
-
-    file->setId(id);
-
-    rocksdb::DB* db = this->openDatabase("En LogIn: ");
-
-    try {
-        file->erase(db);
-    }catch(std::exception& e){
-        delete db;
-        throw; //Needs to be this way. If you throw e, a new instance is created and the exception class is missed
-    }
-    //Should delete db inmediately after using it
-    delete db;
-    delete file;
-
-    return "{ \"result\" : \"true\" , \"fileID\" : \" " + std::to_string(id) + "\" }";
 
 }
