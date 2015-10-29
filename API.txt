@@ -14,7 +14,7 @@ LOGIN:
 	Respuesta: En caso de no existir el email, se recibe un mensaje de error. En caso satisfactorio se recibe un token para que el usuario pueda operar.
 
 
-SAVE FILE:
+SAVE FILE: Para NEW files (the user sending it will be the owner)
 	url: <dirección server>/files
 	Método: POST
 	Body: {
@@ -22,11 +22,23 @@ SAVE FILE:
 		“token”:”<token>”,
 		“name”:”<name>”,
 		“extension”:”<extension>”,
-		“owner”:”owner>”,
+		"path":"<path>",
 		“tags”:[<tag1>, <tag2>, ...]
 	}
-	Respuesta: En caso de que todos los campos sean correctos, se recibe un id que identifica al archivo.
+	Respuesta: En caso de que todos los campos sean correctos, { "result" : true , "fileID" : <id> }.
 
+SAVE FILE: Para OLD files (the user sending it will be creating a new version)
+	url: <dirección server>/files
+	Método: POST
+	Body: {
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“name”:”<name>”,
+		“extension”:”<extension>”,
+		"id":<id>,
+		“tags”:[<tag1>, <tag2>, ...]
+	}
+	Respuesta: En caso de que todos los campos sean correctos y el usuario tenga permisos para acceder al archivo, { "result" : true }.
 
 LOAD FILE:
 	url: <dirección server>/userfiles?email=<email>&token=<token>

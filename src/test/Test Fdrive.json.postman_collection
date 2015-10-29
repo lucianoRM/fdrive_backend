@@ -125,11 +125,11 @@
 			"tests": "",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1446089058690,
+			"time": 1446093720165,
 			"name": "Subo archivo con Token Correcto",
 			"description": "",
 			"collectionId": "3ec1e92d-9099-37e4-83c0-2be03e7fa0a4",
-			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file\",\n    \"extension\":\".txt\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
+			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file\",\n    \"extension\":\".txt\",\n    \"path\":\"root\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
 		},
 		{
 			"id": "614f8853-606f-ef33-d471-705ca9fa8455",
@@ -179,11 +179,11 @@
 			"tests": "",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1446089109229,
+			"time": 1446094605286,
 			"name": "Subo otro archivo con Token Correcto",
 			"description": "",
 			"collectionId": "3ec1e92d-9099-37e4-83c0-2be03e7fa0a4",
-			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file2\",\n    \"extension\":\".txt\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
+			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file2\",\n    \"extension\":\".txt\",\n    \"path\":\"root/folder1\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
 		},
 		{
 			"id": "95002876-cfb2-f59d-b099-fb500cf5d46a",
@@ -198,11 +198,11 @@
 			"tests": "",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1445021828352,
+			"time": 1446093717679,
 			"name": "Subo archivo con Token Inválido",
 			"description": "",
 			"collectionId": "3ec1e92d-9099-37e4-83c0-2be03e7fa0a4",
-			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"pass\",\n    \"name\":\"file\",\n    \"extension\":\".txt\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
+			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"pass\",\n    \"name\":\"file\",\n    \"extension\":\".txt\",\n    \"path\":\"root\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
 		},
 		{
 			"id": "b21837db-1319-1a1c-e549-828c9f3cf7b2",
@@ -217,11 +217,11 @@
 			"tests": "",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1446089127486,
+			"time": 1446094602717,
 			"name": "Subo tercer archivo con Token Correcto copy",
 			"description": "",
 			"collectionId": "3ec1e92d-9099-37e4-83c0-2be03e7fa0a4",
-			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file3\",\n    \"extension\":\".txt\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
+			"rawModeData": "{\n    \"email\":\"Luciano\",\n    \"token\":\"fa37JncCHryDsbzayy4c\",\n    \"name\":\"file3\",\n    \"extension\":\".txt\",\n    \"path\":\"root\",\n    \"tags\": [\"martin\",\"dani\",\"agus\"]\n    \n}"
 		},
 		{
 			"id": "e92c3e4f-a018-6b74-0fe3-031a758b8494",
