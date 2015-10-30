@@ -18,4 +18,6 @@ else
     flags="-i -t"
 fi
 docker run $flags -p 8000:8000 --name backend -v "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )":/backend fdrive_backend /backend/utils/makeAndRunTests.sh docker
+result=$?
 docker stop backend
+exit $result

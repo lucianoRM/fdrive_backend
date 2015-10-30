@@ -10,6 +10,7 @@ fi
 ./build/fdrive &
 pid=$!
 sleep 2
-result=$(python -m unittest discover -s functional_tests -p "*.py")
+python -m unittest discover -s functional_tests -p "*.py"
+result=$?
 kill $pid
 exit $result
