@@ -22,7 +22,7 @@ class TestLogin(unittest.TestCase):
 		payload = {"email": "testemail", "token": r.json()["token"]}
 		r = requests.get("http://localhost:8000/logout", params = payload)
 
-		self.assertNotEqual(True, r.json()["result"])
+		self.assertEqual(True, r.json()["result"])
 
 if __name__ == '__main__':
     unittest.main()
