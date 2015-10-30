@@ -37,7 +37,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
     delete file;
 
-    return "{ \"result\" : \"true\" , \"fileID\" : " + std::to_string(fileID) + " }";
+    return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " }";
 }
 
 std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags) {
