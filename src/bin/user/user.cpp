@@ -1,8 +1,11 @@
 #include "user.h"
 
+#define INICIAL_QUOTA 10
+
 User::User() {
 	this->tokens = new std::vector<UserToken*>();
 	this->files = new std::vector<struct userFile*>();
+    this->quota = INICIAL_QUOTA;
 }
 
 User::~User() {
