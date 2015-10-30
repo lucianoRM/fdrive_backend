@@ -23,7 +23,11 @@ struct userFile {
 class User {
 
     private:
+        //Falta foto de perfil
         std::string email;
+        std::string name;
+        std::string lastLocation;
+        int quota;  // In MB.
         std::string hashed_password;
         std::vector<UserToken*>* tokens;
         std::vector<struct userFile*>* files;
