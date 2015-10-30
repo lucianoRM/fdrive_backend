@@ -13,7 +13,7 @@ else
 fi
 if [[ detached -eq 1 ]]
 then
-    flags="-d"
+    flags=""
 else
     flags="-i -t"
 fi
