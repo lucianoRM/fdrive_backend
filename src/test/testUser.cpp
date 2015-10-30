@@ -165,7 +165,7 @@ TEST(TokensTest, GetTwoDifferentTokens) {
     std::string token1 = user->getNewToken(db);
     std::string token2 = user->getNewToken(db);
 
-    EXPECT_NE(token1, token2);
+    EXPECT_EQ(token1, token2);
     delete db;
     delete user;
 }
