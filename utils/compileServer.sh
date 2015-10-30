@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../"
 
 env=$1
 if [ -z $env ]
@@ -7,9 +7,9 @@ then
     env="local"
 fi
 
-if [ -f "lastrun" ]
+if [ -f "utils/lastrun" ]
 then
-    read -r line < "lastrun"
+    read -r line < "utils/lastrun"
 else
     line=""
 fi
@@ -20,14 +20,11 @@ then
     cp /rocksdb/rocksdb/librocksdb.a src/
     rm -rf build/*
 fi
-echo $env > "lastrun"
+echo $env > "utils/lastrun"
 
 cd build
 cmake ../src/
-make
+result=$(make)
 cd ../
 chmod a+rwx -R build
-
-./build/fdrive &
-sleep 7
-python -m unittest discover -s functional_tests -p "*.py"
+exit $result
