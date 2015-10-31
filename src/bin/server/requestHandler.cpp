@@ -111,7 +111,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				mg_get_var(conn, "id", id, sizeof(id));
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-                this->userManager->checkIfUserHasFilePermits(std::string(cemail), atoi(id));
+				this->userManager->checkIfUserHasFilePermits(std::string(cemail), atoi(id));
 				result = this->fileManager->loadFile(atoi(id));
 				break;
 			}
