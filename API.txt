@@ -41,7 +41,7 @@ SAVE FILE: Para OLD files (the user sending it will be creating a new version)
 	Respuesta: En caso de que todos los campos sean correctos y el usuario tenga permisos para acceder al archivo, { "result" : true }.
 
 LOAD FILE:
-	url: <dirección server>/userfiles?email=<email>&token=<token>&id=<id>
+	url: <dirección server>/files?email=<email>&token=<token>&id=<id>
 	Método: GET
 	Body:
 	Respuesta: En caso de que el token sea correcto,
