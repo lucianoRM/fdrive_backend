@@ -3,3 +3,4 @@ rocksdb/*
 testdb/*
 lastrun
 userTestDB/*
+CMakeFiles/
