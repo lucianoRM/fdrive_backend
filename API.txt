@@ -1,17 +1,21 @@
 Corriendo localmente al host, la dirección del server es: localhost:8000.
 
+En caso de error, la respuesta siempre es { "result" : false , "errors" : ["<Error Message>"] }
+
 ADD USER:
 	url: <dirección server>/users?email=<email>&password=<password>
 	Método: GET
 	Body:
-	Respuesta: En caso de no existir ya un usuario con ese mail se recibe true para éxito.
+	Respuesta: En caso de no existir ya un usuario con ese mail se recibe { "result" : true } .
 
 
 LOGIN:
 	url: <dirección server>/login?email=<email>&password=<password>
 	Método: GET
 	Body:
-	Respuesta: En caso de no existir el email, se recibe un mensaje de error. En caso satisfactorio se recibe un token para que el usuario pueda operar.
+	Respuesta: En caso de no existir el email, se recibe un mensaje de error.
+			En caso satisfactorio se recibe un token para que el usuario pueda operar:
+				{ "result" : true , "token" : "<token>" }
 
 
 SAVE FILE: Para NEW files (the user sending it will be the owner)
@@ -98,4 +102,6 @@ ERASE FILE:
 		“token”:”<token>”,
 		“id”:”<id>”
 		}
-	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe un mensaje de success con el id del archivo borrado.
+	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe 
+	
+	un mensaje de success con el id del archivo borrado.

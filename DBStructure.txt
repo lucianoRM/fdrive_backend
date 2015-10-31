@@ -6,11 +6,14 @@ Here we specify the structure of the DB. How are things stored and why.
     <id> -> Json with metadata: //Stores the metadata that belongs to the file with that id
 				name
 				extension
-				lastModified (last modification time)
-				lastUser (last modifying user)
+				lastVersion (int)
 				owner
 				pathInOwnersAccount
 				tags : ["tag1", "tag2", ...]
+				versions : { "0" : {	lastModified (last modification time),
+										lastUser (last modifying user)	},
+							 "1" : ... 
+							}
 
 @users.
     <email> -> Json with:
@@ -18,7 +21,7 @@ Here we specify the structure of the DB. How are things stored and why.
 				hashed password
 				name 					(optional)
 				pathToProfilePicture	(optional)
-				lastLocation
+				lastLocation			(optional - as it won't have any until it doesn't specify one - this updates anytime the user operates with files)
 				quota (int that represent the number MB)
 				tokens (an array of: {"token": <token>, "expirationTime" : <expTime>} )
 
@@ -26,6 +29,7 @@ Here we specify the structure of the DB. How are things stored and why.
 	<email>.<pathOfFolder> - > Json with internal folders (depth = 1) and files:
 								folders : ["folder1", ...]
 								files : [id1, ...]
+								//Not lastModified and lastUser because of complexity moving up between folders.
 	(For any user there will always be "<email>.root", "<email>.shared" and "<email>.trash".)
 		Example:
 			<email>.root -> { "folders" : ["folder1"] , "files" : [id7, id2] }
