@@ -24,7 +24,8 @@ echo $env > "utils/lastrun"
 
 cd build
 cmake ../src/
-result=$(make)
+make
+result=$?
 cd ../
 chmod a+rwx -R build
 exit $result

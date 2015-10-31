@@ -186,7 +186,7 @@ void UserManager::checkIfUserHasFilePermits(std::string email, int id) {
 
     if (!user->hasFile(id)) {
         delete user;
-        throw new HasNoPermits();
+        throw HasNoPermits();
     }
     delete user;
 }
