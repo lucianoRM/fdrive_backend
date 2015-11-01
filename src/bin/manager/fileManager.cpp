@@ -2,6 +2,7 @@
 // Created by luciano on 03/10/15.
 //
 
+#include <folder/folder.h>
 #include "fileManager.h"
 #include "userManager.h"
 
@@ -9,6 +10,8 @@ FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags) {
+    rocksdb::DB* db = this->openDatabase("En SaveFile: ");
+
     File* file = new File();
     file->setName(name);
     file->setExtension(extension);
@@ -17,18 +20,26 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     for (std::string tag : tags ) {
         file->setTag(tag);
     }
+    file->genId(db);
+    std::string idFile = file->getId();
+
+    Folder* folder = new Folder();
+    folder->load(db,email,path);
+    folder->addFile(email,path,idFile);
+    folder->save(db);
 
     UserManager u_manager;
     /* TODO check there is no same name in the same path.
      * If there is: throw FilenameTakenException(); */
 
-    rocksdb::DB* db = this->openDatabase("En SaveFile: ");
     try {
         file->save(db);
     } catch (std::exception& e) {
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
+
+
     delete db;
 
     u_manager.addFileToUserAsOwner(email, file->getMetadata()->id, path);
