@@ -330,7 +330,7 @@ TEST(FolderTest, SavedFile) {
 
     Folder* folder = new Folder();
     folder->load(db,"email","root");
-    folder->addFile("email","root","file1");
+    folder->addFile("file1");
     folder->save(db);
 
     Json::Reader reader;
@@ -364,7 +364,7 @@ TEST(FolderTest, SavedFolder) {
 
     Folder* folder = new Folder();
     folder->load(db,"email","root");
-    folder->addFolder("email","root","folder1");
+    folder->addFolder("folder1");
     folder->save(db);
 
     Json::Reader reader;
