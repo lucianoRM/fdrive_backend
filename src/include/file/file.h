@@ -41,7 +41,6 @@ class File {
     private:
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
         std::string getKey(); // Returns key made from file metadata.
-        bool genId(rocksdb::DB* db); // If file wanted to be saved is new, a new id is generated.
 
     public:
         /* In the File constructor:
@@ -58,12 +57,15 @@ class File {
         void setLastUser(std::string newLastUser);
         void setTag(std::string newTag);
         void setId(int id);
+        void genId(rocksdb::DB* db); // ID to be generated when adding a new file.
+        std::string getId();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata.
 
         void load(rocksdb::DB* db); // Loads the metadata from the db. Id needs to be set.
         void save(rocksdb::DB* db); // Saves the metadata to the db
+
 };
 
 #endif //TALLER_FILE_H

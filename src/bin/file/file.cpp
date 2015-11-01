@@ -69,6 +69,10 @@ std::string File::getKey() {
     return key;
 }
 
+std::string File::getId() {
+    return std::to_string(this->metadata->id);
+}
+
 Json::Value File::getJson() {
     Json::Value root;
     root["name"] = this->metadata->name;
@@ -86,7 +90,7 @@ Json::Value File::getJson() {
 }
 
 // If this function is called is because a file with no id(-1) is trying to be saved.
-bool File::genId(rocksdb::DB* db) {
+void File::genId(rocksdb::DB* db) {
     // Gets id counter.
     int fileId;
     std::string value;
@@ -110,7 +114,6 @@ bool File::genId(rocksdb::DB* db) {
     // At this point, fileId has a valid number and db id counter is initialized.
     // The new id is assigned to the file.
     this->metadata->id = fileId;
-    return true;
 }
 
 void File::load(rocksdb::DB* db) {
