@@ -1,6 +1,7 @@
 
 #include "googletest/include/gtest/gtest.h"
 #include "user.h"
+#include "folder.h"
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
 #include <string.h>
@@ -302,4 +303,86 @@ TEST(FilesTest, AskForFileWhenFalseInDatabase) {
     delete user;
 
     delete db;
+}
+
+std::string getEmptyJson() {
+    Json::Value root;
+    Json::StyledWriter writer;
+
+    Json::Value folders;
+    Json::Value files;
+
+    root["folders"] = "";
+    root["files"] = "";
+    std::string json = writer.write(root);
+
+    return json;
+}
+
+TEST(FolderTest, SavedFile) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"email.root",json);
+
+    Folder* folder = new Folder();
+    folder->load(db,"email","root");
+    folder->addFile("email","root","file1");
+    folder->save(db);
+
+    Json::Reader reader;
+    Json::Value root;
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(),"email.root",&value);
+    if (! reader.parse(value,root,false)) throw;
+    Json::Value files = root["files"];
+
+    std::string file;
+    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
+        file = (*it).asString();
+    }
+
+    EXPECT_EQ("file1", file);
+
+    db->Delete(rocksdb::WriteOptions(), "email.root");
+    delete db;
+    delete folder;
+}
+
+TEST(FolderTest, SavedFolder) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"email.root",json);
+
+    Folder* folder = new Folder();
+    folder->load(db,"email","root");
+    folder->addFolder("email","root","folder1");
+    folder->save(db);
+
+    Json::Reader reader;
+    Json::Value root;
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(),"email.root",&value);
+    if (! reader.parse(value,root,false)) throw;
+    Json::Value folders = root["folders"];
+
+    std::string folderInside;
+    for (Json::Value::iterator it = folders.begin(); it != folders.end();it++) {
+        folderInside = (*it).asString();
+    }
+
+    EXPECT_EQ("folder1", folderInside);
+
+    db->Delete(rocksdb::WriteOptions(), "email.root");
+    delete db;
+    delete folder;
 }
