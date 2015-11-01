@@ -7,10 +7,13 @@
 
 #include <string.h>
 #include <list>
-#include <rocksdb/db.h>
+#include <algorithm>
+#include <ctime>
+#include "rocksdb/db.h"
 #include "json/json.h"
 #include "json/json-forwards.h"
 #include <iostream>
+#include "dbExceptions.h"
 
 // Class to represent the logical structure of a Folder.
 

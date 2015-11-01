@@ -3,7 +3,6 @@
 //
 
 #include <exceptions/dbExceptions.h>
-#include <bits/algorithmfwd.h>
 #include "folder.h"
 
 Folder::Folder() {
