@@ -6,6 +6,8 @@
 #include "rocksdb/options.h"
 #include <string.h>
 #include "UserException.h"
+#include "folderExceptions.h"
+#include "fileExceptions.h"
 #include "googletest/include/gtest/internal/gtest-internal.h"
 #include "googletest/include/gtest/internal/gtest-port.h"
 #include "googletest/include/gtest/gtest_pred_impl.h"
@@ -330,7 +332,7 @@ TEST(FolderTest, SavedFile) {
 
     Folder* folder = new Folder();
     folder->load(db,"email","root");
-    folder->addFile("file1");
+    folder->addFile("id1","file1");
     folder->save(db);
 
     Json::Reader reader;
@@ -346,7 +348,7 @@ TEST(FolderTest, SavedFile) {
         file = (*it).asString();
     }
 
-    EXPECT_EQ("file1", file);
+    EXPECT_EQ("id1", file);
 
     db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
@@ -386,3 +388,47 @@ TEST(FolderTest, SavedFolder) {
     delete db;
     delete folder;
 }
+
+TEST(FolderTest, AlreadyExistentFile) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"email.root",json);
+
+    Folder* folder = new Folder();
+    folder->load(db,"email","root");
+    folder->addFile("id1","file1");
+    folder->save(db);
+
+
+    EXPECT_THROW(folder->addFile("id2","file1"),FilenameTakenException);
+
+    db->Delete(rocksdb::WriteOptions(), "email.root");
+    delete db;
+    delete folder;
+}
+
+TEST(FolderTest, AlreadyExistentFolder) {
+    rocksdb::DB* db = openDatabase();
+    if (! db) {
+        return;
+    }
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"email.root",json);
+
+    Folder* folder = new Folder();
+    folder->load(db,"email","root");
+    folder->addFolder("folder");
+    folder->save(db);
+
+    EXPECT_THROW(folder->addFolder("folder"),AlreadyExistentFolderException);
+
+    db->Delete(rocksdb::WriteOptions(), "email.root");
+    delete db;
+    delete folder;
+}
+
