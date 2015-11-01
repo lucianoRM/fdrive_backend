@@ -29,8 +29,8 @@ class Folder {
         Folder();
         ~Folder();
         Json::Value getJson();
-        void addFolder(std::string email, std::string path, std::string folder);
-        void addFile(std::string email, std::string path, std::string file);
+        void addFolder(std::string folder);
+        void addFile(std::string file);
         void load(rocksdb::DB* db, std::string email, std::string path);
         void save(rocksdb::DB* db);
 };

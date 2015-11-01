@@ -6,7 +6,6 @@
 #include "folder.h"
 
 Folder::Folder() {
-
     this->files = new std::list<std::string>;
     this->folders = new std::list<std::string>;
 }
@@ -16,15 +15,11 @@ Folder::~Folder() {
     delete this->folders;
 }
 
-void Folder::addFolder(std::string email, std::string path, std::string folder) {
-    this->email = email;
-    this->name = path;
+void Folder::addFolder(std::string folder) {
     this->folders->push_back(folder);
 }
 
-void Folder::addFile(std::string email, std::string path, std::string file) {
-    this->email = email;
-    this->name = path;
+void Folder::addFile(std::string file) {
     this->files->push_back(file);
 }
 
@@ -46,7 +41,11 @@ Json::Value Folder::getJson() {
 
 void Folder::load(rocksdb::DB* db, std::string email, std::string path) {
     std::string value;
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(),"email."+path,&value);
+
+    this->email = email;
+    this->name = path;
+
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(),this->email+"."+this->name,&value);
     if (status.IsNotFound()) throw;
 
     // If here is because file exists in db.
@@ -74,7 +73,7 @@ void Folder::save(rocksdb::DB* db) {
 
     std::string json = writer.write(root);
 
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"email."+name,json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),email+"."+name,json);
 
     if (! status.ok()) throw DBException();
 }
