@@ -59,9 +59,32 @@ bool User::save(rocksdb::DB* db) {
 	return (status.ok());
 }
 
+std::string User::getJsonFileStructure() {
+	Json::Value root;
+	Json::StyledWriter writer;
+
+	Json::Value folders;
+	Json::Value files;
+
+	root["folders"] = "";
+	root["files"] = "";
+	std::string json = writer.write(root);
+
+	return json;
+}
+
+void User::setFileStructure(rocksdb::DB *db) {
+	std::string fileStructure = getJsonFileStructure();
+
+	db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructure);
+	db->Put(rocksdb::WriteOptions(), this->email+".shared",fileStructure);
+	db->Put(rocksdb::WriteOptions(), this->email+".trash",fileStructure);
+}
+
 void User::signup(rocksdb::DB* db) {
 	std::string value;
 	if (checkIfExisting(db,&value)) throw AlreadyExistentUserException();
+	this->setFileStructure(db);
 	this->save(db);
 }
 

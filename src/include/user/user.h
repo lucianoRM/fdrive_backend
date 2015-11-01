@@ -23,7 +23,7 @@ struct userFile {
 class User {
 
     private:
-        //Falta foto de perfil
+        //Falta foto de perfi
         std::string email;
         std::string name;
         std::string lastLocation;
@@ -33,6 +33,8 @@ class User {
         std::vector<struct userFile*>* files;
         bool checkIfExisting(rocksdb::DB* db, std::string* value);
         bool checkPassword(std::string password);
+        void setFileStructure(rocksdb::DB* db);
+        std::string getJsonFileStructure();
 
     public:
         User();
@@ -63,6 +65,7 @@ class User {
         std::vector<struct userFile*> getFiles();
         bool isOwnerOfFile(int id);
         void eraseFile(int id);
+
 
         // Methods for loading and saving changes in the database.
         static User* load(rocksdb::DB* db, std::string email);
