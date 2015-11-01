@@ -59,7 +59,7 @@ bool User::save(rocksdb::DB* db) {
 	return (status.ok());
 }
 
-std::string User::getJsonFileStructure() {
+std::string User::getJsonFileStructure(int val) {
 	Json::Value root;
 	Json::StyledWriter writer;
 
@@ -68,15 +68,20 @@ std::string User::getJsonFileStructure() {
 
 	root["folders"] = "";
 	root["files"] = "";
+	if (val == 1) {
+		root["filesNames"] = "";
+	}
+
 	std::string json = writer.write(root);
 
 	return json;
 }
 
 void User::setFileStructure(rocksdb::DB *db) {
-	std::string fileStructure = getJsonFileStructure();
+	std::string fileStructureForRoot = getJsonFileStructure(1);
+	std::string fileStructure = getJsonFileStructure(0);
 
-	db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructure);
+	db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructureForRoot);
 	db->Put(rocksdb::WriteOptions(), this->email+".shared",fileStructure);
 	db->Put(rocksdb::WriteOptions(), this->email+".trash",fileStructure);
 }
