@@ -25,12 +25,15 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
     Folder* folder = new Folder();
     folder->load(db,email,path);
-    folder->addFile(email,path,idFile);
-    folder->save(db);
 
-    UserManager u_manager;
-    /* TODO check there is no same name in the same path.
-     * If there is: throw FilenameTakenException(); */
+    // To check if there is a existing file with the same name File in current path.
+    try {
+        folder->addFile(idFile, name);
+    } catch (std::exception& e) {
+        throw;
+    }
+
+    folder->save(db);
 
     try {
         file->save(db);
@@ -42,6 +45,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
     delete db;
 
+    UserManager u_manager;
     u_manager.addFileToUserAsOwner(email, file->getMetadata()->id, path);
 
     int fileID = file->getMetadata()->id;
