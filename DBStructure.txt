@@ -32,9 +32,9 @@ Here we specify the structure of the DB. How are things stored and why.
 								//Not lastModified and lastUser because of complexity moving up between folders.
 	(For any user there will always be "<email>.root", "<email>.shared" and "<email>.trash".)
 		Example:
-			<email>.root -> { "folders" : ["folder1"] , "files" : [id7, id2] }
-			<email>.root/folder1 -> { "folders" : ["folder2"] , "files" : [id1] }
-			<email>.root/folder1/folder2 -> { "folders" : [] , "files" : [id10, id3, id67] }
+			<email>.root -> { "folders" : ["folder1"] , "files" : [id7, id2], "filesNames" : ["fileName7", "fileName2"]}
+			<email>.root/folder1 -> { "folders" : ["folder2"] , "files" : [id1], "filesNames" : ["fileName1"] }
+			<email>.root/folder1/folder2 -> { "folders" : [] , "files" : [id10, id3, id67] "filesNames" : ["fileName10", "fileName3", "fileName67"]}
 			<email>.shared -> {"folders" : [] , "files": [] }
 			<email>.trash -> {"folders" : [] , "files": [] }
 		
