@@ -28,9 +28,7 @@ class User {
         bool checkIfExisting(rocksdb::DB* db, std::string* value);
         bool checkPassword(std::string password);
         bool setFileStructure(rocksdb::DB* db);
-        // If val == 1 is the structure for root folder.
-        // If not. Is the structure for share and trash folder.
-        std::string getJsonFileStructure(int val);
+        std::string getJsonFileStructure();
 
     public:
         User();

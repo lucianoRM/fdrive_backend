@@ -91,13 +91,14 @@ File* FileManager::openFile(int id) {
 
     file->setId(id);
 
-    rocksdb::DB* db = this->openDatabase("En OpenFile: ");
+    rocksdb::DB* db = NULL;
 
     try {
+        db = this->openDatabase("En OpenFile: ");
         file->load(db);
     } catch(std::exception& e) {
         delete file;
-        delete db;
+        if (db != NULL) delete db;
         throw;
     }
     delete db;

@@ -183,7 +183,7 @@ void File::save(rocksdb::DB* db) {
 
     std::string json = writer.write(root);
 
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files." + std::to_string(fileId), json);
 
     if (!status.ok()) throw DBException();
 }
@@ -196,6 +196,7 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
+        throw;
     }
     delete owner;
 
@@ -206,6 +207,7 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
+        throw;
     }
     delete name;
 
@@ -217,6 +219,7 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
+        throw;
     }
     delete extension;
 
@@ -228,6 +231,7 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
             tagInfo->save(db);
         }  catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
+            throw;
         }
         delete tagInfo;
     }
@@ -258,6 +262,7 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
             folder->save(db);
         } catch (std::exception& e) {
             if (folder != NULL) delete folder;
+            throw;
         }
         delete folder;
         this->users->clear();
@@ -275,6 +280,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
+        throw;
     }
     delete owner;
 
@@ -285,6 +291,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
+        throw;
     }
     delete name;
 
@@ -296,6 +303,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
+        throw;
     }
     delete extension;
 
@@ -307,6 +315,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
             tagInfo->save(db);
         } catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
+            throw;
         }
         delete tagInfo;
     }
@@ -318,6 +327,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
+        throw;
     }
     delete folder;
 }

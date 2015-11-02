@@ -19,13 +19,14 @@ std::string UserManager::addUser(std::string email, std::string password) {
     user->setEmail(email);
     user->setPassword(password);
 
-    rocksdb::DB* db = this->openDatabase("En AddUser: ");
+    rocksdb::DB* db = NULL;
 
     try {
+        db = this->openDatabase("En AddUser: ");
         user->signup(db);
     } catch (std::exception& e) {
         delete user;
-        delete db;
+        if (db != NULL) delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
 
@@ -43,6 +44,7 @@ std::string UserManager::loginUser(std::string email, std::string password) {
         user = User::load(db, email);
         if (!user->login(password)) {
             delete user;
+            delete db;
             throw WrongPasswordException();
         }
     } catch (std::exception& e) {

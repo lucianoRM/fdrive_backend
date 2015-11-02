@@ -43,24 +43,22 @@ bool User::save(rocksdb::DB* db) {
     root["tokens"] = jsonTokens;
     if (!name.empty()) root["name"] = this->name;
     if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
-    if (!picture.empty()) root["pathToProfilePicture"] = this->lastLocation;
+    if (!picture.empty()) root["pathToProfilePicture"] = this->picture;
 	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, writer.write(root));
 	return (status.ok());
 }
 
-std::string User::getJsonFileStructure(int val) {
+std::string User::getJsonFileStructure() {
 	Json::Value root;
 	Json::StyledWriter writer;
 
 	Json::Value folders (Json::arrayValue);
 	Json::Value files (Json::arrayValue);
+    Json::Value filesNames (Json::arrayValue);
 
 	root["folders"] = folders;
 	root["files"] = files;
-	if (val == 1) {
-        Json::Value filesNames (Json::arrayValue);
-		root["filesNames"] = filesNames;
-	}
+    root["filesNames"] = filesNames;
 
 	std::string json = writer.write(root);
 
@@ -68,10 +66,9 @@ std::string User::getJsonFileStructure(int val) {
 }
 
 bool User::setFileStructure(rocksdb::DB *db) {
-	std::string fileStructureForRoot = getJsonFileStructure(1);
-	std::string fileStructure = getJsonFileStructure(0);
+	std::string fileStructure = getJsonFileStructure();
 
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructureForRoot);
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructure);
 	bool ok = status.ok();
 	status = db->Put(rocksdb::WriteOptions(), this->email+".shared",fileStructure);
 	ok &= status.ok();
@@ -81,7 +78,7 @@ bool User::setFileStructure(rocksdb::DB *db) {
 
 void User::signup(rocksdb::DB* db) {
 	std::string value;
-	if (checkIfExisting(db,&value)) throw AlreadyExistentUserException();
+	if (this->checkIfExisting(db,&value)) throw AlreadyExistentUserException();
 	if (!this->setFileStructure(db)) throw DBException();
 	if (!this->save(db)) throw DBException();
 }
