@@ -1,7 +1,3 @@
-//
-// Created by luciano on 08/10/15.
-//
-
 #ifndef TALLER_REQUESTEXCEPTIONS_H
 #define TALLER_REQUESTEXCEPTIONS_H
 

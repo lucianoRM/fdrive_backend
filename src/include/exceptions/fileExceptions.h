@@ -1,7 +1,3 @@
-//
-// Created by luciano on 08/10/15.
-//
-
 #ifndef TALLER_FILEEXCEPTIONS_H
 #define TALLER_FILEEXCEPTIONS_H
 
@@ -34,18 +30,18 @@ class FilenameNotValidException: public FileException {
 
 };
 
-class FilenameTakenException: public FileException {
-
-    virtual const char* what() const throw() {
-        return "File name already taken";
-    }
-
-};
-
 class FileNotFoundException: public FileException {
 
     virtual const char* what() const throw() {
         return "File not found";
+    }
+
+};
+
+class UserAlreadyHasFileSharedException: public FileException {
+
+    virtual const char* what() const throw() {
+        return "File already shared to user";
     }
 
 };

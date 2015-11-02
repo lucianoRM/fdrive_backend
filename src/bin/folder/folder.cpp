@@ -1,15 +1,12 @@
-//
-// Created by martin on 1/11/15.
-//
 #include "folder.h"
 #include <exceptions/dbExceptions.h>
 #include <exceptions/fileExceptions.h>
 #include <exceptions/folderExceptions.h>
 
 Folder::Folder() {
-    this->filesIds = new std::list<std::string>;
-    this->filesNames = new std::list<std::string>;
-    this->folders = new std::list<std::string>;
+    this->filesIds = new std::vector<int>();
+    this->filesNames = new std::vector<std::string>();
+    this->folders = new std::vector<std::string>();
 }
 
 Folder::~Folder() {
@@ -18,7 +15,11 @@ Folder::~Folder() {
     delete this->folders;
 }
 
-bool Folder::checkIfExisting(std::list<std::string>* listToCheck, std::string value) {
+bool Folder::checkIfExisting(std::vector<std::string>* listToCheck, std::string value) {
+    return (std::find(listToCheck->begin(), listToCheck->end(), value) != listToCheck->end());
+}
+
+bool Folder::checkIfExisting(std::vector<int>* listToCheck, int value) {
     return (std::find(listToCheck->begin(), listToCheck->end(), value) != listToCheck->end());
 }
 
@@ -29,8 +30,11 @@ void Folder::addFolder(std::string folder) {
     this->folders->push_back(folder);
 }
 
-void Folder::addFile(std::string fileId, std::string fileName) {
-    if (checkIfExisting(this->filesNames, fileName)) {
+void Folder::addFile(int fileId, std::string fileName) {
+    if (this->checkIfExisting(this->filesIds, fileId)) {
+        throw FileAlreadyInFolderException();
+    }
+    if (this->checkIfExisting(this->filesNames, fileName)) {
         throw FilenameTakenException();
     }
 
@@ -38,56 +42,83 @@ void Folder::addFile(std::string fileId, std::string fileName) {
     this->filesNames->push_back(fileName);
 }
 
+void Folder::removeFile(int fileId) {
+    size_t i;
+    for (i = 0; i < this->filesIds->size(); i++) {
+        if (this->filesIds->at(i) == fileId) break;
+    }
+    if (i == this->filesIds->size()) throw FileNotInFolderException();
+    this->filesIds->erase(this->filesIds->begin() + i);
+    this->filesNames->erase(this->filesNames->begin() + i);
+}
+
 Json::Value Folder::getJson() {
+
     Json::Value root;
 
-    Json::Value folders;
-    Json::Value files;
-    Json::Value filesNames;
+    Json::Value folders (Json::arrayValue);
+    Json::Value files (Json::arrayValue);
+    Json::Value filesNames (Json::arrayValue);
 
-    std::for_each(this->folders->begin(),this->folders->end(),[&folders](std::string &folder){folders.append(folder);});
+
+    for (std::string folder : *(this->folders)) {
+        folders.append(folder);
+    }
     root["folders"] = folders;
 
-    std::for_each(this->filesIds->begin(),this->filesIds->end(),[&files](std::string &file){files.append(file);});
+    for (int id : *(this->filesIds)) {
+        files.append(id);
+    }
     root["files"] = files;
 
-    std::for_each(this->filesNames->begin(),this->filesNames->end(),[&filesNames](std::string &file){filesNames.append(file);});
+    for (std::string fileName : *(this->filesNames)) {
+        filesNames.append(fileName);
+    }
     root["filesNames"] = filesNames;
 
     return root;
 }
 
 
-void Folder::load(rocksdb::DB* db, std::string email, std::string path) {
+Folder* Folder::load(rocksdb::DB* db, std::string email, std::string path) {
+    Folder* folder = new Folder();
+    folder->user = email;
+    folder->fullName = path;
+
     std::string value;
-
-    this->email = email;
-    this->name = path;
-
-    rocksdb::Status status = db->Get(rocksdb::ReadOptions(),this->email+"."+this->name,&value);
-    if (status.IsNotFound()) throw;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(),folder->user+"."+folder->fullName,&value);
+    if (status.IsNotFound()) {
+        delete folder;
+        throw FolderNotFound();
+    }
 
     // If here is because file exists in db.
     Json::Reader reader;
     Json::Value root;
 
-    if (! reader.parse(value,root,false)) throw;
+    if (!reader.parse(value,root,false)) {
+        delete folder;
+        std::cout << "JsonCPP no pudo parsear en Folder::load. Value: " << value << ". root: " << root << std::endl;
+        throw std::exception();
+    }
 
     Json::Value folders = root["folders"];
     Json::Value files = root["files"];
     Json::Value filesNames = root["filesNames"];
 
     for (Json::Value::iterator it = folders.begin(); it != folders.end();it++) {
-        this->folders->push_back((*it).asString());
+        folder->folders->push_back((*it).asString());
     }
 
     for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
-        this->filesIds->push_back((*it).asString());
+        folder->filesIds->push_back((*it).asInt());
     }
 
     for (Json::Value::iterator it = filesNames.begin(); it != filesNames.end();it++) {
-        this->filesNames->push_back((*it).asString());
+        folder->filesNames->push_back((*it).asString());
     }
+
+    return folder;
 }
 
 void Folder::save(rocksdb::DB* db) {
@@ -96,7 +127,13 @@ void Folder::save(rocksdb::DB* db) {
 
     std::string json = writer.write(root);
 
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),email+"."+name,json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),user+"."+fullName,json);
 
-    if (! status.ok()) throw DBException();
+    if (!status.ok()) throw DBException();
+}
+
+std::string Folder::getContent() {
+    Json::Value json = getJson();
+    Json::StyledWriter writer;
+    return writer.write(json);
 }

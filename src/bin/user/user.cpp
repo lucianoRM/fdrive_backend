@@ -4,7 +4,6 @@
 
 User::User() {
 	this->tokens = new std::vector<UserToken*>();
-	this->files = new std::vector<struct userFile*>();
     this->quota = INICIAL_QUOTA;
 }
 
@@ -13,10 +12,6 @@ User::~User() {
 		delete token;
 	}
 	delete this->tokens;
-	for (struct userFile* file: *this->files) {
-		delete file;
-	}
-	delete this->files;
 }
 
 std::string User::getEmail() {
@@ -40,22 +35,16 @@ bool User::save(rocksdb::DB* db) {
 		jsonTokens.append(oneToken->serialize());
 	}
 
-	Json::Value jsonFiles;
-	for (struct userFile* file: *this->files) {
-		Json::Value jsonFile;
-		jsonFile["id"] = file->id;
-		jsonFile["permits"] = file->permits;
-        jsonFile["path"] = file->path;
-		jsonFiles.append(jsonFile);
-	}
-
 	Json::StyledWriter writer;
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email,
-									 "{"
-											 "\"email\":\""+this->email + "\", "
-											 "\"password\":\""+this->hashed_password + "\", "
-											 "\"tokens\":" + writer.write(jsonTokens) + ", "
-									         "\"files\":" + writer.write(jsonFiles) + "}");
+    Json::Value root;
+    root["email"] = this->email;
+    root["password"] = this->hashed_password;
+    root["quota"] = this->quota;
+    root["tokens"] = jsonTokens;
+    if (!name.empty()) root["name"] = this->name;
+    if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
+    if (!picture.empty()) root["pathToProfilePicture"] = this->lastLocation;
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, writer.write(root));
 	return (status.ok());
 }
 
@@ -63,13 +52,14 @@ std::string User::getJsonFileStructure(int val) {
 	Json::Value root;
 	Json::StyledWriter writer;
 
-	Json::Value folders;
-	Json::Value files;
+	Json::Value folders (Json::arrayValue);
+	Json::Value files (Json::arrayValue);
 
-	root["folders"] = "";
-	root["files"] = "";
+	root["folders"] = folders;
+	root["files"] = files;
 	if (val == 1) {
-		root["filesNames"] = "";
+        Json::Value filesNames (Json::arrayValue);
+		root["filesNames"] = filesNames;
 	}
 
 	std::string json = writer.write(root);
@@ -77,20 +67,23 @@ std::string User::getJsonFileStructure(int val) {
 	return json;
 }
 
-void User::setFileStructure(rocksdb::DB *db) {
+bool User::setFileStructure(rocksdb::DB *db) {
 	std::string fileStructureForRoot = getJsonFileStructure(1);
 	std::string fileStructure = getJsonFileStructure(0);
 
-	db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructureForRoot);
-	db->Put(rocksdb::WriteOptions(), this->email+".shared",fileStructure);
-	db->Put(rocksdb::WriteOptions(), this->email+".trash",fileStructure);
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), this->email+".root",fileStructureForRoot);
+	bool ok = status.ok();
+	status = db->Put(rocksdb::WriteOptions(), this->email+".shared",fileStructure);
+	ok &= status.ok();
+	status = db->Put(rocksdb::WriteOptions(), this->email+".trash",fileStructure);
+	return ok & status.ok();
 }
 
 void User::signup(rocksdb::DB* db) {
 	std::string value;
 	if (checkIfExisting(db,&value)) throw AlreadyExistentUserException();
-	this->setFileStructure(db);
-	this->save(db);
+	if (!this->setFileStructure(db)) throw DBException();
+	if (!this->save(db)) throw DBException();
 }
 
 bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
@@ -98,7 +91,6 @@ bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {
 	if (status.IsNotFound()) {
 		return false;
 	}
-
 	return true;
 }
 
@@ -128,6 +120,7 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	User* user = new User();
 	user->email = root["email"].asString();
 	user->hashed_password = root["password"].asString();
+    user->quota = root["quota"].asInt();
 
 	Json::Value tokens = root["tokens"];
 	for (Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ) {
@@ -136,14 +129,9 @@ User* User::load(rocksdb::DB* db, std::string email) {
 			user->tokens->push_back(userToken);
 	}
 
-	Json::Value files = root["files"];
-	for (Json::ValueIterator it = files.begin(); it != files.end();it++ ) {
-		struct userFile* file = new struct userFile;
-		file->id = (*it)["id"].asInt();
-		file->permits = (*it)["permits"].asString();
-        file->path = (*it)["path"].asString();
-		user->files->push_back(file);
-	}
+    if (root.isMember("name")) user->name = root["name"].asString();
+    if (root.isMember("lastLocation")) user->lastLocation = root["lastLocation"].asString();
+    if (root.isMember("pathToProfilePicture")) user->picture = root["pathToProfilePicture"].asString();
 
 	return user;
 }
@@ -206,45 +194,4 @@ void User::checkToken(std::string token) {
 
 	throw NotLoggedInException();
 
-}
-
-void User::addFile(int id, std::string path) {
-	struct userFile* file = new struct userFile;
-	file->id = id;
-	file->permits = "O"; // O de owner.
-    file->path = path;
-	this->files->push_back(file);
-}
-
-void User::addSharedFile(int id) {
-	struct userFile* file = new struct userFile;
-	file->id = id;
-	file->permits = "S"; // S de shared.
-    file->path = "root";
-	this->files->push_back(file);
-}
-
-std::vector<struct userFile*> User::getFiles() {
-	return *this->files;
-}
-
-bool User::hasFile(int id) {
-	for (struct userFile* file: *this->files) {
-		if (file->id == id) return true; // && file->path != "trash" ?
-	}
-	return false;
-}
-
-// It does not throw an exception, because its supposed to check before if it's existent.
-void User::eraseFile(int id) {
-	for (struct userFile* file: *this->files) {
-		if (file->id == id) file->path = "trash";
-	}
-}
-
-bool User::isOwnerOfFile(int id) {
-    for (struct userFile* file: *this->files) {
-        if (file->id == id) return (file->permits.compare("O") == 0);
-    }
-    return false;
 }

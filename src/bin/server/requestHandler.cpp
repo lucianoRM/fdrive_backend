@@ -82,7 +82,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				if (! root.isMember("name") || ! root.isMember("extension") ||
 					! root.isMember("tags") )
 					throw RequestException();
-                if (id == -1 && !root.isMember("path")) throw new RequestException();
+                if (id == -1 && !root.isMember("path")) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
@@ -99,8 +99,8 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
                     path = root["path"].asString();
 					result = this->fileManager->saveFile(email, name, extension, path, vtags);
 				} else {
-                    this->userManager->checkIfUserHasFilePermits(email, id);
-					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags);
+                    this->fileManager->checkIfUserHasFilePermits(id, email);
+					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags); //TODO terminar bien esta función.
 				}
 				break;
 			}
@@ -111,7 +111,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				mg_get_var(conn, "id", id, sizeof(id));
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				this->userManager->checkIfUserHasFilePermits(std::string(cemail), atoi(id));
+				this->fileManager->checkIfUserHasFilePermits(atoi(id), std::string(cemail));
 				result = this->fileManager->loadFile(atoi(id));
 				break;
 			}
@@ -128,27 +128,29 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 					throw FileException();
 
 				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
-				if (!root.isMember("id")) throw RequestException();
+				if (!root.isMember("id") || !root.isMember("path")) throw RequestException();
 
-				std::string email, token;
+				std::string email, token, path;
 				int id;
 				email = root["email"].asString();
 				token = root["ctoken"].asString();
 				id = root["id"].asInt();
+				path = root["path"].asString();
 
 				this->userManager->checkIfLoggedIn(email, token);
-                this->userManager->checkIfUserHasFilePermits(email, id);
-				result = this->userManager->eraseFileFromUser(email, id);
+                this->fileManager->checkIfUserHasFilePermits(id, email);
+				result = this->fileManager->eraseFileFromUser(id, email, path);
 				break;
 			}
 			case requestCodes::LOADUSERFILES_GET:
 			{
-				char cemail[100], ctoken[100];
+				char cemail[100], ctoken[100], cpath[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				mg_get_var(conn, "path", cpath, sizeof(cpath));
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				result = this->userManager->loadUserFiles(std::string(cemail));
+				result = this->userManager->loadUserFiles(std::string(cemail), std::string(cpath));
 				break;
 			}
 			default:

@@ -1,6 +1,7 @@
 #include "userManager.h"
 #include "file.h"
 #include "fileManager.h"
+#include "folder/folder.h"
 
 int UserManager::counter = 0;
 
@@ -23,6 +24,7 @@ std::string UserManager::addUser(std::string email, std::string password) {
     try {
         user->signup(db);
     } catch (std::exception& e) {
+        delete user;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
@@ -36,23 +38,24 @@ std::string UserManager::addUser(std::string email, std::string password) {
 std::string UserManager::loginUser(std::string email, std::string password) {
     rocksdb::DB* db = this->openDatabase("En LogIn: ");
 
-    User* user;
+    User* user = NULL;
     try {
         user = User::load(db, email);
-        if (!user->login(password)) throw WrongPasswordException();
+        if (!user->login(password)) {
+            delete user;
+            throw WrongPasswordException();
+        }
     } catch (std::exception& e) {
+        if (user != NULL) delete user;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
-    delete db;
-
-    db = this->openDatabase("En LogIn: ");
 
     std::string token;
-
     try {
         token = user->getNewToken(db);
     } catch (std::exception& e) {
+        delete user;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
@@ -65,7 +68,7 @@ std::string UserManager::loginUser(std::string email, std::string password) {
 std::string UserManager::logoutUser(std::string email, std::string token) {
     rocksdb::DB* db = this->openDatabase("En LogOut: ");
 
-    User* user;
+    User* user = NULL;
     try {
         user = User::load(db, email);
         if (! user->logout(db, token)) {
@@ -73,42 +76,24 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
             throw NotLoggedInException();
         }
     } catch (std::exception& e) {
+        if (user != NULL) delete user;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete db;
     delete user;
+
     return "{ \"result\" : true }";
 }
 
 void UserManager::checkIfLoggedIn(std::string email, std::string token) {
     rocksdb::DB* db = openDatabase("En check if logged in");
-
+    User* user= NULL;
     try {
-        User* user = User::load(db, email);
+        user = User::load(db, email);
         user->checkToken(token);
     } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-
-    delete db;
-}
-
-void UserManager::addFileToUser(std::string email, int id) {
-    rocksdb::DB* db = openDatabase("En add file to user");
-    User* user;
-    try {
-        user = User::load(db, email);
-        user->addSharedFile(id);
-    } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    try {
-        user->save(db);
-    } catch (std::exception& e) {
-        delete user;
+        if (user != NULL) delete user;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
@@ -116,104 +101,17 @@ void UserManager::addFileToUser(std::string email, int id) {
     delete db;
 }
 
-void UserManager::addFileToUserAsOwner(std::string email, int id, std::string path) {
-    rocksdb::DB* db = openDatabase("En add file to user");
-    User* user;
-    try {
-        user = User::load(db, email);
-        user->addFile(id, path);
-    } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    try {
-        user->save(db);
-    } catch (std::exception& e) {
-        delete user;
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    delete user;
-    delete db;
-}
-
-std::string UserManager::loadUserFiles(std::string email) {
+std::string UserManager::loadUserFiles(std::string email, std::string path) {
     rocksdb::DB* db = openDatabase("En load user files");
-    User* user;
+    Folder* folder = NULL;
     try {
-        user = User::load(db, email);
+        folder = Folder::load(db, email, path);
     } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    delete db;
-
-    FileManager f_manager;
-    std::unordered_map<std::string, std::string> folders;
-    for (struct userFile* file : user->getFiles()) {
-        std::unordered_map<std::string,std::string>::const_iterator iterator = folders.find(file->path);
-        if (iterator != folders.end()) {
-            folders[file->path] += ", " + f_manager.loadFile(file->id);
-        } else {
-            folders[file->path] = f_manager.loadFile(file->id);
-        }
-    }
-
-    std::string result = "{ \"result\" : true , \"files\" : [ ";
-    int i = 0;
-    for (auto& folder: folders) {
-        if (i == 1) result += ", ";
-        result += "{ \"folderPath\" : \"" + folder.first + "\" , \"files\" : [ " + folder.second + " ] }";
-        i++;
-    }
-    result += " ] }";
-
-    delete user;
-    return result;
-}
-
-void UserManager::checkIfUserHasFilePermits(std::string email, int id) {
-    rocksdb::DB* db = openDatabase("En load user files");
-
-    User* user;
-    try {
-        user = User::load(db, email);
-    } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    delete db;
-
-    if (!user->hasFile(id)) {
-        delete user;
-        throw HasNoPermits();
-    }
-    delete user;
-}
-
-std::string UserManager::eraseFileFromUser(std::string email, int id) {
-    rocksdb::DB* db = openDatabase("En erase file from user");
-
-    User* user;
-    try {
-        user = User::load(db, email);
-        user->eraseFile(id);
-    } catch (std::exception& e) {
-        delete db;
-        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
-    }
-    try {
-        user->save(db);
-        if (user->isOwnerOfFile(id)) {
-            ; // TODO Eliminarlo de los demás a los que se lo compartí.
-        }
-    } catch (std::exception& e) {
-        delete user;
-        delete db;
+        if (folder != NULL) delete folder;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
 
-    delete db;
-
-    return "{ \"result\" : true }";
+    std::string content = folder->getContent();
+    delete folder;
+    return "{ \"result\" : true , \"content\" : " + content + " }";
 }

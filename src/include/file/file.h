@@ -1,7 +1,3 @@
-//
-// Created by luciano on 02/10/15.
-//
-
 #ifndef TALLER_FILE_H
 #define TALLER_FILE_H
 
@@ -13,9 +9,12 @@
 #include "json/json.h"
 #include "json/json-forwards.h"
 #include <iostream>
-#include "fileExceptions.h"
-#include "dbExceptions.h"
-#include "requestExceptions.h"
+#include "exceptions/fileExceptions.h"
+#include "exceptions/dbExceptions.h"
+#include "exceptions/userExceptions.h"
+#include "exceptions/requestExceptions.h"
+#include "searchInformation/searchInformation.h"
+#include "folder/folder.h"
 
 // Struct containing the metadata belonging to a file.
 struct metadata {
@@ -23,6 +22,7 @@ struct metadata {
     std::string name;
     std::string extension;
     std::string owner;
+    std::string ownerPath; // Path of file in owner's account.
     std::string lastModified;
     std::string lastUser; // Last user that modified the file.
     std::list<std::string>* tags;
@@ -37,10 +37,11 @@ class File {
 
     private:
         struct metadata* metadata;
+        std::list<std::string>* users;
 
-    private:
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
         std::string getKey(); // Returns key made from file metadata.
+        void deleteFromUser(rocksdb::DB* db, std::string email, std::string path);
 
     public:
         /* In the File constructor:
@@ -53,18 +54,28 @@ class File {
         void setName(std::string newName);
         void setExtension(std::string newExt);
         void setOwner(std::string newOwner);
+        void setOwnerPath(std::string newPath);
         void setLastModDate( );
         void setLastUser(std::string newLastUser);
         void setTag(std::string newTag);
         void setId(int id);
         void genId(rocksdb::DB* db); // ID to be generated when adding a new file.
-        std::string getId();
+        int getId();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata.
 
+        static File* load(rocksdb::DB* db, int id);
         void load(rocksdb::DB* db); // Loads the metadata from the db. Id needs to be set.
         void save(rocksdb::DB* db); // Saves the metadata to the db
+        //TODO save devuelve el número de la nueva versión.
+        void saveSearches(std::string user, std::string path, rocksdb::DB* db); // Saves tag, name, extension and owner information for future searches done by the user.
+        void changeSearchInformation(File* oldFile);
+
+        void checkIfUserHasPermits(std::string email);
+
+        void addSharedUser(std::string user);
+        void eraseFromUser(rocksdb::DB* db, std::string email, std::string path);
 
 };
 
