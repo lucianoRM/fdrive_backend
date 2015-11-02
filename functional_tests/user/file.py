@@ -83,7 +83,7 @@ class TestFile(unittest.TestCase):
 		}
 		r = requests.get("http://localhost:8000/files", params = payload)
 		self.assertFalse(r.json()["result"])
-		self.assertEqual(["The user has no permits for specified file."], r.json()["errors"])
+		self.assertEqual(["File not found"], r.json()["errors"])
 		self.assertEqual(2, len(r.json()))
 		
 	def test_get_file_not_authorized(self):

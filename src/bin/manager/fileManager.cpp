@@ -96,6 +96,7 @@ File* FileManager::openFile(int id) {
     try {
         file->load(db);
     } catch(std::exception& e) {
+        delete file;
         delete db;
         throw;
     }

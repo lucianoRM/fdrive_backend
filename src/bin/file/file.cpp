@@ -238,6 +238,7 @@ void File::changeSearchInformation(File* oldFile) {
 }
 
 void File::checkIfUserHasPermits(std::string email) {
+    if (this->metadata->owner.compare(email) == 0) return;
     for (std::string user : *users) {
         if (user.compare(email) == 0) return;
     }
