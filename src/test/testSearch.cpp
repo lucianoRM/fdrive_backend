@@ -20,7 +20,7 @@ rocksdb::DB* SEARCH_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "userTestDB", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, "searchTestDB", &db);
 
     //La db se abrio correctamente
     if (!status.ok()){
@@ -55,6 +55,7 @@ TEST(SearchTest, TagFileSearch) {
 
     File* file = generateNewFile(db);
     file->save(db);
+
     file->saveSearches("email", "root", db);
 
     std::string value;
@@ -90,7 +91,7 @@ TEST(SearchTest, OwnerFileSearch) {
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "searchowner.email.email", &value);
     Json::Reader reader;
     Json::Value jsonFiles;
-    ///std::cout << "Recibe: " << value << std::endl;
+
     if (! reader.parse(value, jsonFiles, false)) throw;
     Json::Value::iterator it = jsonFiles["files"].begin();
     int id = (*it)["id"].asInt();
@@ -145,7 +146,7 @@ TEST(SearchTest, ExtensionFileSearch) {
     file->saveSearches("email", "root", db);
 
     std::string value;
-    db->Get(rocksdb::ReadOptions(), "searchextension.email.doc", &value);
+    db->Get(rocksdb::ReadOptions(), "searchname.email.file1", &value);
     Json::Reader reader;
     Json::Value jsonFiles;
 
@@ -163,5 +164,47 @@ TEST(SearchTest, ExtensionFileSearch) {
     SEARCH_deleteDatabase();
 }
 
+TEST(SearchTest, TwoFilesWithSameOwner) {
+    rocksdb::DB* db = SEARCH_openDatabase();
+    if (! db) {
+        return;
+    }
 
+    File* file1 = generateNewFile(db);
+    file1->save(db);
+    file1->saveSearches("email", "root", db);
+
+    File* file2 = generateNewFile(db);
+    file2->save(db);
+    file2->saveSearches("email", "root/other", db);
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(), "searchname.email.file1", &value);
+    Json::Reader reader;
+    Json::Value jsonFiles;
+
+    if (! reader.parse(value, jsonFiles, false)) throw;
+
+    std::list<struct searchFile*>* files = new std::list<struct searchFile*>();
+    for (Json::Value::iterator it = jsonFiles["files"].begin(); it != jsonFiles["files"].end(); it++) {
+        struct searchFile* file = new searchFile;
+        file->id = (*it)["id"].asInt();
+        file->path = (*it)["path"].asString();
+        files->push_back(file);
+    }
+
+    searchFile* fileSearch1 = files->pop_front();
+    searchFile* fileSearch2 = files->pop_front();
+
+    EXPECT_EQ(0,fileSearch1->i);
+    EXPECT_EQ("root",fileSearch1->path);
+    EXPECT_EQ(1,fileSearch2->i);
+    EXPECT_EQ("root/other",fileSearch2->path);
+
+
+    delete db;
+    delete file1;
+    delete file2;
+    SEARCH_deleteDatabase();
+}
 

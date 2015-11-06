@@ -29,8 +29,8 @@ SearchInformation* SearchInformation::load(rocksdb::DB* db, std::string typeOfSe
         } else {
             for (Json::Value::iterator it = jsonFiles["files"].begin(); it != jsonFiles["files"].end(); it++) {
                 struct searchFile* file = new searchFile;
-                file->id = (*it).asInt();
-                file->path = (*it).asString();
+                file->id = (*it)["id"].asInt();
+                file->path = (*it)["path"].asString();
                 info->files->push_back(file);
             }
         }
