@@ -11,17 +11,27 @@
 #include "rocksdb/options.h"
 #include <string.h>
 #include <iostream>
-#include <file/file.h>
 #include <searchInformation/searchInformation.h>
+#include <file/file.h>
 
 #include "fileExceptions.h"
 
-TEST(SearchTest, NewFileSearch) {
-    rocksdb::DB* db = openDatabase();
-    if (! db) {
-        return;
+rocksdb::DB* openDatabaseSearch() {
+    rocksdb::DB* db;
+    rocksdb::Options options;
+    options.create_if_missing = true;
+    rocksdb::Status status = rocksdb::DB::Open(options, "userTestDB", &db);
+
+    //La db se abrio correctamente
+    if (!status.ok()){
+        std::cout << "Error DB:" << status.ToString() << std::endl;
+        return NULL;
     }
 
+    return db;
+}
+
+File* generateNewFile(rocksdb::DB* db) {
     File* file = new File();
     file->setName("file1");
     file->setExtension(".doc");
@@ -31,6 +41,17 @@ TEST(SearchTest, NewFileSearch) {
     file->setId(1);
     file->save(db);
     file->saveSearches("email", "root", db);
+
+    return file;
+}
+
+TEST(SearchTest, NewFileSearch) {
+    rocksdb::DB* db = openDatabaseSearch();
+    if (! db) {
+        return;
+    }
+
+    File* file = generateNewFile(db);
 
     std::string value;
     db->Get(rocksdb::ReadOptions(), "searchname.email.file1", &value);
@@ -50,3 +71,5 @@ TEST(SearchTest, NewFileSearch) {
     delete db;
     delete file;
 }
+
+
