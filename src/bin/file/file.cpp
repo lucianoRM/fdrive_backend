@@ -80,6 +80,7 @@ Json::Value File::getJson() {
     root["name"] = this->metadata->name;
     root["extension"]  = this->metadata->extension;
     root["owner"] = this->metadata->owner;
+    root["pathInOwner"] = this->metadata->ownerPath;
     root["id"] = this->metadata->id;
     root["lastModified"] = this->metadata->lastModified;
     root["lastUser"] = this->metadata->lastUser;
