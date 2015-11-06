@@ -16,7 +16,7 @@
 
 #include "fileExceptions.h"
 
-rocksdb::DB* openDatabaseSearch() {
+rocksdb::DB* SEARCH_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
@@ -31,6 +31,10 @@ rocksdb::DB* openDatabaseSearch() {
     return db;
 }
 
+void SEARCH_deleteDatabase() {
+    system("rm -rf userTestDB");
+}
+
 File* generateNewFile(rocksdb::DB* db) {
     File* file = new File();
     file->setName("file1");
@@ -38,7 +42,7 @@ File* generateNewFile(rocksdb::DB* db) {
     file->setOwner("email");
     file->setOwnerPath("root");
     file->setTag("tag");
-    file->setId(1);
+    file->genId(db);
     file->save(db);
     file->saveSearches("email", "root", db);
 
@@ -46,7 +50,7 @@ File* generateNewFile(rocksdb::DB* db) {
 }
 
 TEST(SearchTest, TagFileSearch) {
-    rocksdb::DB* db = openDatabaseSearch();
+    rocksdb::DB* db = SEARCH_openDatabase();
     if (! db) {
         return;
     }
@@ -64,17 +68,16 @@ TEST(SearchTest, TagFileSearch) {
     std::string path = (*it)["path"].asString();
 
 
-    EXPECT_EQ(1,id);
+    EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    db->Delete(rocksdb::WriteOptions(), "searchtag.email.tag");
-    db->Delete(rocksdb::WriteOptions(),"files.1");
     delete db;
     delete file;
+    SEARCH_deleteDatabase();
 }
 
 TEST(SearchTest, OwnerFileSearch) {
-    rocksdb::DB* db = openDatabaseSearch();
+    rocksdb::DB* db = SEARCH_openDatabase();
     if (! db) {
         return;
     }
@@ -82,27 +85,26 @@ TEST(SearchTest, OwnerFileSearch) {
     File* file = generateNewFile(db);
 
     std::string value;
-    db->Get(rocksdb::ReadOptions(), "searchowner.email.email", &value);
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "searchowner.email.email", &value);
     Json::Reader reader;
     Json::Value jsonFiles;
-
+    ///std::cout << "Recibe: " << value << std::endl;
     if (! reader.parse(value, jsonFiles, false)) throw;
     Json::Value::iterator it = jsonFiles["files"].begin();
     int id = (*it)["id"].asInt();
     std::string path = (*it)["path"].asString();
 
 
-    EXPECT_EQ(1,id);
+    EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    db->Delete(rocksdb::WriteOptions(), "searchowner.email.email");
-    db->Delete(rocksdb::WriteOptions(),"files.1");
     delete db;
     delete file;
+    SEARCH_deleteDatabase();
 }
 
 TEST(SearchTest, NameFileSearch) {
-    rocksdb::DB* db = openDatabaseSearch();
+    rocksdb::DB* db = SEARCH_openDatabase();
     if (! db) {
         return;
     }
@@ -120,17 +122,16 @@ TEST(SearchTest, NameFileSearch) {
     std::string path = (*it)["path"].asString();
 
 
-    EXPECT_EQ(1,id);
+    EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    db->Delete(rocksdb::WriteOptions(), "searchname.email.file1");
-    db->Delete(rocksdb::WriteOptions(),"files.1");
     delete db;
     delete file;
+    SEARCH_deleteDatabase();
 }
 
 TEST(SearchTest, ExtensionFileSearch) {
-    rocksdb::DB* db = openDatabaseSearch();
+    rocksdb::DB* db = SEARCH_openDatabase();
     if (! db) {
         return;
     }
@@ -148,13 +149,12 @@ TEST(SearchTest, ExtensionFileSearch) {
     std::string path = (*it)["path"].asString();
 
 
-    EXPECT_EQ(1,id);
+    EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    db->Delete(rocksdb::WriteOptions(), "searchextension.email.doc");
-    db->Delete(rocksdb::WriteOptions(),"files.1");
     delete db;
     delete file;
+    SEARCH_deleteDatabase();
 }
 
 
