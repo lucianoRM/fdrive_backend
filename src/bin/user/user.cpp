@@ -30,21 +30,7 @@ void User::deleteExpiredTokens(time_t* currTime) {
 }
 
 bool User::save(rocksdb::DB* db) {
-	Json::Value jsonTokens;
-	for (UserToken* oneToken : *this->tokens) {
-		jsonTokens.append(oneToken->serialize());
-	}
-
-	Json::StyledWriter writer;
-    Json::Value root;
-    root["email"] = this->email;
-    root["password"] = this->hashed_password;
-    root["quota"] = this->quota;
-    root["tokens"] = jsonTokens;
-    if (!name.empty()) root["name"] = this->name;
-    if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
-    if (!picture.empty()) root["pathToProfilePicture"] = this->picture;
-	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, writer.write(root));
+	rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "users."+this->email, this->getJson());
 	return (status.ok());
 }
 
@@ -141,6 +127,18 @@ void User::setPassword (std::string password) {
 	this->hashed_password = this->hashPassword(password);
 }
 
+void User::setName(std::string name) {
+	this->name = name;
+}
+
+void setLocation (std::string location) {
+    this->lastLocation = location;
+}
+
+void setProfilePicturePath(std::string path) {
+    this->picture = path;
+}
+
 std::string User::hashPassword (std::string password) {
 	unsigned char *out;
 	const char* pwd = password.c_str();
@@ -191,4 +189,22 @@ void User::checkToken(std::string token) {
 
 	throw NotLoggedInException();
 
+}
+
+std::string User::getJson() {
+    Json::Value jsonTokens;
+    for (UserToken* oneToken : *this->tokens) {
+        jsonTokens.append(oneToken->serialize());
+    }
+
+    Json::StyledWriter writer;
+    Json::Value root;
+    root["email"] = this->email;
+    root["password"] = this->hashed_password;
+    root["quota"] = this->quota;
+    root["tokens"] = jsonTokens;
+    if (!name.empty()) root["name"] = this->name;
+    if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
+    if (!picture.empty()) root["pathToProfilePicture"] = this->picture;
+    return writer.write(root);
 }
