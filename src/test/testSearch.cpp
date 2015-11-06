@@ -43,8 +43,6 @@ File* generateNewFile(rocksdb::DB* db) {
     file->setOwnerPath("root");
     file->setTag("tag");
     file->genId(db);
-    file->save(db);
-    file->saveSearches("email", "root", db);
 
     return file;
 }
@@ -56,6 +54,8 @@ TEST(SearchTest, TagFileSearch) {
     }
 
     File* file = generateNewFile(db);
+    file->save(db);
+    file->saveSearches("email", "root", db);
 
     std::string value;
     db->Get(rocksdb::ReadOptions(), "searchtag.email.tag", &value);
@@ -83,6 +83,8 @@ TEST(SearchTest, OwnerFileSearch) {
     }
 
     File* file = generateNewFile(db);
+    file->save(db);
+    file->saveSearches("email", "root", db);
 
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "searchowner.email.email", &value);
@@ -110,6 +112,8 @@ TEST(SearchTest, NameFileSearch) {
     }
 
     File* file = generateNewFile(db);
+    file->save(db);
+    file->saveSearches("email", "root", db);
 
     std::string value;
     db->Get(rocksdb::ReadOptions(), "searchname.email.file1", &value);
@@ -137,6 +141,8 @@ TEST(SearchTest, ExtensionFileSearch) {
     }
 
     File* file = generateNewFile(db);
+    file->save(db);
+    file->saveSearches("email", "root", db);
 
     std::string value;
     db->Get(rocksdb::ReadOptions(), "searchextension.email.doc", &value);
