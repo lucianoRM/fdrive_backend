@@ -11,7 +11,7 @@ FileManager::~FileManager() { }
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags) {
     rocksdb::DB* db = this->openDatabase("En SaveFile: ");
-    std::cout << "Abrí la base de datos en SaveFile." << std::endl;
+    ///std::cout << "Abrí la base de datos en SaveFile." << std::endl;
     File* file = new File();
     file->setName(name);
     file->setExtension(extension);
@@ -31,7 +31,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         delete file;
         if (folder != NULL) delete folder;
         delete db;
-        std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
+        ///std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
 
@@ -46,7 +46,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         delete file;
         delete folder;
         delete db;
-        std::cout << "ERROR2 pero cerré la base de datos en SaveFile." << std::endl;
+        ///std::cout << "ERROR2 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
 

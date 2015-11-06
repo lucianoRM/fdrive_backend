@@ -23,5 +23,11 @@ class TestSignup(unittest.TestCase):
 		r = requests.get("http://localhost:8000/users", params = payload)
 		self.assertEqual(False, r.json()["result"])
 
+	def test_add_user_bad_request(self):
+		payload = {"email": "testemail"}
+		r = requests.get("http://localhost:8000/users", params = payload)
+		self.assertEqual(False, r.json()["result"])
+		self.assertEquals(["Bad request"], r.json()["errors"]);
+
 if __name__ == '__main__':
     unittest.main()
