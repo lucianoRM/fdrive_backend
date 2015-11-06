@@ -13,6 +13,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
+	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
 }
 
 RequestHandler::~RequestHandler(){
@@ -21,12 +22,12 @@ RequestHandler::~RequestHandler(){
 	delete this->fileManager;
 }
 
-bool RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
+int RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
 	// Combine uri+request_method.
 	std::string uriPlusMethod = uri + ":" + request_method;
-
+	std::cout << uriPlusMethod << std::endl;
 	if (!this->codesMap->count(uriPlusMethod)) {
-		return false;
+		return -1;
 	}
 
 	int reqCode = codesMap->at(uriPlusMethod);
@@ -153,13 +154,66 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
 				result = this->userManager->loadUserFiles(std::string(cemail), std::string(cpath));
 				break;
 			}
+			case requestCodes::FILEUPLOAD_POST:
+			{
+				std::cout << "FILEUPLOAD" << std::endl;
+				/*FILE *fp = (FILE *) conn->connection_param;
+				if (fp != NULL) {
+					fwrite(conn->content, 1, conn->content_len, fp); // Write last bits
+					/*mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+									  "Content-Type: text/plain\r\n"
+									  "Connection: close\r\n\r\n"
+									  "Written %ld of POST data to a temp file:\n\n",
+							  (long) ftell(fp));*/
+
+					// Temp file will be destroyed after fclose(), do something with the
+					// data here -- for example, parse it and extract uploaded files.
+				/*
+					mg_printf_data(conn, "{ \"result\" : false }");
+
+					FILE* fout = fopen("output.txt", "w");
+					rewind(fp);
+					int c = fgetc (fp);
+					while (c >= 0) {
+						fputc (c, fout);
+						c = fgetc (fp);
+					}
+					fclose (fout);
+					std::cout << "COPIED" << std::endl;
+					fclose(fp);
+
+					// As an example, we just echo the whole POST buffer back to the client.
+					//mg_send_file_data(conn, fileno(fp));
+					return MG_TRUE;  // Tell Mongoose reply is not completed yet
+				} else {
+					mg_printf_data(conn, "%s", "Had no data to write...");
+					return MG_TRUE; // Tell Mongoose we're done with this request
+				}*/
+
+				const char *data;
+				int data_len, ofs = 0;
+				char var_name[100], file_name[100];
+
+				while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs,
+												 var_name, sizeof(var_name),
+												 file_name, sizeof(file_name),
+												 &data, &data_len)) > 0) {
+					FILE* fout = fopen(file_name, "w");
+					fwrite(data, data_len, 1, fout);
+					fclose(fout);
+				}
+
+				mg_printf_data(conn, "{ \"result\" : true }");
+
+				return MG_TRUE;
+			}
 			default:
-				return false;
+				return -1;
 		}
 		mg_printf_data(conn, result.c_str());
 
 	} catch (std::exception& e) {
 		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); // Even if there is an error, it should return true to close the connection.
 	}
-	return true;
+	return -2;
 }

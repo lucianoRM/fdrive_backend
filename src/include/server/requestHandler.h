@@ -10,7 +10,7 @@
 
 // Needed for switch case.
 enum requestCodes : int { USERS_POST = 1, LOGIN_GET, LOGOUT_GET,
-		SAVEFILE_POST, LOADFILE_GET, ERASEFILE_DELETE, LOADUSERFILES_GET };
+		SAVEFILE_POST, LOADFILE_GET, ERASEFILE_DELETE, LOADUSERFILES_GET, FILEUPLOAD_POST };
 
 // Class to manage the requests done by the user.
 
@@ -27,7 +27,7 @@ class RequestHandler {
 
 		// Returns true if was a valid request (no matter its result).
 		// False in other case.
-		bool handle(std::string uri, std::string request_method, struct mg_connection* conn);
+		int handle(std::string uri, std::string request_method, struct mg_connection* conn);
 };
 
 #endif /* REQHANDLER_H_ */
