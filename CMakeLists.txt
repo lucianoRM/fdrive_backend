@@ -196,6 +196,6 @@ set(SOURCE_FILES
     src/UserToken.h
     API.txt
     configuration_instructions.md
-    DBStructure.txt)
+    DBStructure.txt src/include/exceptions/folderExceptions.h)
 
 add_executable(fdrive_backend ${SOURCE_FILES})

@@ -35,6 +35,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/manager")
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/mongoose")
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/user")
+	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/searchInformation")
 
 
 

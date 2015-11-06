@@ -1,9 +1,9 @@
 Here we specify the structure of the DB. How are things stored and why.
 
-@files.
-    maxID -> id (int) //Stores maxid taken by a file in the db. Whenever a new file is added, this values should be incremented by one and give the new id to the new file.
+@files
+    files.maxID -> id (int) //Stores maxid taken by a file in the db. Whenever a new file is added, this values should be incremented by one and give the new id to the new file.
 
-    <id> -> Json with metadata: //Stores the metadata that belongs to the file with that id
+    files.<id> -> Json with metadata: //Stores the metadata that belongs to the file with that id
 				name
 				extension
 				lastVersion (int)
@@ -14,9 +14,10 @@ Here we specify the structure of the DB. How are things stored and why.
 										lastUser (last modifying user)	},
 							 "1" : ... 
 							}
+				usersSharedTo : [ "emailUser1", ... ]
 
-@users.
-    <email> -> Json with:
+@users
+    users.<email> -> Json with:
 				email
 				hashed password
 				name 					(optional)
@@ -29,6 +30,7 @@ Here we specify the structure of the DB. How are things stored and why.
 	<email>.<pathOfFolder> - > Json with internal folders (depth = 1) and files:
 								folders : ["folder1", ...]
 								files : [id1, ...]
+								filesNames : ["name.txt", ...]  // For checking repetition of complete name: name + extension.
 								//Not lastModified and lastUser because of complexity moving up between folders.
 	(For any user there will always be "<email>.root", "<email>.shared" and "<email>.trash".)
 		Example:
@@ -42,5 +44,5 @@ Here we specify the structure of the DB. How are things stored and why.
 @searches
 	searchtag.<email>.<tag> 			-> 
 	searchowner.<email>.<owner> 		-> 		Json with:
-	searchname.<email>.<name> 			-> 			[ {"id": <id>, "path": <path>} , ... ]
+	searchname.<email>.<name> 			-> 			{ "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
 	searchextension.<email>.<extension> -> 

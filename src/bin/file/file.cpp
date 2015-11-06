@@ -3,19 +3,17 @@
 File::File() {
     this->metadata = new struct metadata;
     this->metadata->id = -1;
-    this->metadata->extension = ".";
-    this->metadata->name = "";
     time_t currTime;
     time(&currTime);
     char* time = ctime(&currTime);
     time[strlen(time) - 1] = '\0'; // Removes \n at the end.
     this->metadata->lastModified = std::string(time);
-    this->metadata->lastUser = "";
-    this->metadata->owner = "";
-    this->metadata->tags = new std::list<std::string>;
+    this->metadata->tags = new std::list<std::string>();
+    this->users = new std::list<std::string>();
 }
 
 File::~File() {
+    delete this->users;
     delete this->metadata->tags;
     delete this->metadata;
 }
@@ -32,6 +30,10 @@ void File::setExtension(std::string newExt) {
 
 void File::setOwner(std::string newOwner) {
     this->metadata->owner = newOwner;
+}
+
+void File::setOwnerPath(std::string newPath) {
+    this->metadata->ownerPath = newPath;
 }
 
 void File::setLastModDate() {
@@ -69,8 +71,8 @@ std::string File::getKey() {
     return key;
 }
 
-std::string File::getId() {
-    return std::to_string(this->metadata->id);
+int File::getId() {
+    return this->metadata->id;
 }
 
 Json::Value File::getJson() {
@@ -82,9 +84,13 @@ Json::Value File::getJson() {
     root["lastModified"] = this->metadata->lastModified;
     root["lastUser"] = this->metadata->lastUser;
 
-    Json::Value tags;
+    Json::Value tags (Json::arrayValue);
     std::for_each(this->metadata->tags->begin(),this->metadata->tags->end(),[&tags](std::string &tag){tags.append(tag);});
     root["tags"] = tags;
+
+    Json::Value users (Json::arrayValue);
+    std::for_each(this->users->begin(),this->users->end(),[&users](std::string &user){users.append(user);});
+    root["users"] = users;
 
     return root;
 }
@@ -116,6 +122,18 @@ void File::genId(rocksdb::DB* db) {
     this->metadata->id = fileId;
 }
 
+File* File::load(rocksdb::DB* db, int id) {
+    File* file = new File();
+    file->setId(id);
+    try {
+        file->load(db);
+    } catch(std::exception& e) {
+        delete file;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed,
+    }
+    return file;
+}
+
 void File::load(rocksdb::DB* db) {
     int id = this->metadata->id;
     if (id < 0) throw FileNotFoundException(); //File id not set.
@@ -136,10 +154,15 @@ void File::load(rocksdb::DB* db) {
     this->metadata->extension = root["extension"].asString();
     this->metadata->lastUser = root["lastUser"].asString();
     this->metadata->name = root["name"].asString();
-    Json::Value tags = root["tags"];
 
-    for (Json::Value::iterator it = tags.begin(); it != tags.end();it++) {
+    Json::Value tags = root["tags"];
+    for (Json::Value::iterator it = tags.begin(); it != tags.end(); it++) {
         this->metadata->tags->push_back((*it).asString());
+    }
+
+    Json::Value users = root["users"];
+    for (Json::Value::iterator it = users.begin(); it != users.end(); it++) {
+        this->users->push_back((*it).asString());
     }
 }
 
@@ -160,7 +183,159 @@ void File::save(rocksdb::DB* db) {
 
     std::string json = writer.write(root);
 
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files."+std::to_string(fileId),json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files." + std::to_string(fileId), json);
 
-    if (! status.ok()) throw DBException();
+    if (!status.ok()) throw DBException();
+}
+
+void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
+    SearchInformation* owner = NULL;
+    try {
+        owner =  SearchInformation::load(db, "owner", user, this->metadata->owner);
+        owner->addFile(this->metadata->id, path);
+        owner->save(db);
+    } catch (std::exception& e) {
+        if (owner != NULL) delete owner;
+        throw;
+    }
+    delete owner;
+
+    SearchInformation* name = NULL;
+    try {
+        name = SearchInformation::load(db, "name", user, this->metadata->name);
+        name->addFile(this->metadata->id, path);
+        name->save(db);
+    } catch (std::exception& e) {
+        if (name != NULL) delete name;
+        throw;
+    }
+    delete name;
+
+
+    SearchInformation* extension = NULL;
+    try {
+        extension = SearchInformation::load(db, "extension", user, this->metadata->extension);
+        extension->addFile(this->metadata->id, path);
+        extension->save(db);
+    } catch (std::exception& e) {
+        if (extension != NULL) delete extension;
+        throw;
+    }
+    delete extension;
+
+    for (std::string tag : *(this->metadata->tags)) {
+        SearchInformation* tagInfo = NULL;
+        try {
+            tagInfo = SearchInformation::load(db, "tag", user, tag);
+            tagInfo->addFile(this->metadata->id, path);
+            tagInfo->save(db);
+        }  catch (std::exception& e) {
+            if (tagInfo != NULL) delete tagInfo;
+            throw;
+        }
+        delete tagInfo;
+    }
+}
+
+void File::changeSearchInformation(File* oldFile) {
+    //TODO ver diferencias de tags, name y extension para cambiarlos. (owner no se puede cambiar)
+}
+
+void File::checkIfUserHasPermits(std::string email) {
+    if (this->metadata->owner.compare(email) == 0) return;
+    for (std::string user : *users) {
+        if (user.compare(email) == 0) return;
+    }
+    throw HasNoPermits();
+}
+
+void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
+    if (user.compare(this->metadata->owner)) {
+        for (std::string sharedUser : *this->users) {
+            this->deleteFromUser(db, sharedUser, "shared");
+        }
+        this->deleteFromUser(db, user, path);
+        Folder* folder = NULL;
+        try {
+            folder = Folder::load(db, user, "trash");
+            folder->addFile(this->metadata->id, this->metadata->name + "." + this->metadata->extension);
+            folder->save(db);
+        } catch (std::exception& e) {
+            if (folder != NULL) delete folder;
+            throw;
+        }
+        delete folder;
+        this->users->clear();
+    } else {
+        this->deleteFromUser(db, user, "shared");
+        this->users->remove(user);
+    }
+}
+
+void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
+    SearchInformation* owner = NULL;
+    try {
+        owner =  SearchInformation::load(db, "owner", user, this->metadata->owner);
+        owner->eraseFile(this->metadata->id); //, path);
+        owner->save(db);
+    } catch (std::exception& e) {
+        if (owner != NULL) delete owner;
+        throw;
+    }
+    delete owner;
+
+    SearchInformation* name = NULL;
+    try {
+        name = SearchInformation::load(db, "name", user, this->metadata->name);
+        name->eraseFile(this->metadata->id); //, path);
+        name->save(db);
+    } catch (std::exception& e) {
+        if (name != NULL) delete name;
+        throw;
+    }
+    delete name;
+
+
+    SearchInformation* extension = NULL;
+    try {
+        extension = SearchInformation::load(db, "extension", user, this->metadata->extension);
+        extension->eraseFile(this->metadata->id); //, path);
+        extension->save(db);
+    } catch (std::exception& e) {
+        if (extension != NULL) delete extension;
+        throw;
+    }
+    delete extension;
+
+    for (std::string tag : *(this->metadata->tags)) {
+        SearchInformation* tagInfo = NULL;
+        try {
+            tagInfo = SearchInformation::load(db, "tag", user, tag);
+            tagInfo->eraseFile(this->metadata->id); //, path);
+            tagInfo->save(db);
+        } catch (std::exception& e) {
+            if (tagInfo != NULL) delete tagInfo;
+            throw;
+        }
+        delete tagInfo;
+    }
+
+    Folder* folder = NULL;
+    try {
+        folder = Folder::load(db, user, path);
+        folder->removeFile(this->metadata->id);
+        folder->save(db);
+    } catch (std::exception& e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+    delete folder;
+}
+
+void File::addSharedUser(std::string user) {
+    if (std::find(this->users->begin(), this->users->end(), user) != this->users->end()) {
+        throw UserAlreadyHasFileSharedException();
+    } else {
+        this->users->push_back(user);
+    }
 }

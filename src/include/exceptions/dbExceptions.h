@@ -1,7 +1,3 @@
-//
-// Created by luciano on 08/10/15.
-//
-
 #ifndef TALLER_DBEXCEPTIONS_H
 #define TALLER_DBEXCEPTIONS_H
 

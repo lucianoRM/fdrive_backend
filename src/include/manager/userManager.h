@@ -1,7 +1,3 @@
-//
-// Created by luciano on 29/09/15.
-//
-
 #include "mongoose.h"
 #include "user.h"
 #include <iostream>
@@ -29,11 +25,8 @@ class UserManager:public Manager {
         void checkIfLoggedIn(std::string email, std::string token);
         std::string loginUser(std::string email, std::string password);
         std::string logoutUser(std::string email, std::string token);
-        void addFileToUser(std::string email, int id);
-        void addFileToUserAsOwner(std::string email, int id, std::string path);
-        std::string loadUserFiles(std::string email);
+        std::string loadUserFiles(std::string email, std::string path);
         void checkIfUserHasFilePermits(std::string email, int id);
-        std::string eraseFileFromUser(std::string email, int id);
 };
 
 #endif //TALLER_USERMANAGER_H

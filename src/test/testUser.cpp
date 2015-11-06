@@ -5,7 +5,8 @@
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
 #include <string.h>
-#include "UserException.h"
+#include <iostream>
+#include "userExceptions.h"
 #include "folderExceptions.h"
 #include "fileExceptions.h"
 #include "googletest/include/gtest/internal/gtest-internal.h"
@@ -231,91 +232,15 @@ TEST(TokensTest, CheckLastOfManyTokens) {
     delete user;
 }
 
-TEST(FilesTest, HasFileWhenFalse) {
-    User* user = new User();
-    user->setEmail("a");
-    EXPECT_FALSE(user->hasFile(1));
-    delete user;
-}
-
-TEST(FilesTest, HasFileWhenOwnerTrue) {
-    User* user = new User();
-    user->setEmail("a");
-    user->addFile(1, "root");
-    EXPECT_TRUE(user->hasFile(1));
-    delete user;
-}
-
-TEST(FilesTest, HasFileWhenSharedTrue) {
-    User* user = new User();
-    user->setEmail("a");
-    user->addSharedFile(1);
-    EXPECT_TRUE(user->hasFile(1));
-    delete user;
-}
-
-TEST(FilesTest, AddNewFileAndSaveInDatabase) {
-    rocksdb::DB* db = openDatabase();
-    if (! db) {
-        return;
-    }
-    User* user = new User();
-    user->setEmail("a");
-    user->addFile(1, "root");
-    user->save(db);
-    delete user;
-
-    user = User::load(db, "a");
-    EXPECT_TRUE(user->hasFile(1));
-    delete user;
-
-    delete db;
-}
-
-TEST(FilesTest, AddNewSharedFileAndSaveInDatabase) {
-    rocksdb::DB* db = openDatabase();
-    if (! db) {
-        return;
-    }
-    User* user = new User();
-    user->setEmail("a");
-    user->addSharedFile(1);
-    user->save(db);
-    delete user;
-
-    user = User::load(db, "a");
-    EXPECT_TRUE(user->hasFile(1));
-    delete user;
-
-    delete db;
-}
-
-TEST(FilesTest, AskForFileWhenFalseInDatabase) {
-    rocksdb::DB* db = openDatabase();
-    if (! db) {
-        return;
-    }
-    User* user = new User();
-    user->setEmail("a");
-    user->save(db);
-    delete user;
-
-    user = User::load(db, "a");
-    EXPECT_FALSE(user->hasFile(1));
-    delete user;
-
-    delete db;
-}
-
 std::string getEmptyJson() {
     Json::Value root;
     Json::StyledWriter writer;
 
-    Json::Value folders;
-    Json::Value files;
+    Json::Value folders (Json::arrayValue);
+    Json::Value files (Json::arrayValue);
 
-    root["folders"] = "";
-    root["files"] = "";
+    root["folders"] = folders;
+    root["files"] = files;
     std::string json = writer.write(root);
 
     return json;
@@ -330,9 +255,8 @@ TEST(FolderTest, SavedFile) {
     std::string json = getEmptyJson();
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
-    Folder* folder = new Folder();
-    folder->load(db,"email","root");
-    folder->addFile("id1","file1");
+    Folder* folder = Folder::load(db,"email","root");
+    folder->addFile(1,"file1");
     folder->save(db);
 
     Json::Reader reader;
@@ -343,12 +267,10 @@ TEST(FolderTest, SavedFile) {
     if (! reader.parse(value,root,false)) throw;
     Json::Value files = root["files"];
 
-    std::string file;
-    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
-        file = (*it).asString();
-    }
+    Json::Value::iterator it = files.begin();
+    int file = (*it).asInt();
 
-    EXPECT_EQ("id1", file);
+    EXPECT_EQ(1, file);
 
     db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
@@ -364,8 +286,7 @@ TEST(FolderTest, SavedFolder) {
     std::string json = getEmptyJson();
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
-    Folder* folder = new Folder();
-    folder->load(db,"email","root");
+    Folder* folder = Folder::load(db,"email","root");
     folder->addFolder("folder1");
     folder->save(db);
 
@@ -375,12 +296,10 @@ TEST(FolderTest, SavedFolder) {
     std::string value;
     db->Get(rocksdb::ReadOptions(),"email.root",&value);
     if (! reader.parse(value,root,false)) throw;
-    Json::Value folders = root["folders"];
 
-    std::string folderInside;
-    for (Json::Value::iterator it = folders.begin(); it != folders.end();it++) {
-        folderInside = (*it).asString();
-    }
+    Json::Value folders = root["folders"];
+    Json::Value::iterator it = folders.begin();
+    std::string folderInside = (*it).asString();
 
     EXPECT_EQ("folder1", folderInside);
 
@@ -398,13 +317,12 @@ TEST(FolderTest, AlreadyExistentFile) {
     std::string json = getEmptyJson();
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
-    Folder* folder = new Folder();
-    folder->load(db,"email","root");
-    folder->addFile("id1","file1");
+    Folder* folder = Folder::load(db,"email","root");
+    folder->addFile(1,"file1");
     folder->save(db);
 
 
-    EXPECT_THROW(folder->addFile("id2","file1"),FilenameTakenException);
+    EXPECT_THROW(folder->addFile(2,"file1"),FilenameTakenException);
 
     db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
@@ -420,8 +338,7 @@ TEST(FolderTest, AlreadyExistentFolder) {
     std::string json = getEmptyJson();
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
-    Folder* folder = new Folder();
-    folder->load(db,"email","root");
+    Folder* folder = Folder::load(db,"email","root");
     folder->addFolder("folder");
     folder->save(db);
 

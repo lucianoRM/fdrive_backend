@@ -8,8 +8,6 @@
 #include <iostream>
 #include <exception>
 
-// Classes to represent the Exceptions related to Files.
-
 class FolderException: public std::exception {
 
     virtual const char* what() const throw() {
@@ -22,8 +20,43 @@ class AlreadyExistentFolderException: public FolderException {
 
     virtual const char* what() const throw() {
         return "Folder name already existent in current path";
+	}
+
+};
+
+
+class FolderNotFound: public std::exception {
+
+    virtual const char* what() const throw() {
+        return "Folder nor found";
     }
 
 };
+
+class FilenameTakenException: public FolderException {
+
+    virtual const char* what() const throw() {
+        return "File name already taken";
+    }
+
+};
+
+class FileAlreadyInFolderException: public FolderException {
+
+    virtual const char* what() const throw() {
+        return "File already in folder";
+    }
+
+};
+
+class FileNotInFolderException: public FolderException {
+
+    virtual const char* what() const throw() {
+        return "File not in folder";
+
+    }
+
+};
+
 
 #endif //FDRIVE_FOLDEREXCEPTIONS_H
