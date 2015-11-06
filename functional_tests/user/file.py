@@ -36,9 +36,9 @@ class TestFile(unittest.TestCase):
 
 	def test_save_new_file_then_get(self):
 		token = self._signup_and_login()
-
+		#print "Voy a guardar el archivo."
 		fileid = self._save_new_file(token)
-		
+		#print "Voy a pedir el archivo."
 		payload = {
 			"email":		"testemail",
 			"token":		token,

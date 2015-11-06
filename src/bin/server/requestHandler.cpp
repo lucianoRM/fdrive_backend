@@ -73,7 +73,7 @@ bool RequestHandler::handle(std::string uri, std::string request_method, struct 
                 int id;
                 std::string email, token, name, extension, path;
 
-                if (root["id"].isNull()) {
+                if (!root.isMember("id")) {
                     id = -1;
 				} else {
                     id = root["id"].asInt();
