@@ -45,7 +45,35 @@ File* generateNewFile(rocksdb::DB* db) {
     return file;
 }
 
-TEST(SearchTest, NewFileSearch) {
+TEST(SearchTest, TagFileSearch) {
+    rocksdb::DB* db = openDatabaseSearch();
+    if (! db) {
+        return;
+    }
+
+    File* file = generateNewFile(db);
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(), "searchtag.email.tag", &value);
+    Json::Reader reader;
+    Json::Value jsonFiles;
+
+    if (! reader.parse(value, jsonFiles, false)) throw;
+    Json::Value::iterator it = jsonFiles["files"].begin();
+    int id = (*it)["id"].asInt();
+    std::string path = (*it)["path"].asString();
+
+
+    EXPECT_EQ(1,id);
+    EXPECT_EQ("root",path);
+
+    db->Delete(rocksdb::WriteOptions(), "searchtag.email.tag");
+    db->Delete(rocksdb::WriteOptions(),"files.1");
+    delete db;
+    delete file;
+}
+
+TEST(SearchTest, NameFileSearch) {
     rocksdb::DB* db = openDatabaseSearch();
     if (! db) {
         return;
@@ -68,6 +96,7 @@ TEST(SearchTest, NewFileSearch) {
     EXPECT_EQ("root",path);
 
     db->Delete(rocksdb::WriteOptions(), "searchname.email.file1");
+    db->Delete(rocksdb::WriteOptions(),"files.1");
     delete db;
     delete file;
 }
