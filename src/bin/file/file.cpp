@@ -80,6 +80,7 @@ Json::Value File::getJson() {
     root["name"] = this->metadata->name;
     root["extension"]  = this->metadata->extension;
     root["owner"] = this->metadata->owner;
+    root["pathInOwner"] = this->metadata->ownerPath;
     root["id"] = this->metadata->id;
     root["lastModified"] = this->metadata->lastModified;
     root["lastUser"] = this->metadata->lastUser;
@@ -150,6 +151,7 @@ void File::load(rocksdb::DB* db) {
 
     // Load metadata into file.
     this->metadata->owner = root["owner"].asString();
+    this->metadata->ownerPath = root["pathInOwner"].asString();
     this->metadata->lastModified = root["lastModified"].asString();
     this->metadata->extension = root["extension"].asString();
     this->metadata->lastUser = root["lastUser"].asString();

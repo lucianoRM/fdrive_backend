@@ -1,4 +1,5 @@
 #include "requestHandler.h"
+#include <cstring>
 
 RequestHandler::RequestHandler() {
 
@@ -39,6 +40,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "password", cpassword, sizeof(cpassword));
+				if (strlen(cemail) == 0) throw RequestException();
+				if (strlen(cpassword) == 0) throw RequestException();
 
 				result = this->userManager->addUser(std::string(cemail), std::string(cpassword));
 				break;
@@ -47,6 +50,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "password", cpassword, sizeof(cpassword));
+                if (strlen(cemail) == 0) throw RequestException();
+                if (strlen(cpassword) == 0) throw RequestException();
 
 				result = this->userManager->loginUser(std::string(cemail), std::string(cpassword));
 				break;
@@ -55,6 +60,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+                if (strlen(cemail) == 0) throw RequestException();
+                if (strlen(ctoken) == 0) throw RequestException();
 
 				result = this->userManager->logoutUser(std::string(cemail), std::string(ctoken));
 				break;
@@ -106,14 +113,17 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], id[100];
+				char cemail[100], ctoken[100], cid[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
-				mg_get_var(conn, "id", id, sizeof(id));
+				mg_get_var(conn, "id", cid, sizeof(cid));
+                if (strlen(cemail) == 0) throw RequestException();
+                if (strlen(ctoken) == 0) throw RequestException();
+                if (strlen(cid) == 0) throw RequestException();
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				this->fileManager->checkIfUserHasFilePermits(atoi(id), std::string(cemail));
-				result = this->fileManager->loadFile(atoi(id));
+				this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+				result = this->fileManager->loadFile(atoi(cid));
 				break;
 			}
 			case requestCodes::ERASEFILE_DELETE:
@@ -149,6 +159,9 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "path", cpath, sizeof(cpath));
+                if (strlen(cemail) == 0) throw RequestException();
+                if (strlen(ctoken) == 0) throw RequestException();
+                if (strlen(cpath) == 0) throw RequestException();
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->userManager->loadUserFiles(std::string(cemail), std::string(cpath));

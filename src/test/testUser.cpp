@@ -13,7 +13,7 @@
 #include "googletest/include/gtest/internal/gtest-port.h"
 #include "googletest/include/gtest/gtest_pred_impl.h"
 
-rocksdb::DB* openDatabase() {
+rocksdb::DB* USER_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
@@ -28,8 +28,12 @@ rocksdb::DB* openDatabase() {
     return db;
 }
 
+void USER_deleteDatabase() {
+    system("rm -rf userTestDB");
+}
+
 TEST(HashedPasswordTest, HashedPassword) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
     return;
     }
@@ -38,13 +42,13 @@ TEST(HashedPasswordTest, HashedPassword) {
 
     EXPECT_EQ("0c60c80f961f0e71f3a9b524af6012062fe037a6", user->hashPassword("password"));
 
-    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
 TEST(SignUpTest, SignupAvailableEmail) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -54,13 +58,13 @@ TEST(SignUpTest, SignupAvailableEmail) {
 
     EXPECT_NO_THROW(user->signup(db));
 
-    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
-TEST(SignUpTest, SignupTakenEmail){
-    rocksdb::DB* db = openDatabase();
+TEST(SignUpTest, SignupTakenEmail) {
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -75,15 +79,14 @@ TEST(SignUpTest, SignupTakenEmail){
     user2->setPassword("password");
     EXPECT_THROW(user2->signup(db), AlreadyExistentUserException);
 
-    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
-
     delete db;
     delete user;
     delete user2;
+    USER_deleteDatabase();
 }
 
-TEST(SignInTest, SignInExisting){
-    rocksdb::DB* db = openDatabase();
+TEST(LogInTest, LogInExisting) {
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -96,31 +99,28 @@ TEST(SignInTest, SignInExisting){
 
     EXPECT_NO_THROW(user = User::load(db, "emailTest"));
     EXPECT_TRUE(user->login(std::string("password")));
-    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
 
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
-TEST(SignInTest, SignInNonExisting){
-    rocksdb::DB* db = openDatabase();
+TEST(LogInTest, LogInNonExisting) {
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
 
-    User* user;
+    User* user = NULL;
 
     EXPECT_THROW(user = User::load(db, "emailTest"), NonExistentUserException);
 
     delete db;
+    USER_deleteDatabase();
 }
 
-TEST(SignInTest, SignInWrongPassword) {
-    rocksdb::DB* db = openDatabase();
-    if (! db) {
-        return;
-    }
-
+TEST(LogInTest, LogInWrongPassword) {
+    rocksdb::DB* db = USER_openDatabase();
     User* user = new User();
     user->setEmail("emailTest");
     user->setPassword("password");
@@ -130,13 +130,36 @@ TEST(SignInTest, SignInWrongPassword) {
     user = User::load(db, "emailTest");
     EXPECT_FALSE(user->login(std::string("wrongpassword")));
 
-    db->Delete(rocksdb::WriteOptions(), "users.emailTest");
     delete db;
     delete user;
+    USER_deleteDatabase();
+}
+
+TEST(LogOutTest, CorrectLogOutLeavesTokenInvalid) {
+    rocksdb::DB* db = USER_openDatabase();
+    
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    user = User::load(db, "emailTest");
+    user->login(std::string("password"));
+    std::string token = user->getNewToken(db);
+    delete user;
+    user = User::load(db, "emailTest");
+    EXPECT_TRUE(user->logout(db, token));
+    delete user;
+    user = User::load(db, "emailTest");
+    EXPECT_THROW(user->checkToken(token), NotLoggedInException);
+
+    delete db;
+    delete user;
+    USER_deleteDatabase();
 }
 
 TEST(TokensTest, DeleteExpiredTokens) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -158,10 +181,11 @@ TEST(TokensTest, DeleteExpiredTokens) {
     EXPECT_THROW(user->checkToken(token), NotLoggedInException);
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
 TEST(TokensTest, GetTwoDifferentTokens) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -172,10 +196,11 @@ TEST(TokensTest, GetTwoDifferentTokens) {
     EXPECT_NE(token1, token2);
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
 TEST(TokensTest, CheckExistingToken) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -188,10 +213,11 @@ TEST(TokensTest, CheckExistingToken) {
 
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
 TEST(TokensTest, CheckFirstOfManyTokens) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -209,10 +235,11 @@ TEST(TokensTest, CheckFirstOfManyTokens) {
 
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
 
 TEST(TokensTest, CheckLastOfManyTokens) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -230,7 +257,159 @@ TEST(TokensTest, CheckLastOfManyTokens) {
 
     delete db;
     delete user;
+    USER_deleteDatabase();
 }
+
+
+TEST(LogOutTest, LogOutWithoutLogInFails) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    user = User::load(db, "emailTest");
+    EXPECT_FALSE(user->logout(db, std::string("token")));
+
+    delete db;
+    delete user;
+    USER_deleteDatabase();
+}
+
+TEST(LogOutTest, LogOutWithWrongTokenFails) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    user = User::load(db, "emailTest");
+    user->login(std::string("password"));
+    std::string token = user->getNewToken(db);
+    delete user;
+    std::string wrongToken = token + "WRONG";
+    user = User::load(db, "emailTest");
+    EXPECT_FALSE(user->logout(db, wrongToken));
+    delete user;
+    user = User::load(db, "emailTest");
+    EXPECT_NO_THROW(user->checkToken(token));
+
+    delete db;
+    delete user;
+    USER_deleteDatabase();
+}
+
+TEST(NameTest, NoNameInDatabaseAtStart) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    EXPECT_FALSE(json.find("name") != std::string::npos);
+    delete db;
+    USER_deleteDatabase();
+}
+
+TEST(NameTest, AddedNameToDatabase) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->setName("Nombre De Usuario");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    Json::Reader reader;
+    Json::Value root;
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Nombre De Usuario", root["name"].asString());
+
+    delete db;
+    USER_deleteDatabase();
+}
+
+
+TEST(LocationTest, NoLastLocationInDatabaseAtStart) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    EXPECT_FALSE(json.find("lastLocation") != std::string::npos);
+    delete db;
+    USER_deleteDatabase();
+}
+
+TEST(LocationTest, AddedLocationToDatabase) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->setLocation("Location");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    Json::Reader reader;
+    Json::Value root;
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Location", root["lastLocation"].asString());
+
+    delete db;
+    USER_deleteDatabase();
+}
+
+
+TEST(ProfilePictureTest, NoPictureInDatabaseAtStart) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    EXPECT_FALSE(json.find("pathToProfilePicture") != std::string::npos);
+    delete db;
+    USER_deleteDatabase();
+}
+
+TEST(ProfilePictureTest, AddedPictureToDatabase) {
+    rocksdb::DB* db = USER_openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->setProfilePicturePath("Picture Path");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    Json::Reader reader;
+    Json::Value root;
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Picture Path", root["pathToProfilePicture"].asString());
+
+    delete db;
+    USER_deleteDatabase();
+}
+
+
+
 
 std::string getEmptyJson() {
     Json::Value root;
@@ -247,7 +426,7 @@ std::string getEmptyJson() {
 }
 
 TEST(FolderTest, SavedFile) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -272,13 +451,13 @@ TEST(FolderTest, SavedFile) {
 
     EXPECT_EQ(1, file);
 
-    db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
     delete folder;
+    USER_deleteDatabase();
 }
 
 TEST(FolderTest, SavedFolder) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -303,13 +482,13 @@ TEST(FolderTest, SavedFolder) {
 
     EXPECT_EQ("folder1", folderInside);
 
-    db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
     delete folder;
+    USER_deleteDatabase();
 }
 
 TEST(FolderTest, AlreadyExistentFile) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -324,13 +503,13 @@ TEST(FolderTest, AlreadyExistentFile) {
 
     EXPECT_THROW(folder->addFile(2,"file1"),FilenameTakenException);
 
-    db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
     delete folder;
+    USER_deleteDatabase();
 }
 
 TEST(FolderTest, AlreadyExistentFolder) {
-    rocksdb::DB* db = openDatabase();
+    rocksdb::DB* db = USER_openDatabase();
     if (! db) {
         return;
     }
@@ -344,8 +523,8 @@ TEST(FolderTest, AlreadyExistentFolder) {
 
     EXPECT_THROW(folder->addFolder("folder"),AlreadyExistentFolderException);
 
-    db->Delete(rocksdb::WriteOptions(), "email.root");
     delete db;
     delete folder;
+    USER_deleteDatabase();
 }
 

@@ -41,6 +41,9 @@ class User {
         // SETTERS.
         void setEmail (std::string email);
         void setPassword (std::string password);
+        void setName (std::string name);
+        void setLocation (std::string location);
+        void setProfilePicturePath(std::string path);
 
         // Methods related to logging.
         void signup(rocksdb::DB* db);
@@ -55,6 +58,9 @@ class User {
         // Methods for loading and saving changes in the database.
         static User* load(rocksdb::DB* db, std::string email);
         bool save(rocksdb::DB* db);
+
+        // Method for obtaining Json information of the user
+        std::string getJson();
 };
 
 #endif //FDRIVE_BACKEND_USER_H
