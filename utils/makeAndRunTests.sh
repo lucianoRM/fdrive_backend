@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")/../"
-compilationResult=$(utils/compileServer.sh $1)
+utils/compileServer.sh $1
+compilationResult=$?
 
 if [ $compilationResult -ne 0 ]
 then

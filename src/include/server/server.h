@@ -45,6 +45,9 @@ class Server {
 		void copyListeners(Server* server0);
 
 		static int eventHandler(struct mg_connection *conn, enum mg_event ev);
+
+		static int handle_recv(struct mg_connection *conn);
+		static int handle_close(struct mg_connection *conn);
 };
 
 #endif /* SERVER_H_ */

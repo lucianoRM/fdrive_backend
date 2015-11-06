@@ -63,7 +63,7 @@ class File {
         int getId();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
-        Json::Value getJson(); // Returns Json value made from file metadata.
+        Json::Value getJson(); // Returns Json value made from file metadata and users.
 
         static File* load(rocksdb::DB* db, int id);
         void load(rocksdb::DB* db); // Loads the metadata from the db. Id needs to be set.
