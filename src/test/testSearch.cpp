@@ -34,7 +34,7 @@ rocksdb::DB* openDatabaseSearch() {
 File* generateNewFile(rocksdb::DB* db) {
     File* file = new File();
     file->setName("file1");
-    file->setExtension(".doc");
+    file->setExtension("doc");
     file->setOwner("email");
     file->setOwnerPath("root");
     file->setTag("tag");
@@ -129,6 +129,33 @@ TEST(SearchTest, NameFileSearch) {
     delete file;
 }
 
+TEST(SearchTest, ExtensionFileSearch) {
+    rocksdb::DB* db = openDatabaseSearch();
+    if (! db) {
+        return;
+    }
+
+    File* file = generateNewFile(db);
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(), "searchextension.email.doc", &value);
+    Json::Reader reader;
+    Json::Value jsonFiles;
+
+    if (! reader.parse(value, jsonFiles, false)) throw;
+    Json::Value::iterator it = jsonFiles["files"].begin();
+    int id = (*it)["id"].asInt();
+    std::string path = (*it)["path"].asString();
+
+
+    EXPECT_EQ(1,id);
+    EXPECT_EQ("root",path);
+
+    db->Delete(rocksdb::WriteOptions(), "searchextension.email.doc");
+    db->Delete(rocksdb::WriteOptions(),"files.1");
+    delete db;
+    delete file;
+}
 
 
 
