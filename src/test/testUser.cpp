@@ -337,7 +337,76 @@ TEST(NameTest, AddedNameToDatabase) {
 }
 
 
+TEST(LocationTest, NoLastLocationInDatabaseAtStart) {
+    rocksdb::DB* db = openDatabase();
 
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    EXPECT_FALSE(json.find("lastLocation") != std::string::npos);
+    delete db;
+    deleteDatabase();
+}
+
+TEST(LocationTest, AddedLocationToDatabase) {
+    rocksdb::DB* db = openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->setLocation("Location");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    Json::Reader reader;
+    Json::Value root;
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Location", root["lastLocation"].asString());
+
+    delete db;
+    deleteDatabase();
+}
+
+
+TEST(ProfilePictureTest, NoPictureInDatabaseAtStart) {
+    rocksdb::DB* db = openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    EXPECT_FALSE(json.find("pathToProfilePicture") != std::string::npos);
+    delete db;
+    deleteDatabase();
+}
+
+TEST(ProfilePictureTest, AddedPictureToDatabase) {
+    rocksdb::DB* db = openDatabase();
+
+    User* user = new User();
+    user->setEmail("emailTest");
+    user->setPassword("password");
+    user->setProfilePicturePath("Picture Path");
+    user->signup(db);
+    delete user;
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &json);
+    Json::Reader reader;
+    Json::Value root;
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Picture Path", root["pathToProfilePicture"].asString());
+
+    delete db;
+    deleteDatabase();
+}
 
 
 
