@@ -131,11 +131,11 @@ void User::setName(std::string name) {
 	this->name = name;
 }
 
-void setLocation (std::string location) {
+void User::setLocation (std::string location) {
     this->lastLocation = location;
 }
 
-void setProfilePicturePath(std::string path) {
+void User::setProfilePicturePath(std::string path) {
     this->picture = path;
 }
 
