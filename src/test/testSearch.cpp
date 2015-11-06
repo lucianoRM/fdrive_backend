@@ -32,7 +32,7 @@ rocksdb::DB* SEARCH_openDatabase() {
 }
 
 void SEARCH_deleteDatabase() {
-    system("rm -rf userTestDB");
+    system("rm -rf searchTestDB");
 }
 
 File* generateNewFile(rocksdb::DB* db) {
@@ -193,12 +193,12 @@ TEST(SearchTest, TwoFilesWithSameOwner) {
         files->push_back(file);
     }
 
-    searchFile* fileSearch1 = files->pop_front();
-    searchFile* fileSearch2 = files->pop_front();
+    struct searchFile* fileSearch1 = files->front();files->pop_front();
+    struct searchFile* fileSearch2 = files->front();
 
-    EXPECT_EQ(0,fileSearch1->i);
+    EXPECT_EQ(0,fileSearch1->id);
     EXPECT_EQ("root",fileSearch1->path);
-    EXPECT_EQ(1,fileSearch2->i);
+    EXPECT_EQ(1,fileSearch2->id);
     EXPECT_EQ("root/other",fileSearch2->path);
 
 
