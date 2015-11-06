@@ -151,6 +151,7 @@ void File::load(rocksdb::DB* db) {
 
     // Load metadata into file.
     this->metadata->owner = root["owner"].asString();
+    this->metadata->ownerPath = root["pathInOwner"].asString();
     this->metadata->lastModified = root["lastModified"].asString();
     this->metadata->extension = root["extension"].asString();
     this->metadata->lastUser = root["lastUser"].asString();

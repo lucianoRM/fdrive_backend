@@ -49,13 +49,40 @@ TEST(FileCreationTest, CreateFileWithBasicInformation) {
     EXPECT_EQ("root", root["pathInOwner"].asString());
     EXPECT_EQ("OtherUser", root["lastUser"].asString());
     EXPECT_TRUE(root.isMember("lastModified")); //Deberíamos chequear también el valor.
+    EXPECT_TRUE(root.isMember("users"));
+
+    delete db;
+    FILE_deleteDatabase();
+}
+
+TEST(FileCreationTest, LoadFile) {
+    rocksdb::DB* db = FILE_openDatabase();
+
+    File* file = new File();
+    file->genId(db);
+    file->setName("Nombre");
+    file->setExtension("ext");
+    file->setOwner("Owner");
+    file->setOwnerPath("root");
+    file->setLastUser("OtherUser");
+    file->save(db);
+    delete file;
+    file = File::load(db, 0);
+    Json::Value json = file->getJson();
+    EXPECT_EQ("Nombre", json["name"].asString());
+    EXPECT_EQ("ext", json["extension"].asString());
+    EXPECT_EQ("Owner", json["owner"].asString());
+    EXPECT_EQ("root", json["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser", json["lastUser"].asString());
+    EXPECT_TRUE(json.isMember("lastModified")); //Deberíamos chequear también el valor.
+    EXPECT_TRUE(json.isMember("users"));
 
     delete db;
     FILE_deleteDatabase();
 }
 
 
-TEST(IdGeneration, GeneratingFromFile) {
+TEST(IdGenerationTest, GeneratingFromFile) {
     rocksdb::DB* db = FILE_openDatabase();
 
     File* file = new File();
@@ -73,7 +100,7 @@ TEST(IdGeneration, GeneratingFromFile) {
     FILE_deleteDatabase();
 }
 
-TEST(IdGeneration, TouchingDatabase) {
+TEST(IdGenerationTest, TouchingDatabase) {
     rocksdb::DB* db = FILE_openDatabase();
 
     File* file = new File();
