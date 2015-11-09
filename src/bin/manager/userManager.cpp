@@ -141,6 +141,21 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
 }
 
 std::string UserManager::getUsers(std::string email) {
-    //TODO
-    return "";
+    rocksdb::DB* db = openDatabase("En getUsers");
+
+    std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
+    Json::Reader reader;
+    Json::Value root;
+    if (!reader.parse(value, root, false)) {
+        std::cout << "Json no pudo parsear los users en GetUsers." << std::endl;
+        throw DBException();
+    }
+    Json::Value otherUsers(Json::arrayValue);
+    for (Json::ValueIterator it = root["users"].begin(); it != root["users"].end();it++ ) {
+        if ((*it).asString().compare(email) != 0)
+            otherUsers.append((*it).asString());
+    }
+    Json::StyledWriter writer;
+    return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
 }

@@ -25,10 +25,14 @@ class User {
         std::string picture;    // Path to the profile picture.
         int quota;  // In MB.
         std::vector<UserToken*>* tokens;
+
         bool checkIfExisting(rocksdb::DB* db, std::string* value);
         bool checkPassword(std::string password);
         bool setFileStructure(rocksdb::DB* db);
         std::string getJsonFileStructure();
+        bool saveInUsers(rocksdb::DB* db);
+        bool deleteFromUsers(rocksdb::DB* db);
+
 
     public:
         User();

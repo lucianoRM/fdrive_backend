@@ -17,6 +17,9 @@ Here we specify the structure of the DB. How are things stored and why.
 				usersSharedTo : [ "emailUser1", ... ]
 
 @users
+
+	users -> Json with and array of users (emails).
+
     users.<email> -> Json with:
 				email
 				hashed password

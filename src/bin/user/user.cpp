@@ -62,11 +62,58 @@ bool User::setFileStructure(rocksdb::DB *db) {
 	return ok & status.ok();
 }
 
+bool User::saveInUsers(rocksdb::DB* db) {
+	std::string value;
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
+	if (status.IsNotFound()) {
+		value = "{ \"users\" : [ \"" + this->email + "\" ] }";
+	} else {
+		Json::Reader reader;
+        Json::Value root;
+        if (!reader.parse(value, root, false)) {
+            std::cout << "Json no pudo parsear los users en SaveInUsers: " << value << std::endl;
+            return false;
+        }
+        root["users"].append("\"" + this->email + "\"");
+        Json::StyledWriter writer;
+        value = writer.write(root);
+	}
+    status = db->Put(rocksdb::WriteOptions(), "users", value);
+    return status.ok();
+}
+
+bool User::deleteFromUsers(rocksdb::DB* db) {
+	std::string value;
+	rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
+	Json::Reader reader;
+	Json::Value root;
+	if (!reader.parse(value, root, false)) {
+		std::cout << "Json no pudo parsear los users en DeleteFromUsers." << std::endl;
+		return false;
+	}
+    Json::Value newUsers(Json::arrayValue);
+    for (Json::ValueIterator it = root["users"].begin(); it != root["users"].end();it++ ) {
+        if ((*it).asString().compare(this->email) != 0)
+            newUsers.append((*it).asString());
+    }
+	root["users"] = newUsers;
+	Json::StyledWriter writer;
+	status = db->Put(rocksdb::WriteOptions(), "users", writer.write(root));
+	return status.ok();
+}
+
 void User::signup(rocksdb::DB* db) {
 	std::string value;
 	if (this->checkIfExisting(db,&value)) throw AlreadyExistentUserException();
-	if (!this->setFileStructure(db)) throw DBException();
-	if (!this->save(db)) throw DBException();
+	if (!this->saveInUsers(db)) throw DBException();
+	if (!this->setFileStructure(db)) {
+		this->deleteFromUsers(db);
+		throw DBException();
+	}
+	if (!this->save(db)) {
+		this->deleteFromUsers(db);
+		throw DBException();
+	}
 }
 
 bool User::checkIfExisting(rocksdb::DB *db, std::string* value) {

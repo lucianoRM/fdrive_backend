@@ -57,6 +57,11 @@ TEST(SignUpTest, SignupAvailableEmail) {
     user->setPassword("password");
 
     EXPECT_NO_THROW(user->signup(db));
+    std::string value;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users.emailTest", &value);
+    EXPECT_FALSE(status.IsNotFound());
+    status = db->Get(rocksdb::ReadOptions(), "users", &value);
+    EXPECT_FALSE(status.IsNotFound());
 
     delete db;
     delete user;
