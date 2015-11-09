@@ -12,7 +12,7 @@ class TestFile(unittest.TestCase):
 	
 	def _signup_and_login(self, email="testemail"):	
 		payload = {"email": email, "password": "testpassword"}
-		r = requests.get("http://localhost:8000/users", params = payload)
+		r = requests.post("http://localhost:8000/users", params = payload)
 
 		payload = {"email": email, "password": "testpassword"}
 		r = requests.get("http://localhost:8000/login", params = payload)

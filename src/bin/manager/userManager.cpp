@@ -139,3 +139,8 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
     return "{ \"result\" : true , \"content\" : " + content + " }";
 }
+
+std::string UserManager::getUsers(std::string email) {
+    //TODO
+    return "";
+}

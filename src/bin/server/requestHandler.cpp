@@ -7,7 +7,8 @@ RequestHandler::RequestHandler() {
 	this->fileManager = new FileManager();
 
 	this->codesMap = new std::unordered_map<std::string,int>;
-	(*this->codesMap)["/users:GET"] = requestCodes::USERS_POST;
+	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;
+	(*this->codesMap)["/users:GET"] = requestCodes::USERS_GET;
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
@@ -44,6 +45,17 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (strlen(cpassword) == 0) throw RequestException();
 
 				result = this->userManager->addUser(std::string(cemail), std::string(cpassword));
+				break;
+			}
+			case requestCodes::USERS_GET: {
+				char cemail[100], ctoken[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				if (strlen(cemail) == 0) throw RequestException();
+				if (strlen(ctoken) == 0) throw RequestException();
+
+				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+				result = this->userManager->getUsers(std::string(cemail));
 				break;
 			}
 			case requestCodes::LOGIN_GET: {

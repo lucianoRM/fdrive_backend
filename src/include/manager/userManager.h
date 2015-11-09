@@ -27,6 +27,8 @@ class UserManager:public Manager {
         std::string logoutUser(std::string email, std::string token);
         std::string loadUserFiles(std::string email, std::string path);
         void checkIfUserHasFilePermits(std::string email, int id);
+        // Returns all users except the one it receives.
+        std::string getUsers(std::string email);
 };
 
 #endif //TALLER_USERMANAGER_H

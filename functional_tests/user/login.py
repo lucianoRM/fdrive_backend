@@ -11,7 +11,7 @@ class TestLogin(unittest.TestCase):
 
 	def test_login_correct(self):
 		payload = {"email": "testemail", "password": "testpassword"}
-		r = requests.get("http://localhost:8000/users", params = payload)
+		r = requests.post("http://localhost:8000/users", params = payload)
 
 		payload = {"email": "testemail", "password": "testpassword"}
 		r = requests.get("http://localhost:8000/login", params = payload)
