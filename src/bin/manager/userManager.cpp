@@ -23,7 +23,7 @@ std::string UserManager::addUser(std::string email, std::string password) {
     rocksdb::DB* db = NULL;
 
     try {
-        db = this->openDatabase("En AddUser: ");
+        db = this->openDatabase("En AddUser: ",'w');
         ///std::cout << "Abrí la base de datos en AddUser." << std::endl;
         user->signup(db);
     } catch (std::exception& e) {
@@ -43,7 +43,7 @@ std::string UserManager::addUser(std::string email, std::string password) {
 }
 
 std::string UserManager::loginUser(std::string email, std::string password) {
-    rocksdb::DB* db = this->openDatabase("En LogIn: ");
+    rocksdb::DB* db = this->openDatabase("En LogIn: ",'w');
     ///std::cout << "Abrí la base de datos en LoginUser." << std::endl;
     User* user = NULL;
     try {
@@ -78,7 +78,7 @@ std::string UserManager::loginUser(std::string email, std::string password) {
 }
 
 std::string UserManager::logoutUser(std::string email, std::string token) {
-    rocksdb::DB* db = this->openDatabase("En LogOut: ");
+    rocksdb::DB* db = this->openDatabase("En LogOut: ",'w');
     ///std::cout << "Abrí la base de datos en LogoutUser." << std::endl;
     User* user = NULL;
     try {
@@ -103,7 +103,7 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
 }
 
 void UserManager::checkIfLoggedIn(std::string email, std::string token) {
-    rocksdb::DB* db = openDatabase("En check if logged in");
+    rocksdb::DB* db = openDatabase("En check if logged in",'r');
     ///std::cout << "Abrí la base de datos en CheckIfLoggedIn." << std::endl;
     User* user= NULL;
     try {
@@ -121,7 +121,7 @@ void UserManager::checkIfLoggedIn(std::string email, std::string token) {
 }
 
 std::string UserManager::loadUserFiles(std::string email, std::string path) {
-    rocksdb::DB* db = openDatabase("En load user files");
+    rocksdb::DB* db = openDatabase("En load user files",'r');
     ///std::cout << "Abrí la base de datos en LoadUserFiles." << std::endl;
     Folder* folder = NULL;
     try {
@@ -141,8 +141,8 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
 }
 
 std::string UserManager::getUsers(std::string email) {
-    rocksdb::DB* db = openDatabase("En getUsers: ");
 
+    rocksdb::DB* db = openDatabase("En getUsers",'r');
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
     delete db;
@@ -162,7 +162,7 @@ std::string UserManager::getUsers(std::string email) {
 }
 
 void UserManager::addFile(std::string email, int size) {
-	rocksdb::DB* db = openDatabase("En addFile: ");
+	rocksdb::DB* db = openDatabase("En addFile: ", 'w');
 	User* user= NULL;
     try {
         user = User::load(db, email);
@@ -180,7 +180,7 @@ void UserManager::addFile(std::string email, int size) {
 }
 
 void UserManager::checkFileSizeChange(std::string email, int oldSize, int newSize) {
-	rocksdb::DB* db = openDatabase("En check file size change: ");
+	rocksdb::DB* db = openDatabase("En check file size change: ", 'r');
 	User* user= NULL;
     try {
         user = User::load(db, email);
@@ -197,7 +197,7 @@ void UserManager::checkFileSizeChange(std::string email, int oldSize, int newSiz
 }
 
 void UserManager::changeFileSize(std::string email, int oldSize, int newSize) {
-	rocksdb::DB* db = openDatabase("En changeFileSize: ");
+	rocksdb::DB* db = openDatabase("En changeFileSize: ", 'w');
 	User* user= NULL;
     try {
         user = User::load(db, email);

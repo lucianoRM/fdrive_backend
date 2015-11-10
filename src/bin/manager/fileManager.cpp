@@ -9,8 +9,10 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
+
+
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
-    rocksdb::DB* db = this->openDatabase("En SaveFile: ");
+    rocksdb::DB* db = this->openDatabase("En SaveFile: ",'w');
     ///std::cout << "Abrí la base de datos en SaveFile." << std::endl;
     File* file = new File();
     file->setName(name);
@@ -84,7 +86,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
 	}
 
 
-    rocksdb::DB* db = this->openDatabase("En SaveNewVersionOfFile: ");
+    rocksdb::DB* db = this->openDatabase("En SaveNewVersionOfFile: ",'w');
     try {
         file->changeSearchInformation(oldFile);
         file->save(db);
@@ -112,7 +114,7 @@ File* FileManager::openFile(int id) {
     rocksdb::DB* db = NULL;
 
     try {
-        db = this->openDatabase("En OpenFile: ");
+        db = this->openDatabase("En OpenFile: ",'r');
         file->load(db);
     } catch(std::exception& e) {
         delete file;
@@ -149,7 +151,7 @@ std::string FileManager::shareFileToUser(int id, std::string email) {
     rocksdb::DB *db = NULL;
     Folder* folder = NULL;
     try {
-        db = this->openDatabase("En checkIfUserHasFilePermits: ");
+        db = this->openDatabase("En checkIfUserHasFilePermits: ",'w');
         file->addSharedUser(email);
         file->save(db);
         folder = Folder::load(db, email, "shared");
@@ -170,7 +172,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     File* file = this->openFile(id);
     rocksdb::DB *db = NULL;
     try {
-        db = this->openDatabase("En eraseFileFromUser: ");
+        db = this->openDatabase("En eraseFileFromUser: ",'w');
         file->eraseFromUser(db, email, path);
     } catch (std::exception& e) {
         if (db != NULL) delete db;
