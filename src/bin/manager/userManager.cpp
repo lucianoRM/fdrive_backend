@@ -141,22 +141,37 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
 }
 
 std::string UserManager::getUsers(std::string email) {
+    rocksdb::DB* db = openDatabase("En getUsers", 'r');
 
-    rocksdb::DB* db = openDatabase("En getUsers",'r');
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
-    delete db;
+    if (!status.ok()) {
+		delete db;
+		throw DBException();
+	}
     Json::Reader reader;
     Json::Value root;
     if (!reader.parse(value, root, false)) {
         std::cout << "Json no pudo parsear los users en GetUsers." << std::endl;
+        delete db;
         throw DBException();
     }
     Json::Value otherUsers(Json::arrayValue);
     for (Json::ValueIterator it = root["users"].begin(); it != root["users"].end();it++ ) {
-        if ((*it).asString().compare(email) != 0)
-            otherUsers.append((*it).asString());
+        if ((*it).asString().compare(email) != 0) {
+			std::string otherEmail = (*it).asString();
+			User* user = NULL;
+			try {
+				user = User::load(db, otherEmail);
+				otherUsers.append(user->getJsonValue());
+			} catch (std::exception& e) {
+				if (user != NULL) delete user;
+				delete db;
+				throw;
+			}
+		}
     }
+    delete db;
     Json::StyledWriter writer;
     return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
 }

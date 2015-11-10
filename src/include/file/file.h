@@ -77,6 +77,7 @@ class File {
         void changeSearchInformation(File* oldFile);
 
         void checkIfUserHasPermits(std::string email);
+        void checkIfUserIsOwner(std::string email);
 
         void addSharedUser(std::string user);
         void eraseFromUser(rocksdb::DB* db, std::string email, std::string path);

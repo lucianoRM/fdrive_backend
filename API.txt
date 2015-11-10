@@ -17,6 +17,25 @@ LOGIN:
 			En caso satisfactorio se recibe un token para que el usuario pueda operar:
 				{ "result" : true , "token" : "<token>" }
 
+GET USERS:
+	url: <dirección server>/login?email=<email>&token=<token>
+	Método: GET
+	Body:
+	Respuesta: Si no hay problemas con la base de datos, siempre se supone exitoso.
+			   Devuelve todos los users que hay sin contar a quien hizo la request:
+			     { "result" : true , "users" : [
+													{ "email" : <email>,
+													  "password" : <password>,
+													  "totalQuota" : <totalQuota>,
+													  "freeQuota" : <freeQuota>,
+													  "tokens" : [ {"token" : <token>, "expiration" : <expiration>} , ... ],
+				(opcional - sólo si lo tiene)		  "name" : <name>,
+				(opcional - sólo si lo tiene)		  "lastLocation" : <location>,
+				(opcional - sólo si lo tiene)		  "pathToProfilePicture" : <path>
+													} ,
+													...
+											   ]
+			     }
 
 SAVE FILE: Para NEW files (the user sending it will be the owner)
 	url: <dirección server>/files
@@ -105,3 +124,21 @@ ERASE FILE:
 	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe 
 	
 	un mensaje de success con el id del archivo borrado.
+
+
+SHARE FILE:
+	url: <dirección server>/share
+	Método: POST
+	Body:{
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“id”:”<id>”,
+		"users" : [ <email1>, <email2>, ...]
+		}
+	Respuesta: Si el que lo pide es el dueño, y todos tienen la cuota necesaria, hay éxito y se devuelve:
+				{ "result" : true }
+			   En el caso de que alguno no tenga la cuota necesaria, no se le agregará a ninguna y 
+				  en el mensaje se indicará qué usuario no tenía lugar:
+				{ "result" : false , "errors" : ["The user <email> doesn't have enough space in the account."] }
+
+

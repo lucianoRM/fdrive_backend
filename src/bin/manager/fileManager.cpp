@@ -146,6 +146,17 @@ void FileManager::checkIfUserHasFilePermits(int id, std::string email) {
     delete file;
 }
 
+void FileManager::checkIfUserIsOwner(int id, std::string email) {
+	File* file = this->openFile(id);
+    try {
+        file->checkIfUserIsOwner(email);
+    } catch(std::exception& e) {
+        delete file;
+        throw;
+    }
+    delete file;
+}
+
 std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users) {
 	File* file = this->openFile(id);
 	int size = file->getSize();

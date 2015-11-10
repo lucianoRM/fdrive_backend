@@ -9,6 +9,7 @@ Here we specify the structure of the DB. How are things stored and why.
 				lastVersion (int)
 				owner
 				pathInOwnersAccount
+				size
 				tags : ["tag1", "tag2", ...]
 				versions : { "0" : {	lastModified (last modification time),
 										lastUser (last modifying user)	},
@@ -26,7 +27,8 @@ Here we specify the structure of the DB. How are things stored and why.
 				name 					(optional)
 				pathToProfilePicture	(optional)
 				lastLocation			(optional - as it won't have any until it doesn't specify one - this updates anytime the user operates with files)
-				quota (int that represent the number MB)
+				totalQuota (int that represent the number MB)
+				freeQuota (idem)
 				tokens (an array of: {"token": <token>, "expirationTime" : <expTime>} )
 
 @fileStructure

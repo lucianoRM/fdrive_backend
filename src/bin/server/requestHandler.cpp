@@ -16,7 +16,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
 	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
-	(*this->codesMap)["/shared:POST"] = requestCodes::SHAREFILE_POST;
+	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
 }
 
 RequestHandler::~RequestHandler(){
@@ -205,6 +205,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				}
 				
 				this->userManager->checkIfLoggedIn(email, token);
+				this->fileManager->checkIfUserIsOwner(id, email);
 				this->fileManager->shareFileToUsers(id, users);
 				
 			}

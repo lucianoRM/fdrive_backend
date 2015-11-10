@@ -28,6 +28,7 @@ class FileManager: public Manager {
         std::string loadFile(int id); //Loads file
 
         void checkIfUserHasFilePermits(int id, std::string email);
+        void checkIfUserIsOwner(int id, std::string email);
 
         std::string eraseFileFromUser(int id, std::string email, std::string path);
 

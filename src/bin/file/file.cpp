@@ -251,6 +251,11 @@ void File::checkIfUserHasPermits(std::string email) {
     throw HasNoPermits();
 }
 
+void File::checkIfUserIsOwner(std::string email) {
+	if (this->metadata->owner.compare(email) == 0) return;
+	throw IsNotTheOwner();
+}
+
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     if (user.compare(this->metadata->owner)) {
         for (std::string sharedUser : *this->users) {

@@ -58,6 +58,14 @@ class HasNoPermits : public UserException {
 
 };
 
+class IsNotTheOwner : public UserException {
+	
+	virtual const char* what() const throw() {
+        return "The user is not the owner of the file";
+    }
+    
+};
+
 class NotEnoughQuota : public UserException {
 	private:
 		std::string user;
