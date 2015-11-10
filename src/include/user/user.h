@@ -23,7 +23,8 @@ class User {
         std::string name;
         std::string lastLocation;
         std::string picture;    // Path to the profile picture.
-        int quota;  // In MB.
+        int totalQuota;  // In MB.
+        int freeQuota;
         std::vector<UserToken*>* tokens;
 
         bool checkIfExisting(rocksdb::DB* db, std::string* value);
@@ -65,6 +66,10 @@ class User {
 
         // Method for obtaining Json information of the user
         std::string getJson();
+        Json::Value getJsonValue();
+        
+        //Method for quotas
+        bool addFileOfSize(int size);	// Size must be in MB.
 };
 
 #endif //FDRIVE_BACKEND_USER_H

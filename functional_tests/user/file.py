@@ -25,7 +25,8 @@ class TestFile(unittest.TestCase):
 			"name":			filename,
 			"extension":	".txt",
 			"path":			"root",
-			"tags":			["palabra1","palabra2"]
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
 		}
 		r = requests.post("http://localhost:8000/files", json = payload)
 		print json.dumps(r.json())

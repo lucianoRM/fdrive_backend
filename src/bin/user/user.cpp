@@ -4,7 +4,8 @@
 
 User::User() {
 	this->tokens = new std::vector<UserToken*>();
-    this->quota = INICIAL_QUOTA;
+    this->totalQuota = INICIAL_QUOTA;
+    this->freeQuota = INICIAL_QUOTA;
 }
 
 User::~User() {
@@ -74,7 +75,7 @@ bool User::saveInUsers(rocksdb::DB* db) {
             std::cout << "Json no pudo parsear los users en SaveInUsers: " << value << std::endl;
             return false;
         }
-        root["users"].append("\"" + this->email + "\"");
+        root["users"].append(this->email);
         Json::StyledWriter writer;
         value = writer.write(root);
 	}
@@ -150,7 +151,8 @@ User* User::load(rocksdb::DB* db, std::string email) {
 	User* user = new User();
 	user->email = root["email"].asString();
 	user->hashed_password = root["password"].asString();
-    user->quota = root["quota"].asInt();
+    user->totalQuota = root["totalQuota"].asInt();
+    user->freeQuota = root["freeQuota"].asInt();
 
 	Json::Value tokens = root["tokens"];
 	for (Json::ValueIterator it = tokens.begin(); it != tokens.end();it++ ) {
@@ -238,20 +240,33 @@ void User::checkToken(std::string token) {
 
 }
 
-std::string User::getJson() {
-    Json::Value jsonTokens;
+Json::Value User::getJsonValue() {
+	Json::Value jsonTokens(Json::arrayValue);
     for (UserToken* oneToken : *this->tokens) {
         jsonTokens.append(oneToken->serialize());
     }
 
-    Json::StyledWriter writer;
     Json::Value root;
     root["email"] = this->email;
     root["password"] = this->hashed_password;
-    root["quota"] = this->quota;
+    root["totalQuota"] = this->totalQuota;
+    root["freeQuota"] = this->freeQuota;
     root["tokens"] = jsonTokens;
     if (!name.empty()) root["name"] = this->name;
     if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
     if (!picture.empty()) root["pathToProfilePicture"] = this->picture;
-    return writer.write(root);
+    return root;
+}
+
+std::string User::getJson() {
+	Json::StyledWriter writer;
+    return writer.write(this->getJsonValue());
+}
+
+bool User::addFileOfSize(int size) {
+	if (this->freeQuota < size) {
+		return false;
+	}
+	this->freeQuota = this->freeQuota - size;
+	return true;
 }

@@ -58,4 +58,10 @@ class HasNoPermits : public UserException {
 
 };
 
+class NotEnoughQuota : public UserException {
+	virtual const char* what() const throw() {
+        return "The user doesn't have enough space in the account.";
+    }
+};
+
 #endif //FDRIVE_USEREXCEPTION_H

@@ -49,10 +49,12 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         ///std::cout << "ERROR2 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
-
     delete file;
     delete folder;
     delete db;
+    
+    UserManager u_manager;
+	u_manager.addFileToOwner(email, size);
 
     return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " }";
 }

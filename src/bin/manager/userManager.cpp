@@ -141,10 +141,11 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
 }
 
 std::string UserManager::getUsers(std::string email) {
-    rocksdb::DB* db = openDatabase("En getUsers",'r');
 
+    rocksdb::DB* db = openDatabase("En getUsers",'r');
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
+    delete db;
     Json::Reader reader;
     Json::Value root;
     if (!reader.parse(value, root, false)) {
@@ -158,4 +159,22 @@ std::string UserManager::getUsers(std::string email) {
     }
     Json::StyledWriter writer;
     return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
+}
+
+void UserManager::addFileToOwner(std::string email, int size) {
+	rocksdb::DB* db = openDatabase("En addFileToOwner: ");
+	User* user= NULL;
+    try {
+        user = User::load(db, email);
+        if (!user->addFileOfSize(size)) {
+			throw NotEnoughQuota();
+		}
+        if (!user->save(db)) throw DBException();
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        delete db;
+        ///std::cout << "ERROR pero Cerré la base de datos en CheckIfLoggedIn." << std::endl;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
+    }
+	delete db;
 }
