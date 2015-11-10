@@ -9,7 +9,9 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags) {
+
+
+std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
     rocksdb::DB* db = this->openDatabase("En SaveFile: ",'w');
     ///std::cout << "Abrí la base de datos en SaveFile." << std::endl;
     File* file = new File();

@@ -162,7 +162,7 @@ std::string UserManager::getUsers(std::string email) {
 }
 
 void UserManager::addFileToOwner(std::string email, int size) {
-	rocksdb::DB* db = openDatabase("En addFileToOwner: ");
+	rocksdb::DB* db = openDatabase("En addFileToOwner: ",'w');
 	User* user= NULL;
     try {
         user = User::load(db, email);
