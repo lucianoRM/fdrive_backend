@@ -247,13 +247,14 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				const char *data;
 				int data_len, ofs = 0;
-				char var_name[100], file_name[100];
-
+				char var_name[100], file_name[100], cid[100];
+				mg_get_var(conn, "id", cid, sizeof(cid));
 				while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs,
 												 var_name, sizeof(var_name),
 												 file_name, sizeof(file_name),
 												 &data, &data_len)) > 0) {
-					FILE* fout = fopen(file_name, "w");
+					File* file = this->fileManager->openFile(atoi(cid));
+					FILE* fout = fopen(("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+cid).c_str(), "w");
 					fwrite(data, data_len, 1, fout);
 					fclose(fout);
 				}
