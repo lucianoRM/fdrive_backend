@@ -262,3 +262,11 @@ std::string User::getJson() {
 	Json::StyledWriter writer;
     return writer.write(this->getJsonValue());
 }
+
+bool User::addFileOfSize(int size) {
+	if (this->freeQuota < size) {
+		return false;
+	}
+	this->freeQuota = this->freeQuota - size;
+	return true;
+}

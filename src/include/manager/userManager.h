@@ -27,6 +27,7 @@ class UserManager:public Manager {
         std::string logoutUser(std::string email, std::string token);
         std::string loadUserFiles(std::string email, std::string path);
         void checkIfUserHasFilePermits(std::string email, int id);
+        void addFileToOwner(std::string email, int size);
         // Returns all user's metadata except the one it receives.
         std::string getUsers(std::string email);
 };

@@ -90,7 +90,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (!reader.parse(json, root, false))
 					throw FileException();
 
-                int id;
+                int id, size;
                 std::string email, token, name, extension, path;
 
                 if (!root.isMember("id")) {
@@ -102,7 +102,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (! root.isMember("name") || ! root.isMember("extension") ||
 					! root.isMember("tags") )
 					throw RequestException();
-                if (id == -1 && !root.isMember("path")) throw RequestException();
+                if (id == -1 && (!root.isMember("path") || !root.isMember("size"))) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
@@ -117,7 +117,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(email, token);
 				if (id == -1) {
                     path = root["path"].asString();
-					result = this->fileManager->saveFile(email, name, extension, path, vtags);
+                    size = root["size"].asInt(); // Size in MB.
+					result = this->fileManager->saveFile(email, name, extension, path, vtags, size);
 				} else {
                     this->fileManager->checkIfUserHasFilePermits(id, email);
 					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags); //TODO terminar bien esta función.

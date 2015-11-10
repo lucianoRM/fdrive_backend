@@ -67,6 +67,9 @@ class User {
         // Method for obtaining Json information of the user
         std::string getJson();
         Json::Value getJsonValue();
+        
+        //Method for quotas
+        bool addFileOfSize(int size);	// Size must be in MB.
 };
 
 #endif //FDRIVE_BACKEND_USER_H
