@@ -84,8 +84,6 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
     try {
         user = User::load(db, email);
         if (! user->logout(db, token)) {
-            delete user;
-            delete db;
             ///std::cout << "ERROR pero Cerré la base de datos en LogoutUser." << std::endl;
             throw NotLoggedInException();
         }
