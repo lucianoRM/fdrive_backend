@@ -146,12 +146,29 @@ void FileManager::checkIfUserHasFilePermits(int id, std::string email) {
     delete file;
 }
 
-std::string FileManager::shareFileToUser(int id, std::string email) {
-    File* file = this->openFile(id);
+std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users) {
+	File* file = this->openFile(id);
+	int size = file->getSize();
+	delete file;
+	UserManager u_manager;
+	for (std::string user : users) {
+		u_manager.checkFileAddition(user, size);
+	}
+	for (std::string user : users) {
+		this->shareFileToUser(id, user);
+	}
+	for (std::string user : users) {
+		u_manager.addFile(user, size);
+	}
+	return "{ \"result\" : true }";
+}
+
+void FileManager::shareFileToUser(int id, std::string email) {
+	File* file = this->openFile(id);
     rocksdb::DB *db = NULL;
     Folder* folder = NULL;
     try {
-        db = this->openDatabase("En checkIfUserHasFilePermits: ",'w');
+        db = this->openDatabase("En shareFileToUser: ",'w');
         file->addSharedUser(email);
         file->save(db);
         folder = Folder::load(db, email, "shared");
@@ -164,7 +181,6 @@ std::string FileManager::shareFileToUser(int id, std::string email) {
         delete file;
         throw;
     }
-    return "{ \"result\" : true }";
 }
 
 

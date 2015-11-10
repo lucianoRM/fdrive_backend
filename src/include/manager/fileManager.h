@@ -17,6 +17,7 @@ class FileManager: public Manager {
 
     private:
         File* openFile(int id);
+        void shareFileToUser(int id, std::string email);
 
     public:
         FileManager();
@@ -30,8 +31,8 @@ class FileManager: public Manager {
 
         std::string eraseFileFromUser(int id, std::string email, std::string path);
 
-        std::string shareFileToUser(int id, std::string email);
-
+		std::string shareFileToUsers(int id, std::vector<std::string> users);
+        
 };
 
 #endif //TALLER_FILEMANAGER_H

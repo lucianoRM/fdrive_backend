@@ -161,6 +161,23 @@ std::string UserManager::getUsers(std::string email) {
     return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
 }
 
+void UserManager::checkFileAddition(std::string email, int size) {
+	rocksdb::DB* db = openDatabase("En addFile: ", 'r');
+	User* user= NULL;
+    try {
+        user = User::load(db, email);
+        if (!user->addFileOfSize(size)) {
+			throw NotEnoughQuota(email);
+		}
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        delete db;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
+    }
+    delete user;
+	delete db;
+}
+
 void UserManager::addFile(std::string email, int size) {
 	rocksdb::DB* db = openDatabase("En addFile: ", 'w');
 	User* user= NULL;

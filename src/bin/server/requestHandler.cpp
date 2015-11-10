@@ -89,7 +89,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				Json::Value root;
 				Json::Reader reader;
 				if (!reader.parse(json, root, false))
-					throw FileException();
+					throw RequestException();
 
                 int id, size;
                 std::string email, token, name, extension, path;
@@ -173,15 +173,39 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "path", cpath, sizeof(cpath));
-                if (strlen(cemail) == 0) throw RequestException();
-                if (strlen(ctoken) == 0) throw RequestException();
-                if (strlen(cpath) == 0) throw RequestException();
+                if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0) throw RequestException();
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->userManager->loadUserFiles(std::string(cemail), std::string(cpath));
 				break;
 			}
-			case requestCodes::SHAREFILE_POST: {
+			case requestCodes::SHAREFILE_POST:
+			{
+				//Needed for filtering unnecesary headers
+				char json[conn->content_len + 1];
+				char *content = conn->content;
+				content[conn->content_len] = '\0';
+				strcpy(json, conn->content);
+				Json::Value root;
+				Json::Reader reader;
+				if (!reader.parse(json, root, false))
+					throw RequestException();
+				
+				std::string email, token;
+				int id;
+				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("users") ) throw RequestException();
+				
+				email = root["email"].asString();
+				token = root["token"].asString();
+				id = root["id"].asInt();
+				std::vector<std::string> users;
+				for (Json::ValueIterator itr = root["users"].begin(); itr != root["users"].end(); itr++) {
+					users.push_back((*itr).asString());
+				}
+				
+				this->userManager->checkIfLoggedIn(email, token);
+				this->fileManager->shareFileToUsers(id, users);
 				
 			}
 			case requestCodes::FILEUPLOAD_POST:
