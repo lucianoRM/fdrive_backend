@@ -142,3 +142,11 @@ SHARE FILE:
 				{ "result" : false , "errors" : ["The user <email> doesn't have enough space in the account."] }
 
 
+UPLOAD FILE:
+	url: <dirección server>/filesupload?id=<id>
+	Método: POST
+	Multipart
+	Body:{
+		"file":<data>
+	}
+	Respuesta: {"result": true}
