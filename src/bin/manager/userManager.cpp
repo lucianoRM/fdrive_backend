@@ -3,6 +3,7 @@
 #include "fileManager.h"
 #include "folder/folder.h"
 #include <iostream>
+#include <sys/stat.h>
 
 int UserManager::counter = 0;
 
@@ -26,6 +27,8 @@ std::string UserManager::addUser(std::string email, std::string password) {
         db = this->openDatabase("En AddUser: ",'w');
         ///std::cout << "Abrí la base de datos en AddUser." << std::endl;
         user->signup(db);
+        mkdir(("files/"+email).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+        mkdir(("files/"+email+"/root").c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     } catch (std::exception& e) {
         delete user;
         if (db != NULL) {
