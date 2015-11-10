@@ -70,6 +70,7 @@ class User {
         
         //Method for quotas
         bool addFileOfSize(int size);	// Size must be in MB.
+        bool changeSizeOfFile(int oldSize, int newSize);
 };
 
 #endif //FDRIVE_BACKEND_USER_H

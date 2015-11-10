@@ -11,7 +11,7 @@
 // Needed for switch case.
 enum requestCodes : int { USERS_POST = 1, LOGIN_GET, LOGOUT_GET,
 		SAVEFILE_POST, LOADFILE_GET, ERASEFILE_DELETE, LOADUSERFILES_GET,
-		FILEUPLOAD_POST, USERS_GET };
+		FILEUPLOAD_POST, USERS_GET, SHAREFILE_POST };
 
 // Class to manage the requests done by the user.
 

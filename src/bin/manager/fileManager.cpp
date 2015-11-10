@@ -18,6 +18,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     file->setOwner(email);
     file->setOwnerPath(path);
     file->setLastUser(email);
+    file->setSize(size);
     for (std::string tag : tags ) {
         file->setTag(tag);
     }
@@ -54,12 +55,12 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     delete db;
     
     UserManager u_manager;
-	u_manager.addFileToOwner(email, size);
+	u_manager.addFile(email, size);
 
     return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " }";
 }
 
-std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags) {
+std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags, int size) {
     File* file = this->openFile(id);
     File* oldFile;
     try {
@@ -74,6 +75,14 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
     for (std::string tag : tags ) {
         file->setTag(tag);
     }
+    int oldSize = file->getSize();
+    
+    std::list<std::string> users = file->getUsers();
+	UserManager u_manager;
+    for (std::string user: users) {
+		u_manager.checkFileSizeChange(user, oldSize, size);
+	}
+
 
     rocksdb::DB* db = this->openDatabase("En SaveNewVersionOfFile: ");
     try {
@@ -87,6 +96,10 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
     }
     delete db;
     delete file;
+
+	for (std::string user: users) {
+		u_manager.changeFileSize(user, oldSize, size);
+	}
 
     return "{ \"result\" : \"true\" }"; //TODO devuelve número de versión nueva.
 }

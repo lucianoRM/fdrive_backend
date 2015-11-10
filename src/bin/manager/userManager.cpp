@@ -161,20 +161,55 @@ std::string UserManager::getUsers(std::string email) {
     return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
 }
 
-void UserManager::addFileToOwner(std::string email, int size) {
-	rocksdb::DB* db = openDatabase("En addFileToOwner: ");
+void UserManager::addFile(std::string email, int size) {
+	rocksdb::DB* db = openDatabase("En addFile: ");
 	User* user= NULL;
     try {
         user = User::load(db, email);
         if (!user->addFileOfSize(size)) {
-			throw NotEnoughQuota();
+			throw NotEnoughQuota(email);
 		}
         if (!user->save(db)) throw DBException();
     } catch (std::exception& e) {
         if (user != NULL) delete user;
         delete db;
-        ///std::cout << "ERROR pero Cerré la base de datos en CheckIfLoggedIn." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
+    delete user;
+	delete db;
+}
+
+void UserManager::checkFileSizeChange(std::string email, int oldSize, int newSize) {
+	rocksdb::DB* db = openDatabase("En check file size change: ");
+	User* user= NULL;
+    try {
+        user = User::load(db, email);
+        if (!user->changeSizeOfFile(oldSize, newSize)) {
+			throw NotEnoughQuota(email);
+		}
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        delete db;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
+    }
+    delete user;
+	delete db;
+}
+
+void UserManager::changeFileSize(std::string email, int oldSize, int newSize) {
+	rocksdb::DB* db = openDatabase("En changeFileSize: ");
+	User* user= NULL;
+    try {
+        user = User::load(db, email);
+        if (!user->changeSizeOfFile(oldSize, newSize)) {
+			throw NotEnoughQuota(email);
+		}
+		if (!user->save(db)) throw DBException();
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        delete db;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
+    }
+    delete user;
 	delete db;
 }

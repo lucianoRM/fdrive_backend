@@ -26,6 +26,7 @@ struct metadata {
     std::string lastModified;
     std::string lastUser; // Last user that modified the file.
     std::list<std::string>* tags;
+    int size; // In MB.
 
 };
 
@@ -59,8 +60,11 @@ class File {
         void setLastUser(std::string newLastUser);
         void setTag(std::string newTag);
         void setId(int id);
+        void setSize(int size);
         void genId(rocksdb::DB* db); // ID to be generated when adding a new file.
         int getId();
+        int getSize();
+        std::list<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata and users.

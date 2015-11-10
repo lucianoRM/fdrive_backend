@@ -16,6 +16,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
 	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
+	(*this->codesMap)["/shared:POST"] = requestCodes::SHAREFILE_POST;
 }
 
 RequestHandler::~RequestHandler(){
@@ -100,14 +101,15 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				}
 				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
 				if (! root.isMember("name") || ! root.isMember("extension") ||
-					! root.isMember("tags") )
+					! root.isMember("tags") || !root.isMember("size"))
 					throw RequestException();
-                if (id == -1 && (!root.isMember("path") || !root.isMember("size"))) throw RequestException();
+                if (id == -1 && !root.isMember("path")) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
 				name = root["name"].asString();
 				extension = root["extension"].asString();
+				size = root["size"].asInt(); // Size in MB.
 				Json::Value tags = root["tags"];
 				std::vector<std::string> vtags;
 				for (Json::ValueIterator itr = tags.begin(); itr != tags.end(); itr++) {
@@ -117,11 +119,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(email, token);
 				if (id == -1) {
                     path = root["path"].asString();
-                    size = root["size"].asInt(); // Size in MB.
 					result = this->fileManager->saveFile(email, name, extension, path, vtags, size);
 				} else {
                     this->fileManager->checkIfUserHasFilePermits(id, email);
-					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags); //TODO terminar bien esta función.
+					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags, size); //TODO terminar bien esta función.
 				}
 				break;
 			}
@@ -179,6 +180,9 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->userManager->loadUserFiles(std::string(cemail), std::string(cpath));
 				break;
+			}
+			case requestCodes::SHAREFILE_POST: {
+				
 			}
 			case requestCodes::FILEUPLOAD_POST:
 			{

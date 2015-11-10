@@ -341,3 +341,15 @@ void File::addSharedUser(std::string user) {
         this->users->push_back(user);
     }
 }
+
+std::list<std::string> File::getUsers() {
+	return *this->users;
+}
+
+void File::setSize(int size) {
+	this->metadata->size = size;
+}
+
+int File::getSize() {
+	return this->metadata->size;
+}

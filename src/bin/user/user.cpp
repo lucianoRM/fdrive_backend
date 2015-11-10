@@ -270,3 +270,11 @@ bool User::addFileOfSize(int size) {
 	this->freeQuota = this->freeQuota - size;
 	return true;
 }
+
+bool User::changeSizeOfFile(int oldSize, int newSize) {
+	if ((this->freeQuota + oldSize) < newSize) {
+		return false;
+	}
+	this->freeQuota = this->freeQuota + oldSize - newSize;
+	return true;
+}

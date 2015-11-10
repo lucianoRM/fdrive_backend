@@ -59,9 +59,17 @@ class HasNoPermits : public UserException {
 };
 
 class NotEnoughQuota : public UserException {
-	virtual const char* what() const throw() {
-        return "The user doesn't have enough space in the account.";
-    }
+	private:
+		std::string user;
+		
+	public:
+		NotEnoughQuota(std::string user) {
+			this->user = user;
+		}
+		
+		virtual const char* what() const throw() {
+			return ("The user " + this->user + " doesn't have enough space in the account.").c_str();
+		}
 };
 
 #endif //FDRIVE_USEREXCEPTION_H
