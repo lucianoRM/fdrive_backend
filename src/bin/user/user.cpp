@@ -74,7 +74,7 @@ bool User::saveInUsers(rocksdb::DB* db) {
             std::cout << "Json no pudo parsear los users en SaveInUsers: " << value << std::endl;
             return false;
         }
-        root["users"].append("\"" + this->email + "\"");
+        root["users"].append(this->email);
         Json::StyledWriter writer;
         value = writer.write(root);
 	}
@@ -239,7 +239,7 @@ void User::checkToken(std::string token) {
 }
 
 std::string User::getJson() {
-    Json::Value jsonTokens;
+    Json::Value jsonTokens(Json::arrayValue);
     for (UserToken* oneToken : *this->tokens) {
         jsonTokens.append(oneToken->serialize());
     }
