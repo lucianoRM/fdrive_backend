@@ -1,0 +1,6 @@
+.idea/*
+rocksdb/*
+testdb/*
+lastrun
+userTestDB/*
+CMakeFiles/
