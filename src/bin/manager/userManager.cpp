@@ -78,7 +78,7 @@ std::string UserManager::loginUser(std::string email, std::string password) {
 }
 
 std::string UserManager::logoutUser(std::string email, std::string token) {
-    rocksdb::DB* db = this->openDatabase("En LogOut: ",'r');
+    rocksdb::DB* db = this->openDatabase("En LogOut: ",'w');
     ///std::cout << "Abrí la base de datos en LogoutUser." << std::endl;
     User* user = NULL;
     try {
