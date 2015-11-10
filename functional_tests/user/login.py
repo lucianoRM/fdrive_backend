@@ -24,5 +24,22 @@ class TestLogin(unittest.TestCase):
 
 		self.assertEqual(True, r.json()["result"])
 
+	def test_logout_not_existent_user(self):
+
+            payload = {"email": "testemail", "password": "testpassword"}
+            r = requests.post("http://localhost:8000/users", params = payload)
+
+            payload = {"email": "testemail", "password": "testpassword"}
+            r = requests.get("http://localhost:8000/login", params = payload)
+
+            self.assertEqual(True, r.json()["result"])
+            self.assertTrue("token" in r.json())
+
+            payload = {"email": "testemail", "token": r.json()["token"]}
+            r = requests.get("http://localhost:8000/logout", params = payload)
+
+            r = requests.get("http://localhost:8000/logout", params = payload)
+            self.assertEqual(False, r.json()["result"])
+
 if __name__ == '__main__':
     unittest.main()
