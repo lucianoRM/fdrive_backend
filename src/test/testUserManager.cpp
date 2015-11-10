@@ -23,6 +23,8 @@ TEST(GetFilesTest, GetVariousRootFiles) {
  */
 
 TEST(GetUsersTest, GetUsersWhenNoOther) {
+	USERMANAGER_deleteDatabase();
+	
 	UserManager manager;
 	manager.addUser("email", "password");
 	std::string result = manager.getUsers("email");
@@ -38,6 +40,8 @@ TEST(GetUsersTest, GetUsersWhenNoOther) {
 }
 
 TEST(GetUsersTest, GetUsersWhenTwoOthers) {
+	USERMANAGER_deleteDatabase();
+	
 	UserManager manager;
 	manager.addUser("email", "password");
 	manager.addUser("email2", "password");
