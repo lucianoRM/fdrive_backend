@@ -163,7 +163,7 @@ std::string UserManager::getUsers(std::string email) {
 			User* user = NULL;
 			try {
 				user = User::load(db, otherEmail);
-				otherUsers.append(user->getJson());
+				otherUsers.append(user->getJsonValue());
 			} catch (std::exception& e) {
 				if (user != NULL) delete user;
 				delete db;

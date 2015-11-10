@@ -238,13 +238,12 @@ void User::checkToken(std::string token) {
 
 }
 
-std::string User::getJson() {
-    Json::Value jsonTokens(Json::arrayValue);
+Json::Value User::getJsonValue() {
+	Json::Value jsonTokens(Json::arrayValue);
     for (UserToken* oneToken : *this->tokens) {
         jsonTokens.append(oneToken->serialize());
     }
 
-    Json::StyledWriter writer;
     Json::Value root;
     root["email"] = this->email;
     root["password"] = this->hashed_password;
@@ -253,5 +252,10 @@ std::string User::getJson() {
     if (!name.empty()) root["name"] = this->name;
     if (!lastLocation.empty()) root["lastLocation"] = this->lastLocation;
     if (!picture.empty()) root["pathToProfilePicture"] = this->picture;
-    return writer.write(root);
+    return root;
+}
+
+std::string User::getJson() {
+	Json::StyledWriter writer;
+    return writer.write(this->getJsonValue());
 }

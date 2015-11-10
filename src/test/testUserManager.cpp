@@ -49,12 +49,7 @@ TEST(GetUsersTest, GetUsersWhenTwoOthers) {
 	EXPECT_TRUE(root.isMember("result"));
 	EXPECT_TRUE(root.isMember("users"));
 	Json::Value::iterator it = root["users"].begin();
-	std::cout << "Hasta acá si con: " << (*it) << std::endl;
-	std::cout << "El tipo es objectValue? " << ((*it).type() == Json::objectValue) << std::endl;
-	if (!(*it).isMember("email") ) std::cout << "Por queee?" << std::endl;
-	std::cout << "Acá viene.." << std::endl;
 	EXPECT_TRUE((*it)["email"].asString().compare("email2") == 0);
-	std::cout << "Hasta acá no" << std::endl;
 	it++;
 	EXPECT_TRUE((*it)["email"].asString().compare("email3") == 0);
 	it++;

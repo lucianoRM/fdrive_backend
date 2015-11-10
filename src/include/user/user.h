@@ -65,6 +65,7 @@ class User {
 
         // Method for obtaining Json information of the user
         std::string getJson();
+        Json::Value getJsonValue();
 };
 
 #endif //FDRIVE_BACKEND_USER_H
