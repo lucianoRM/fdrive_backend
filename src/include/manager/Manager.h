@@ -14,7 +14,7 @@
 
 class Manager {
     protected:
-        rocksdb::DB* openDatabase(std::string message);
+        rocksdb::DB* openDatabase(std::string message,char openMode);
 };
 
 #endif //FDRIVE_MANAGER_H

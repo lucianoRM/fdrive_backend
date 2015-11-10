@@ -4,11 +4,17 @@
 
 #include "Manager.h"
 
-rocksdb::DB* Manager::openDatabase(std::string message) {
+rocksdb::DB* Manager::openDatabase(std::string message,char openMode) {
     rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
+    rocksdb::Status status;
+    if(openMode == 'r') {
+        status = rocksdb::DB::OpenForReadOnly(options, "testdb", &db);
+    }
+    else {
+        status = rocksdb::DB::Open(options, "testdb", &db);
+    }
     system("chmod -R a+rwx testdb");
 
     if (!status.ok()) {
