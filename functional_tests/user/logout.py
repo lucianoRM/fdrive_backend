@@ -45,5 +45,11 @@ class TestLogout(unittest.TestCase):
         r = requests.get("http://localhost:8000/logout", params = payload)
         self.assertEqual(False, r.json()["result"])
 
+    def test_logout_inexistent_user(self):
+        payload = {"email": "testemail", "token": "token"}
+        r = requests.get("http://localhost:8000/logout", params = payload)
+        self.assertEqual(False, r.json()["result"])
+
+
 if __name__ == '__main__':
     unittest.main()

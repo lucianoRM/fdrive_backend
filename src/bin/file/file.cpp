@@ -75,6 +75,10 @@ int File::getId() {
     return this->metadata->id;
 }
 
+std::string File::getOwner() {
+    return this->metadata->owner;
+}
+
 Json::Value File::getJson() {
     Json::Value root;
     root["name"] = this->metadata->name;

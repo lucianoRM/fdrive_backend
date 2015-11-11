@@ -12,9 +12,7 @@ FileManager::~FileManager() { }
 
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
-    rocksdb::DB* db = this->openDatabase("En SaveFile: ",'w');
-    ///std::cout << "Abrí la base de datos en SaveFile." << std::endl;
-    File* file = new File();
+        File* file = new File();
     file->setName(name);
     file->setExtension(extension);
     file->setOwner(email);
@@ -24,6 +22,18 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     for (std::string tag : tags ) {
         file->setTag(tag);
     }
+
+    UserManager u_manager;
+    try {
+        u_manager.checkFileAddition(email, size);
+    } catch (std::exception& e) {
+        delete file;
+        ///std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
+        throw;
+    }
+
+    rocksdb::DB* db = this->openDatabase("En SaveFile: ",'w');
+    ///std::cout << "Abrí la base de datos en SaveFile." << std::endl;
 
     Folder* folder = NULL;
     // To check if there is a existing file with the same name File in current path.
@@ -55,9 +65,8 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     delete file;
     delete folder;
     delete db;
-    
-    UserManager u_manager;
-	u_manager.addFile(email, size);
+
+    u_manager.addFile(email, size);
 
     return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " }";
 }
@@ -78,13 +87,23 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
         file->setTag(tag);
     }
     int oldSize = file->getSize();
-    
+    std::string owner = file->getOwner();
+    /* No le saca cuota a quien se lo comparte...
     std::list<std::string> users = file->getUsers();
 	UserManager u_manager;
     for (std::string user: users) {
 		u_manager.checkFileSizeChange(user, oldSize, size);
 	}
-
+    */
+    UserManager u_manager;
+    try {
+        u_manager.checkFileSizeChange(owner, oldSize, size);
+    } catch (std::exception& e) {
+        delete file;
+        delete oldFile;
+        ///std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
+        throw;
+    }
 
     rocksdb::DB* db = this->openDatabase("En SaveNewVersionOfFile: ",'w');
     try {
@@ -98,10 +117,14 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
     }
     delete db;
     delete file;
+    delete oldFile;
 
+    /* Ídem...
 	for (std::string user: users) {
 		u_manager.changeFileSize(user, oldSize, size);
 	}
+    */
+    u_manager.changeFileSize(owner, oldSize, size);
 
     return "{ \"result\" : \"true\" }"; //TODO devuelve número de versión nueva.
 }
@@ -162,15 +185,19 @@ std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users
 	int size = file->getSize();
 	delete file;
 	UserManager u_manager;
-	for (std::string user : users) {
+	/* A shared file does not occupy quota in the others...
+    for (std::string user : users) {
 		u_manager.checkFileAddition(user, size);
 	}
+	*/
 	for (std::string user : users) {
 		this->shareFileToUser(id, user);
 	}
+    /* Ídem...
 	for (std::string user : users) {
 		u_manager.addFile(user, size);
 	}
+     */
 	return "{ \"result\" : true }";
 }
 

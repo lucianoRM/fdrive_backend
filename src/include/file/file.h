@@ -64,6 +64,7 @@ class File {
         void genId(rocksdb::DB* db); // ID to be generated when adding a new file.
         int getId();
         int getSize();
+        std::string getOwner();
         std::list<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
