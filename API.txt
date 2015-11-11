@@ -143,10 +143,10 @@ SHARE FILE:
 
 
 UPLOAD FILE:
-	url: <dirección server>/filesupload?id=<id>
+	url: <dirección server>/filesupload?id=<id>&email=<email>&token=<token>
 	Método: POST
 	Multipart
 	Body:{
-		"file":<data>
+		"upload":<data>
 	}
 	Respuesta: {"result": true}

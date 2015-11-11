@@ -246,20 +246,38 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 					return MG_TRUE; // Tell Mongoose we're done with this request
 				}*/
 
-				const char *data;
-				int data_len, ofs = 0;
-				char var_name[100], file_name[100], cid[100];
+				std::string email, token;
+				int id;
+				char cemail[100], ctoken[100], cid[100];
+
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				email = std::string(cemail);
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				token = std::string(ctoken);
 				mg_get_var(conn, "id", cid, sizeof(cid));
+				id = atoi(cid);
+
+				const char *data;
+				char *filedata;
+				int filedata_len, data_len, ofs = 0;
+				char var_name[400], file_name[400];
 				while ((ofs = mg_parse_multipart(conn->content + ofs, conn->content_len - ofs,
 												 var_name, sizeof(var_name),
 												 file_name, sizeof(file_name),
 												 &data, &data_len)) > 0) {
-					File* file = this->fileManager->openFile(atoi(cid));
-					FILE* fout = fopen(("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+cid).c_str(), "w");
-					fwrite(data, data_len, 1, fout);
-					fclose(fout);
+					if (std::string(var_name) == "upload") {
+						filedata = (char*) malloc(data_len+1);
+						memcpy(filedata, data, data_len);
+						filedata_len = data_len;
+					}
 				}
-
+				this->userManager->checkIfLoggedIn(email, token);
+				File* file = this->fileManager->openFile(id);
+				this->fileManager->checkIfUserIsOwner(file->getMetadata()->id, email);
+				FILE* fout = fopen(("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str(), "w");
+				fwrite(filedata, filedata_len, 1, fout);
+				free(filedata);
+				fclose(fout);
 				mg_printf_data(conn, "{ \"result\" : true }");
 
 				return MG_TRUE;
