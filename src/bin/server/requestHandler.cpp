@@ -76,6 +76,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
 
+				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->userManager->logoutUser(std::string(cemail), std::string(ctoken));
 				break;
 			}

@@ -28,8 +28,8 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     Folder* folder = NULL;
     // To check if there is a existing file with the same name File in current path.
     try {
-        file->genId(db);
         folder = Folder::load(db, email, path);
+        file->genId(db);
     } catch (std::exception& e) {
         delete file;
         if (folder != NULL) delete folder;

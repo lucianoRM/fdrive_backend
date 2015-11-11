@@ -52,8 +52,6 @@ std::string UserManager::loginUser(std::string email, std::string password) {
     try {
         user = User::load(db, email);
         if (!user->login(password)) {
-            delete user;
-            delete db;
             ///std::cout << "ERROR pero Cerré la base de datos en LoginUser." << std::endl;
             throw WrongPasswordException();
         }
@@ -91,7 +89,7 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
             throw NotLoggedInException();
         }
     } catch (std::exception& e) {
-        delete user;
+        if (user != NULL) delete user;
         delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en LogoutUser." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
