@@ -16,6 +16,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
 	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
+	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
 	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
 }
 
@@ -281,6 +282,27 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_printf_data(conn, "{ \"result\" : true }");
 
 				return MG_TRUE;
+			}
+			case requestCodes::FILEDOWNLOAD_GET:
+			{
+				std::string email, token;
+				int id;
+				char cemail[100], ctoken[100], cid[100];
+
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				email = std::string(cemail);
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				token = std::string(ctoken);
+				mg_get_var(conn, "id", cid, sizeof(cid));
+				id = atoi(cid);
+				this->userManager->checkIfLoggedIn(email, token);
+				File* file = this->fileManager->openFile(id);
+				this->fileManager->checkIfUserIsOwner(file->getMetadata()->id, email);
+				const char* path = ("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
+				const char* extraHeaders = ("Content-Disposition: attachment; filename=\""+file->getMetadata()->name+file->getMetadata()->extension+"\"\r\n").c_str();
+				std::cout << extraHeaders << std::endl;
+				mg_send_file(conn, path, extraHeaders);
+				return MG_MORE;
 			}
 			default:
 				return -1;
