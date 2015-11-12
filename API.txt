@@ -114,13 +114,9 @@ GET USER'S FILES:
 
 
 ERASE FILE:
-	url: <dirección server>/files
+	url: <dirección server>/files?email=<email>&token=<token>&path=<path>&id=<id>
 	Método: DELETE
-	Body:{
-		“email”:”<email>”,
-		“token”:”<token>”,
-		“id”:”<id>”
-		}
+	
 	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe 
 	
 	un mensaje de success con el id del archivo borrado.
