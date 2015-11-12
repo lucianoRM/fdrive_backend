@@ -143,29 +143,21 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::ERASEFILE_DELETE:
 			{
-				//Needed for filtering unnecesary headers
-				char json[conn->content_len + 1];
-				char *content = conn->content;
-				content[conn->content_len] = '\0';
-				strcpy(json, conn->content);
-				Json::Value root;
-				Json::Reader reader;
-				if (!reader.parse(json, root, false))
-					throw FileException();
 
-				if (!root.isMember("email") || !root.isMember("token")) throw RequestException();
-				if (!root.isMember("id") || !root.isMember("path")) throw RequestException();
+				char email[100], token[100], id[100],path[300];
+				mg_get_var(conn, "email", email, sizeof(email));
+				mg_get_var(conn, "token", token, sizeof(token));
+				mg_get_var(conn, "id", id, sizeof(id));
+				mg_get_var(conn, "path", path, sizeof(path));
+				if (strlen(email) == 0) throw RequestException();
+				if (strlen(token) == 0) throw RequestException();
+				if (strlen(id) == 0) throw RequestException();
+				if (strlen(path) == 0) throw RequestException();
 
-				std::string email, token, path;
-				int id;
-				email = root["email"].asString();
-				token = root["ctoken"].asString();
-				id = root["id"].asInt();
-				path = root["path"].asString();
 
-				this->userManager->checkIfLoggedIn(email, token);
-                this->fileManager->checkIfUserHasFilePermits(id, email);
-				result = this->fileManager->eraseFileFromUser(id, email, path);
+				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
+                this->fileManager->checkIfUserHasFilePermits(atoi(id), std::string(email));
+				result = this->fileManager->eraseFileFromUser(atoi(id), std::string(email), std::string(path));
 				break;
 			}
 			case requestCodes::LOADUSERFILES_GET:
