@@ -251,32 +251,37 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
     if (user.compare(this->owner) == 0) {
         for (std::string sharedUser : *this->users) {
-            this->deleteFromUser(db, sharedUser, "shared");
+            this->eraseFromUser(db, sharedUser, "shared");
         }
-        this->deleteFromUser(db, user, path);
-        Folder* folder = NULL;
-        try {
-            folder = Folder::load(db, user, "trash");
-            folder->addFile(this->id, metadata->name + "." + metadata->extension);
-            folder->save(db);
-        } catch (std::exception& e) {
-            if (folder != NULL) delete folder;
-            throw;
-        }
-        delete folder;
-        this->users->clear();
-    } else {
-        this->deleteFromUser(db, user, "shared");
-        this->users->remove(user);
     }
+    //this->deleteFromUser(db, user, path);
+    Folder* folder = NULL;
+    try {
+        folder = Folder::load(db, user, "trash");
+        folder->addFile(this->id, metadata->name + "." + metadata->extension);
+        folder->save(db);
+        delete folder;
+        folder = Folder::load(db, user, path);
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception& e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+    delete folder;
+    //this->users->clear();
+//} else {
+    //this->deleteFromUser(db, user, "shared");
+    this->users->remove(user);
+//}
 }
-
+/*
 void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
 
     SearchInformation* owner = NULL;
     try {
         owner =  SearchInformation::load(db, "owner", user, this->owner);
-        owner->eraseFile(this->id); //, path);
+        owner->eraseFile(this->getId()); //, path);
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
@@ -332,6 +337,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
     delete folder;
 }
+*/
 
 void File::addSharedUser(std::string user) {
     if (std::find(this->users->begin(), this->users->end(), user) != this->users->end()) {
