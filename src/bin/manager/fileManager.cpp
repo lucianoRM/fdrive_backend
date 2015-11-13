@@ -225,5 +225,8 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
         delete file;
         throw;
     }
+
+    delete file;
+    delete db;
     return "{ \"result\" : true }";
 }
