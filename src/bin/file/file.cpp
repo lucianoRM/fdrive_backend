@@ -249,7 +249,7 @@ void File::checkIfUserIsOwner(std::string email) {
 
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
-    if (user.compare(this->owner)) {
+    if (user.compare(this->owner) == 0) {
         for (std::string sharedUser : *this->users) {
             this->deleteFromUser(db, sharedUser, "shared");
         }

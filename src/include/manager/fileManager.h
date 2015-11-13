@@ -25,7 +25,7 @@ class FileManager: public Manager {
         File* openFile(int id);
 
         std::string saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size); // Saves new file.
-        std::string saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags, int size); // It only replaces the old one. It should save different versions.
+        std::string saveNewVersionOfFile(std::string email, int id, int oldVersion, bool overwrite, std::string name, std::string extension, std::vector<std::string> tags, int size); // It only replaces the old one. It should save different versions.
         std::string loadFile(int id); //Loads file
 
         void checkIfUserHasFilePermits(int id, std::string email);

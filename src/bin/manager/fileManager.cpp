@@ -67,11 +67,24 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
     u_manager.addFile(email, size);
 
-    return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " }";
+    return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " , \"version\" : 0 }";
 }
 
-std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::string name, std::string extension, std::vector<std::string> tags, int size) {
+std::string FileManager::saveNewVersionOfFile(std::string email, int id, int oldVersion, bool overwrite, std::string name, std::string extension, std::vector<std::string> tags, int size) {
     File* file = this->openFile(id);
+
+    int latestVersion = file->getLatestVersion();
+    if (latestVersion < oldVersion) {
+        delete file;
+        throw InexistentVersion();
+    }
+    if (!overwrite) {
+        if (latestVersion > oldVersion) {
+            delete file;
+            throw LastFileVersionNotDownload();
+        }
+    }
+
     File* oldFile;
     try {
         oldFile = this->openFile(id);
@@ -174,22 +187,11 @@ void FileManager::checkIfUserIsOwner(int id, std::string email) {
 
 std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users) {
 	File* file = this->openFile(id);
-	int size = file->getSize();
 	delete file;
 	UserManager u_manager;
-	/* A shared file does not occupy quota in the others...
-    for (std::string user : users) {
-		u_manager.checkFileAddition(user, size);
-	}
-	*/
 	for (std::string user : users) {
 		this->shareFileToUser(id, user);
 	}
-    /* Ídem...
-	for (std::string user : users) {
-		u_manager.addFile(user, size);
-	}
-     */
 	return "{ \"result\" : true }";
 }
 
