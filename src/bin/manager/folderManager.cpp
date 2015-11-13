@@ -11,6 +11,7 @@ FolderManager::~FolderManager() { }
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
     rocksdb::DB* db = this->openDatabase("En AddFolder: ",'w');
 
+    Folder* folder = NULL;
     try {
         Folder *folder = Folder::load(db, email, path);
         folder->addFolder(nameFolder);

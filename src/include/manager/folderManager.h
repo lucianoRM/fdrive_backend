@@ -5,6 +5,8 @@
 #ifndef FDRIVE_FOLDERMANAGER_H
 #define FDRIVE_FOLDERMANAGER_H
 
+#include "Manager.h"
+
 class FolderManager: public Manager {
 
 private:
@@ -12,8 +14,6 @@ private:
 public:
     FolderManager();
     ~FolderManager();
-
-    File* openFile(int id);
 
     std::string addFolder(std::string email, std::string path, std::string nameFolder); // Saves new file.
 
