@@ -3,6 +3,7 @@
 //
 
 #include <folder/folder.h>
+#include <sys/stat.h>
 #include "folderManager.h"
 
 FolderManager::FolderManager() { }
@@ -16,6 +17,7 @@ std::string FolderManager::addFolder(std::string email, std::string path, std::s
         folder = Folder::load(db, email, path);
         folder->addFolder(nameFolder,db);
         folder->save(db);
+        mkdir(("files/"+email+"/path/"+nameFolder).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
         delete db;
