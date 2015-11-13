@@ -3,8 +3,8 @@
 
 #include <string.h>
 #include <list>
+#include <unordered_map>
 #include <algorithm>
-#include <ctime>
 #include "rocksdb/db.h"
 #include "json/json.h"
 #include "json/json-forwards.h"
@@ -15,20 +15,8 @@
 #include "exceptions/requestExceptions.h"
 #include "searchInformation/searchInformation.h"
 #include "folder/folder.h"
+#include "version.h"
 
-// Struct containing the metadata belonging to a file.
-struct metadata {
-    int id;
-    std::string name;
-    std::string extension;
-    std::string owner;
-    std::string ownerPath; // Path of file in owner's account.
-    std::string lastModified;
-    std::string lastUser; // Last user that modified the file.
-    std::list<std::string>* tags;
-    int size; // In MB.
-
-};
 
 // Class to represent the logical structure of a File. In other wors its metadata,
 // It's used to set the metadata whenever there is a change on a file, or there is a new File
@@ -37,12 +25,16 @@ struct metadata {
 class File {
 
     private:
-        struct metadata* metadata;
+        int id;
+        int lastVersion;
+        std::string owner;
         std::list<std::string>* users;
+        std::unordered_map<int, Version*>* versions;
 
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
-        std::string getKey(); // Returns key made from file metadata.
         void deleteFromUser(rocksdb::DB* db, std::string email, std::string path);
+        Json::Value addFileData(Json::Value json);
+        Json::Value getJson(int version);
 
     public:
         /* In the File constructor:
@@ -59,16 +51,19 @@ class File {
         void setLastModDate( );
         void setLastUser(std::string newLastUser);
         void setTag(std::string newTag);
-        void setId(int id);
         void setSize(int size);
+        void setId(int id);
         void genId(rocksdb::DB* db); // ID to be generated when adding a new file.
         int getId();
         int getSize();
+        int getLatestVersion();
         std::string getOwner();
         std::list<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata and users.
+
+        void startNewVersion();
 
         static File* load(rocksdb::DB* db, int id);
         void load(rocksdb::DB* db); // Loads the metadata from the db. Id needs to be set.

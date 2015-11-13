@@ -97,7 +97,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (!reader.parse(json, root, false))
 					throw RequestException();
 
-                int id, size;
+                int id, size, version;
                 std::string email, token, name, extension, path;
 
                 if (!root.isMember("id")) {
@@ -106,10 +106,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                     id = root["id"].asInt();
 				}
 				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
-				if (! root.isMember("name") || ! root.isMember("extension") ||
-					! root.isMember("tags") || !root.isMember("size"))
-					throw RequestException();
+				if (! root.isMember("name") || ! root.isMember("extension")) throw RequestException();
+				if (! root.isMember("tags") || !root.isMember("size")) throw RequestException();
                 if (id == -1 && !root.isMember("path")) throw RequestException();
+				//if (id != -1 && !root.isMember("version")) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
@@ -127,6 +127,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                     path = root["path"].asString();
 					result = this->fileManager->saveFile(email, name, extension, path, vtags, size);
 				} else {
+					//version = root["version"].asInt();
                     this->fileManager->checkIfUserHasFilePermits(id, email);
 					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags, size); //TODO terminar bien esta función.
 				}
@@ -271,8 +272,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				}
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
-				this->fileManager->checkIfUserIsOwner(file->getMetadata()->id, email);
-				FILE* fout = fopen(("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str(), "w");
+				this->fileManager->checkIfUserIsOwner(file->getId(), email);
+				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str(), "w");
 				fwrite(filedata, filedata_len, 1, fout);
 				free(filedata);
 				fclose(fout);
@@ -296,8 +297,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				id = atoi(cid);
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
-				this->fileManager->checkIfUserIsOwner(file->getMetadata()->id, email);
-				const char* path = ("files/"+file->getMetadata()->owner+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
+				this->fileManager->checkIfUserIsOwner(file->getId(), email);
+				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
 				const char* extraHeaders = ("Content-Disposition: attachment; filename=\""+file->getMetadata()->name+file->getMetadata()->extension+"\"\r\n").c_str();
 				std::cout << extraHeaders << std::endl;
 				mg_send_file(conn, path, extraHeaders);
