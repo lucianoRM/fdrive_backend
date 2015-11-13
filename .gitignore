@@ -4,3 +4,4 @@ testdb/*
 lastrun
 userTestDB/*
 CMakeFiles/
+files/*

@@ -4,6 +4,7 @@ import json
 from subprocess import call
 import inspect, os
 import datetime
+import filecmp
 
 class TestFile(unittest.TestCase):
 	
@@ -29,7 +30,6 @@ class TestFile(unittest.TestCase):
 			"size":			2		# En MB.
 		}
 		r = requests.post("http://localhost:8000/files", json = payload)
-		print json.dumps(r.json())
 		self.assertEqual(True, r.json()["result"])
 		self.assertIn("fileID", r.json())
 		self.assertIsNotNone(r.json()["fileID"])
@@ -143,6 +143,35 @@ class TestFile(unittest.TestCase):
 		self.assertFalse(r.json()["result"])
 		self.assertEqual(["The user has no permits for specified file."], r.json()["errors"])
 		self.assertEqual(2, len(r.json()))
+
+	def test_file_upload(self):
+		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
+		files = {'upload': open(python_file_path, 'rb')}
+		token = self._signup_and_login("testemail")
+		fileid = self._save_new_file(token, "somefilename")
+		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		self.assertTrue(r.json()["result"])
+		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)
+		self.assertTrue(os.path.isfile(server_file_path))
+		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
+
+	def test_file_download(self):
+		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
+		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
+		files = {'upload': open(python_file_path, 'rb')}
+		token = self._signup_and_login("testemail")
+		fileid = self._save_new_file(token, "somefilename")
+		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		self.assertTrue(r.json()["result"])
+
+		r = requests.get("http://localhost:8000/filesdownload?id="+str(fileid)+"&email=testemail&token="+token)
+		call(["rm", "-rf", downloaded_file_path])
+		with open(downloaded_file_path, 'wb') as f:
+			for chunk in r.iter_content(chunk_size=1024):
+				if chunk:
+					f.write(chunk)
+		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
+		call(["rm", "-rf", downloaded_file_path])
 
 if __name__ == '__main__':
     unittest.main()
