@@ -5,6 +5,7 @@
 #include <folder/folder.h>
 #include <sys/stat.h>
 #include "folderManager.h"
+#include <stdio.h>
 
 FolderManager::FolderManager() { }
 FolderManager::~FolderManager() { }
@@ -55,7 +56,7 @@ std::string FolderManager::renameFolder(std::string email, std::string path, std
         throw;
     }
 
-    int result = rename("files/"+email+"/path/"+oldName,"files/"+email+"/path/"+newName);
+    int result = rename( ("files/"+email+"/path/"+oldName).c_str(),("files/"+email+"/path/"+newName).c_str());
 
     delete folder;
     delete db;
