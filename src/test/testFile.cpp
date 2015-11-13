@@ -42,14 +42,24 @@ TEST(FileCreationTest, CreateFileWithBasicInformation) {
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.4", &json);
     Json::Reader reader;
     Json::Value root;
+    
+    //std::cout << "El json es: " << json << std::endl;
+    
     EXPECT_TRUE(reader.parse(json, root, false));
-    EXPECT_EQ("Nombre", root["name"].asString());
-    EXPECT_EQ("ext", root["extension"].asString());
     EXPECT_EQ("Owner", root["owner"].asString());
-    EXPECT_EQ("root", root["pathInOwner"].asString());
-    EXPECT_EQ("OtherUser", root["lastUser"].asString());
-    EXPECT_TRUE(root.isMember("lastModified")); //Deberíamos chequear también el valor.
-    EXPECT_TRUE(root.isMember("users"));
+    EXPECT_TRUE(root.isMember("lastVersion")); 
+    EXPECT_EQ(0, root["lastVersion"].asInt());
+    EXPECT_TRUE(root.isMember("users")); 
+    EXPECT_TRUE(root["users"].begin() == root["users"].end());
+    EXPECT_TRUE(root.isMember("versions"));
+
+    EXPECT_TRUE(root["versions"].isMember("0"));
+    EXPECT_FALSE(root["versions"].isMember("1"));
+    EXPECT_EQ("Nombre", root["versions"]["0"]["name"].asString());
+    EXPECT_EQ("ext", root["versions"]["0"]["extension"].asString());
+    EXPECT_EQ("root", root["versions"]["0"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser", root["versions"]["0"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
 
     delete db;
     FILE_deleteDatabase();
@@ -69,13 +79,19 @@ TEST(FileCreationTest, LoadFile) {
     delete file;
     file = File::load(db, 0);
     Json::Value json = file->getJson();
+    
+    //std::cout << "El json es: " << json << std::endl;
+    
+    EXPECT_EQ("Owner", json["owner"].asString());
+    EXPECT_TRUE(json.isMember("lastVersion")); 
+    EXPECT_EQ(0, json["lastVersion"].asInt());
+    EXPECT_TRUE(json.isMember("users")); 
+    EXPECT_TRUE(json["users"].begin() == json["users"].end());
     EXPECT_EQ("Nombre", json["name"].asString());
     EXPECT_EQ("ext", json["extension"].asString());
-    EXPECT_EQ("Owner", json["owner"].asString());
     EXPECT_EQ("root", json["pathInOwner"].asString());
     EXPECT_EQ("OtherUser", json["lastUser"].asString());
-    EXPECT_TRUE(json.isMember("lastModified")); //Deberíamos chequear también el valor.
-    EXPECT_TRUE(json.isMember("users"));
+    EXPECT_TRUE(json.isMember("lastModified"));	//Deberíamos chequear también el valor.
 
     delete db;
     FILE_deleteDatabase();
@@ -119,3 +135,164 @@ TEST(IdGenerationTest, TouchingDatabase) {
     delete db;
     FILE_deleteDatabase();
 }
+
+TEST(VersionTest, TwoVersionsThenSave) {
+	rocksdb::DB* db = FILE_openDatabase();
+
+    File* file = new File();
+    file->setId(4);
+    file->setName("Nombre");
+    file->setExtension("ext");
+    file->setOwner("Owner");
+    file->setOwnerPath("root");
+    file->setLastUser("OtherUser");
+    
+    file->startNewVersion();
+    file->setName("Nombre2");
+    file->setExtension("ext2");
+    // El owner no cambia en toda la vida del archivo se supone.
+    file->setOwnerPath("root/files");
+    file->setLastUser("OtherUser2");
+    
+    file->save(db);
+    delete file;
+    
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.4", &json);
+    Json::Reader reader;
+    Json::Value root;
+    
+    //std::cout << "El json es: " << json << std::endl;
+    
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Owner", root["owner"].asString());
+    EXPECT_TRUE(root.isMember("lastVersion")); 
+    EXPECT_EQ(1, root["lastVersion"].asInt());
+    EXPECT_TRUE(root.isMember("users")); 
+    EXPECT_TRUE(root["users"].begin() == root["users"].end());
+    EXPECT_TRUE(root.isMember("versions"));
+
+    EXPECT_TRUE(root["versions"].isMember("0"));
+    EXPECT_EQ("Nombre", root["versions"]["0"]["name"].asString());
+    EXPECT_EQ("ext", root["versions"]["0"]["extension"].asString());
+    EXPECT_EQ("root", root["versions"]["0"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser", root["versions"]["0"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
+
+	EXPECT_TRUE(root["versions"].isMember("1"));
+	EXPECT_EQ("Nombre2", root["versions"]["1"]["name"].asString());
+    EXPECT_EQ("ext2", root["versions"]["1"]["extension"].asString());
+    EXPECT_EQ("root/files", root["versions"]["1"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser2", root["versions"]["1"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["1"].isMember("lastModified")); //Deberíamos chequear también el valor.
+
+    delete db;
+    FILE_deleteDatabase();
+}
+
+
+TEST(VersionTest, OneVersionSaveThenSecondAndSave) {
+	rocksdb::DB* db = FILE_openDatabase();
+
+    File* file = new File();
+    file->setId(4);
+    file->setName("Nombre");
+    file->setExtension("ext");
+    file->setOwner("Owner");
+    file->setOwnerPath("root");
+    file->setLastUser("OtherUser");
+    file->save(db);
+    delete file;
+    
+    file = File::load(db, 4);
+    file->startNewVersion();
+    file->setName("Nombre2");
+    file->setExtension("ext2");
+    // El owner no cambia en toda la vida del archivo se supone. Asique si le cambia, le cambia a todas las versiones.
+    file->setOwnerPath("root/files");
+    file->setLastUser("OtherUser2");
+    file->save(db);
+    delete file;
+    
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.4", &json);
+    Json::Reader reader;
+    Json::Value root;
+    
+    //std::cout << "El json es: " << json << std::endl;
+    
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Owner", root["owner"].asString());
+    EXPECT_TRUE(root.isMember("lastVersion")); 
+    EXPECT_EQ(1, root["lastVersion"].asInt());
+    EXPECT_TRUE(root.isMember("users")); 
+    EXPECT_TRUE(root["users"].begin() == root["users"].end());
+    EXPECT_TRUE(root.isMember("versions"));
+
+    EXPECT_TRUE(root["versions"].isMember("0"));
+    EXPECT_EQ("Nombre", root["versions"]["0"]["name"].asString());
+    EXPECT_EQ("ext", root["versions"]["0"]["extension"].asString());
+    EXPECT_EQ("root", root["versions"]["0"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser", root["versions"]["0"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
+
+	EXPECT_TRUE(root["versions"].isMember("1"));
+	EXPECT_EQ("Nombre2", root["versions"]["1"]["name"].asString());
+    EXPECT_EQ("ext2", root["versions"]["1"]["extension"].asString());
+    EXPECT_EQ("root/files", root["versions"]["1"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser2", root["versions"]["1"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["1"].isMember("lastModified")); //Deberíamos chequear también el valor.
+
+    delete db;
+    FILE_deleteDatabase();
+}
+
+TEST(VersionTest, LoadVersionAndChangeData) {
+	rocksdb::DB* db = FILE_openDatabase();
+
+    File* file = new File();
+    file->genId(db); //Queda id = 0.
+    file->setName("Nombre");
+    file->setExtension("ext");
+    file->setOwner("Owner");
+    file->setOwnerPath("root");
+    file->setLastUser("OtherUser");
+    file->save(db);
+    delete file;
+    
+    file = File::load(db, 0);
+    file->setName("Nombre2");
+    file->setExtension("ext2");
+    // El owner no cambia en toda la vida del archivo se supone. Asique si le cambia, le cambia a todas las versiones.
+    file->setOwnerPath("root/files");
+    file->setLastUser("OtherUser2");
+    file->save(db);
+    delete file;
+    
+    std::string json;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.0", &json);
+    Json::Reader reader;
+    Json::Value root;
+    
+    //std::cout << "El json es: " << json << std::endl;
+    
+    EXPECT_TRUE(reader.parse(json, root, false));
+    EXPECT_EQ("Owner", root["owner"].asString());
+    EXPECT_TRUE(root.isMember("lastVersion")); 
+    EXPECT_EQ(0, root["lastVersion"].asInt());
+    EXPECT_TRUE(root.isMember("users")); 
+    EXPECT_TRUE(root["users"].begin() == root["users"].end());
+    EXPECT_TRUE(root.isMember("versions"));
+
+    EXPECT_TRUE(root["versions"].isMember("0"));
+    EXPECT_EQ("Nombre2", root["versions"]["0"]["name"].asString());
+    EXPECT_EQ("ext2", root["versions"]["0"]["extension"].asString());
+    EXPECT_EQ("root/files", root["versions"]["0"]["pathInOwner"].asString());
+    EXPECT_EQ("OtherUser2", root["versions"]["0"]["lastUser"].asString());
+    EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
+
+    
+    delete db;
+    FILE_deleteDatabase();
+}
+
