@@ -148,6 +148,6 @@ UPLOAD FILE:
 	Respuesta: {"result": true}
 
 ADD FOLDER:
-	url: <dirección server>/addfolder?id=<id>&email=<email>&token=<token>&path=<path>
+	url: <dirección server>/addfolder?email=<email>&token=<token>&path=<path>&name=<name>
 	Método: POST
 	Respuesta: {"result": true}

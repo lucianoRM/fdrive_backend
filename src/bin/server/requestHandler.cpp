@@ -204,7 +204,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(email, token);
 				this->fileManager->checkIfUserIsOwner(id, email);
 				this->fileManager->shareFileToUsers(id, users);
-				
+
+				break;
 			}
 			case requestCodes::FILEUPLOAD_POST:
 			{
@@ -277,6 +278,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_printf_data(conn, "{ \"result\" : true }");
 
 				return MG_TRUE;
+
+				break;
 			}
 			case requestCodes::FILEDOWNLOAD_GET:
 			{
@@ -298,19 +301,21 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				std::cout << extraHeaders << std::endl;
 				mg_send_file(conn, path, extraHeaders);
 				return MG_MORE;
+
+				break;
 			}
 
 			case requestCodes::ADDFOLDER_POST:
 			{
-				char cemail[100], ctoken[100], cpath[100];
+				char cemail[100], ctoken[100], cpath[100], cname[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "path", cpath, sizeof(cpath));
-				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0) throw RequestException();
+				mg_get_var(conn, "name", cname, sizeof(cname));
+				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0 || strlen(cname) == 0) throw RequestException();
 
-				result = this->folderManager->addFolder(std::string(cemail), std::string(cpath), std::string(ctoken));
-				return MG_TRUE;
-				break;
+				this->userManager->checkIfLoggedIn(cemail, ctoken);
+				result = this->folderManager->addFolder(std::string(cemail), std::string(cpath), std::string(cname));
 			}
 			default:
 				return -1;
