@@ -316,6 +316,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				this->userManager->checkIfLoggedIn(cemail, ctoken);
 				result = this->folderManager->addFolder(std::string(cemail), std::string(cpath), std::string(cname));
+				break;
 			}
 			default:
 				return -1;
