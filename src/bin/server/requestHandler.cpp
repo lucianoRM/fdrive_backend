@@ -5,6 +5,7 @@ RequestHandler::RequestHandler() {
 
 	this->userManager = new UserManager();
 	this->fileManager = new FileManager();
+	this->folderManager = new FolderManager();
 
 	this->codesMap = new std::unordered_map<std::string,int>;
 	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;
@@ -18,12 +19,14 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
 	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
 	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
+	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
 }
 
 RequestHandler::~RequestHandler(){
 	delete this->codesMap;
 	delete this->userManager;
 	delete this->fileManager;
+	delete this->folderManager;
 }
 
 int RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
@@ -295,6 +298,19 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				std::cout << extraHeaders << std::endl;
 				mg_send_file(conn, path, extraHeaders);
 				return MG_MORE;
+			}
+
+			case requestCodes::ADDFOLDER_POST:
+			{
+				char cemail[100], ctoken[100], cpath[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				mg_get_var(conn, "path", cpath, sizeof(cpath));
+				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0) throw RequestException();
+
+				result = this->folderManager->addFolder(std::string(cemail), std::string(cpath), std::string(ctoken));
+				return MG_TRUE;
+				break;
 			}
 			default:
 				return -1;
