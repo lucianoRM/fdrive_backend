@@ -2,6 +2,7 @@
 // Created by martin on 13/11/15.
 //
 
+#include <user/user.h>
 #include "googletest/include/gtest/gtest.h"
 #include "googletest/include/gtest/internal/gtest-internal.h"
 #include "googletest/include/gtest/internal/gtest-port.h"
@@ -195,6 +196,12 @@ TEST(FolderTest, RemoveFile) {
         return;
     }
 
+    User* user = new User();
+    user->setEmail("owner");
+    user->setPassword("password");
+    user->signup(db);
+    user = user->load(db,"owner");
+
     File* file = new File();
     file->genId(db);
     file->setName("Nombre");
@@ -206,15 +213,27 @@ TEST(FolderTest, RemoveFile) {
     int id = file->getId();
     delete file;
 
-    std::string json = getEmptyJson();
-    db->Put(rocksdb::WriteOptions(),"owner.root",json);
-
     Folder* folder = Folder::load(db,"owner","root");
     folder->addFile(id,"Nombre");
     folder->save(db);
 
     file = File::load(db,id);
-    EXPECT_NO_THROW(file->eraseFromUser(db,"owner","root"));
+    file->eraseFromUser(db,"owner","root");
+    file->save(db);
+
+    folder = Folder::load(db,"owner","root");
+    std::string json = folder->getContent();
+    Json::Reader reader;
+    Json::Value root;
+
+    std::cout << "El json es: " << json << std::endl;
+
+    EXPECT_TRUE(reader.parse(json, root, false));
+    Json::Value files = root["files"];
+    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
+        std::cout << "\n TIENE: " << it->asString();
+        EXPECT_NE(it->asInt(),id);
+    }
 
     delete db;
     delete file;

@@ -220,6 +220,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     try {
         db = this->openDatabase("En eraseFileFromUser: ",'w');
         file->eraseFromUser(db, email, path);
+        file->save(db);
     } catch (std::exception& e) {
         if (db != NULL) delete db;
         delete file;
