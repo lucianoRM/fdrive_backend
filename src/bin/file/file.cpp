@@ -1,103 +1,90 @@
 #include "file.h"
 
 File::File() {
-    this->metadata = new struct metadata;
-    this->metadata->id = -1;
-    time_t currTime;
-    time(&currTime);
-    char* time = ctime(&currTime);
-    time[strlen(time) - 1] = '\0'; // Removes \n at the end.
-    this->metadata->lastModified = std::string(time);
-    this->metadata->tags = new std::list<std::string>();
+    this->id = -1;
+    this->lastVersion = 0;
+    Version* version = new Version();
+    this->versions = new std::unordered_map<int, Version*>();
+    (*this->versions)[0] = version;
     this->users = new std::list<std::string>();
 }
 
 File::~File() {
     delete this->users;
-    delete this->metadata->tags;
-    delete this->metadata;
+    for (auto version : (*this->versions)) {
+        delete version.second;
+    }
+    delete this->versions;
 }
 
 void File::setName(std::string newName) {
-    if(newName == "~") throw FilenameNotValidException();
-    this->metadata->name = newName;
+    (*this->versions)[this->lastVersion]->setName(newName);
 }
 
 void File::setExtension(std::string newExt) {
-    if(newExt == ".") throw FileExtensionNotValidException();
-    this->metadata->extension = newExt;
+    (*this->versions)[this->lastVersion]->setExtension(newExt);
 }
 
 void File::setOwner(std::string newOwner) {
-    this->metadata->owner = newOwner;
+    this->owner = newOwner;
 }
 
 void File::setOwnerPath(std::string newPath) {
-    this->metadata->ownerPath = newPath;
+    (*this->versions)[this->lastVersion]->setOwnerPath(newPath);
 }
 
 void File::setLastModDate() {
-    time_t currTime;
-    time(&currTime);
-    char* time = ctime(&currTime);
-    time[strlen(time) - 1] = '\0'; // Removes \n at the end.
-    this->metadata->lastModified = std::string(time);
+    (*this->versions)[this->lastVersion]->setLastModDate();
 }
 
 void File::setLastUser(std::string newLastUser) {
-    this->metadata->lastUser = newLastUser;
+    (*this->versions)[this->lastVersion]->setLastUser(newLastUser);
 }
 
 void File::setTag(std::string newTag) {
-    std::list<std::string>* ftags = this->metadata->tags;
-
-    // Checks if the tag already exists.
-    bool exists = false;
-    std::for_each(ftags->begin(), ftags->end(), [&newTag,&exists](std::string &n){if(!n.compare(newTag)) {exists = true; return;} });
-
-    if(!exists) this->metadata->tags->push_back(newTag);
+    (*this->versions)[this->lastVersion]->setTag(newTag);
 }
 
 void File::setId(int id) {
-    this->metadata->id = id;
+    this->id = id;
 }
 
 struct metadata* File::getMetadata() {
-    return this->metadata;
-}
-
-std::string File::getKey() {
-    std::string key = this->metadata->name + this->metadata->extension + ":" + this->metadata->owner;
-    return key;
+    return (*this->versions)[this->lastVersion]->getMetadata();
 }
 
 int File::getId() {
-    return this->metadata->id;
+    return this->id;
 }
 
 std::string File::getOwner() {
-    return this->metadata->owner;
+    return this->owner;
+}
+
+int File::getLatestVersion() {
+    return this->lastVersion;
 }
 
 Json::Value File::getJson() {
-    Json::Value root;
-    root["name"] = this->metadata->name;
-    root["extension"]  = this->metadata->extension;
-    root["owner"] = this->metadata->owner;
-    root["pathInOwner"] = this->metadata->ownerPath;
-    root["id"] = this->metadata->id;
-    root["lastModified"] = this->metadata->lastModified;
-    root["lastUser"] = this->metadata->lastUser;
+    Json::Value root = this->getJson(this->lastVersion);
+    root["id"] = this->id;
+    root = this->addFileData(root);
+    return root;
+}
 
-    Json::Value tags (Json::arrayValue);
-    std::for_each(this->metadata->tags->begin(),this->metadata->tags->end(),[&tags](std::string &tag){tags.append(tag);});
-    root["tags"] = tags;
+Json::Value File::addFileData(Json::Value json) {
+    json["lastVersion"] = this->lastVersion;
+    json["owner"] = this->owner;
 
     Json::Value users (Json::arrayValue);
     std::for_each(this->users->begin(),this->users->end(),[&users](std::string &user){users.append(user);});
-    root["users"] = users;
+    json["users"] = users;
 
-    return root;
+    return json;
+}
+
+Json::Value File::getJson(int version) {
+    return (*this->versions)[version]->getJson();
 }
 
 // If this function is called is because a file with no id(-1) is trying to be saved.
@@ -124,7 +111,7 @@ void File::genId(rocksdb::DB* db) {
 
     // At this point, fileId has a valid number and db id counter is initialized.
     // The new id is assigned to the file.
-    this->metadata->id = fileId;
+    this->id = fileId;
 }
 
 File* File::load(rocksdb::DB* db, int id) {
@@ -140,7 +127,7 @@ File* File::load(rocksdb::DB* db, int id) {
 }
 
 void File::load(rocksdb::DB* db) {
-    int id = this->metadata->id;
+    int id = this->id;
     if (id < 0) throw FileNotFoundException(); //File id not set.
 
     std::string value;
@@ -154,42 +141,41 @@ void File::load(rocksdb::DB* db) {
     if (! reader.parse(value,root,false)) throw FileException();
 
     // Load metadata into file.
-    this->metadata->owner = root["owner"].asString();
-    this->metadata->ownerPath = root["pathInOwner"].asString();
-    this->metadata->lastModified = root["lastModified"].asString();
-    this->metadata->extension = root["extension"].asString();
-    this->metadata->lastUser = root["lastUser"].asString();
-    this->metadata->name = root["name"].asString();
-
-    Json::Value tags = root["tags"];
-    for (Json::Value::iterator it = tags.begin(); it != tags.end(); it++) {
-        this->metadata->tags->push_back((*it).asString());
-    }
+    this->owner = root["owner"].asString();
+    this->lastVersion = root["lastVersion"].asInt();
 
     Json::Value users = root["users"];
     for (Json::Value::iterator it = users.begin(); it != users.end(); it++) {
         this->users->push_back((*it).asString());
     }
+
+    Json::Value versions = root["versions"];
+    for (int i = 0; i <= this->lastVersion; i++) {
+        (*this->versions)[i] = Version::load(versions[std::to_string(i)]);
+    }
+
+    // Y cambia el lastModified al actual.
+    (*this->versions)[this->lastVersion]->setLastModDate();
 }
 
 
 void File::save(rocksdb::DB* db) {
-    int fileId = this->metadata->id;
-
-    if (fileId < 0) { // Means that the file is new, doesn't exist in the db.
-        this->genId(db); // WARNING:Modifies id value.
+    if (this->id < 0) { // Means that the file is new, doesn't exist in the db.
+        this->genId(db); // WARNING: Modifies id value.
     }
 
-    // At this point the file will have a valid id, needs to ve retrieved from atribute again.
-    fileId = this->metadata->id;
+    Json::Value root;
+    root = this->addFileData(root);
+
+    Json::Value versions;
+    for (auto version : (*this->versions)) {
+        versions[std::to_string(version.first)] = version.second->getJson();
+    }
+    root["versions"] = versions;
 
     // Saves file,
-    Json::Value root = this->getJson();
     Json::StyledWriter writer;
-
-    std::string json = writer.write(root);
-
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files." + std::to_string(fileId), json);
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),"files." + std::to_string(this->id), writer.write(root));
 
     if (!status.ok()) throw DBException();
 }
@@ -197,8 +183,8 @@ void File::save(rocksdb::DB* db) {
 void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     SearchInformation* owner = NULL;
     try {
-        owner =  SearchInformation::load(db, "owner", user, this->metadata->owner);
-        owner->addFile(this->metadata->id, path);
+        owner =  SearchInformation::load(db, "owner", user, this->owner);
+        owner->addFile(this->id, path);
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
@@ -206,10 +192,11 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     }
     delete owner;
 
+    struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
     SearchInformation* name = NULL;
     try {
-        name = SearchInformation::load(db, "name", user, this->metadata->name);
-        name->addFile(this->metadata->id, path);
+        name = SearchInformation::load(db, "name", user, metadata->name);
+        name->addFile(this->id, path);
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
@@ -220,8 +207,8 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
 
     SearchInformation* extension = NULL;
     try {
-        extension = SearchInformation::load(db, "extension", user, this->metadata->extension);
-        extension->addFile(this->metadata->id, path);
+        extension = SearchInformation::load(db, "extension", user, metadata->extension);
+        extension->addFile(this->id, path);
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
@@ -229,11 +216,11 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     }
     delete extension;
 
-    for (std::string tag : *(this->metadata->tags)) {
+    for (std::string tag : *(metadata->tags)) {
         SearchInformation* tagInfo = NULL;
         try {
             tagInfo = SearchInformation::load(db, "tag", user, tag);
-            tagInfo->addFile(this->metadata->id, path);
+            tagInfo->addFile(this->id, path);
             tagInfo->save(db);
         }  catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
@@ -248,7 +235,7 @@ void File::changeSearchInformation(File* oldFile) {
 }
 
 void File::checkIfUserHasPermits(std::string email) {
-    if (this->metadata->owner.compare(email) == 0) return;
+    if (this->owner.compare(email) == 0) return;
     for (std::string user : *users) {
         if (user.compare(email) == 0) return;
     }
@@ -256,12 +243,13 @@ void File::checkIfUserHasPermits(std::string email) {
 }
 
 void File::checkIfUserIsOwner(std::string email) {
-	if (this->metadata->owner.compare(email) == 0) return;
+	if (this->owner.compare(email) == 0) return;
 	throw IsNotTheOwner();
 }
 
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
-    if (user.compare(this->metadata->owner)) {
+    struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
+    if (user.compare(this->owner)) {
         //for (std::string sharedUser : *this->users) {
           //  this->deleteFromUser(db, sharedUser, "shared");
         //}
@@ -269,11 +257,11 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
         Folder* folder = NULL;
         try {
             folder = Folder::load(db, user, "trash");
-            folder->addFile(this->metadata->id, this->metadata->name + "." + this->metadata->extension);
+            folder->addFile(this->id, metadata->name + "." + metadata->extension);
             folder->save(db);
             delete folder;
             folder = Folder::load(db, user, path);
-            folder->removeFile(this->metadata->id);
+            folder->removeFile(this->getId());
             folder->save(db);
         } catch (std::exception& e) {
             if (folder != NULL) delete folder;
@@ -286,12 +274,13 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
         this->users->remove(user);
     }
 }
-
+/*
 void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
+
     SearchInformation* owner = NULL;
     try {
-        owner =  SearchInformation::load(db, "owner", user, this->metadata->owner);
-        owner->eraseFile(this->metadata->id); //, path);
+        owner =  SearchInformation::load(db, "owner", user, this->owner);
+        owner->eraseFile(this->getId()); //, path);
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
@@ -299,10 +288,11 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
     delete owner;
 
+    struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
     SearchInformation* name = NULL;
     try {
-        name = SearchInformation::load(db, "name", user, this->metadata->name);
-        name->eraseFile(this->metadata->id); //, path);
+        name = SearchInformation::load(db, "name", user, metadata->name);
+        name->eraseFile(this->id); //, path);
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
@@ -313,8 +303,8 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
 
     SearchInformation* extension = NULL;
     try {
-        extension = SearchInformation::load(db, "extension", user, this->metadata->extension);
-        extension->eraseFile(this->metadata->id); //, path);
+        extension = SearchInformation::load(db, "extension", user, metadata->extension);
+        extension->eraseFile(this->id); //, path);
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
@@ -322,11 +312,11 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
     delete extension;
 
-    for (std::string tag : *(this->metadata->tags)) {
+    for (std::string tag : *(metadata->tags)) {
         SearchInformation* tagInfo = NULL;
         try {
             tagInfo = SearchInformation::load(db, "tag", user, tag);
-            tagInfo->eraseFile(this->metadata->id); //, path);
+            tagInfo->eraseFile(this->id); //, path);
             tagInfo->save(db);
         } catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
@@ -338,7 +328,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     Folder* folder = NULL;
     try {
         folder = Folder::load(db, user, path);
-        folder->removeFile(this->metadata->id);
+        folder->removeFile(this->id);
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
@@ -346,6 +336,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
     delete folder;
 }
+*/
 
 void File::addSharedUser(std::string user) {
     if (std::find(this->users->begin(), this->users->end(), user) != this->users->end()) {
@@ -360,9 +351,14 @@ std::list<std::string> File::getUsers() {
 }
 
 void File::setSize(int size) {
-	this->metadata->size = size;
+	(*this->versions)[this->lastVersion]->setSize(size);
 }
 
 int File::getSize() {
-	return this->metadata->size;
+	return (*this->versions)[this->lastVersion]->getSize();
+}
+
+void File::startNewVersion() {
+    this->lastVersion++;
+    (*this->versions)[this->lastVersion] = new Version();
 }
