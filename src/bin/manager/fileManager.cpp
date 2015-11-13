@@ -12,7 +12,7 @@ FileManager::~FileManager() { }
 
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
-        File* file = new File();
+    File* file = new File();
     file->setName(name);
     file->setExtension(extension);
     file->setOwner(email);
@@ -28,7 +28,6 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         u_manager.checkFileAddition(email, size);
     } catch (std::exception& e) {
         delete file;
-        ///std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
 
@@ -80,21 +79,19 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
         delete file;
         throw;
     }
+    int oldSize = oldFile->getSize();
+    std::string owner = oldFile->getOwner();
+
+    file->startNewVersion();
     file->setName(name);
     file->setExtension(extension);
     file->setLastUser(email);
-    for (std::string tag : tags ) {
+    file->setSize(size);
+    for (std::string tag : tags) {
         file->setTag(tag);
     }
-    int oldSize = file->getSize();
-    std::string owner = file->getOwner();
-    /* No le saca cuota a quien se lo comparte...
-    std::list<std::string> users = file->getUsers();
-	UserManager u_manager;
-    for (std::string user: users) {
-		u_manager.checkFileSizeChange(user, oldSize, size);
-	}
-    */
+    int newVersion = file->getLatestVersion();
+
     UserManager u_manager;
     try {
         u_manager.checkFileSizeChange(owner, oldSize, size);
@@ -119,14 +116,9 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, std::st
     delete file;
     delete oldFile;
 
-    /* Ídem...
-	for (std::string user: users) {
-		u_manager.changeFileSize(user, oldSize, size);
-	}
-    */
     u_manager.changeFileSize(owner, oldSize, size);
 
-    return "{ \"result\" : \"true\" }"; //TODO devuelve número de versión nueva.
+    return "{ \"result\" : true , \"version\" : " + std::to_string(newVersion) + " }";
 }
 
 File* FileManager::openFile(int id) {
