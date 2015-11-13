@@ -188,3 +188,36 @@ TEST(FolderTest, RenameFolder) {
     delete db;
     FOLDER_deleteDatabase();
 }
+
+TEST(FolderTest, RemoveFile) {
+    rocksdb::DB* db = FOLDER_openDatabase();
+    if (! db) {
+        return;
+    }
+
+    File* file = new File();
+    file->genId(db);
+    file->setName("Nombre");
+    file->setExtension("ext");
+    file->setOwner("owner");
+    file->setOwnerPath("root");
+    file->setLastUser("owner");
+    file->save(db);
+    int id = file->getId();
+    delete file;
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"owner.root",json);
+
+    Folder* folder = Folder::load(db,"owner","root");
+    folder->addFile(id,"Nombre");
+    folder->save(db);
+
+    file = File::load(db,id);
+    EXPECT_NO_THROW(file->eraseFromUser(db,"owner","root"));
+
+    delete db;
+    delete file;
+    delete folder;
+    FOLDER_deleteDatabase();
+}

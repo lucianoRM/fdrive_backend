@@ -119,3 +119,4 @@ TEST(IdGenerationTest, TouchingDatabase) {
     delete db;
     FILE_deleteDatabase();
 }
+

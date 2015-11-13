@@ -64,13 +64,21 @@ void Folder::addFile(int fileId, std::string fileName) {
 }
 
 void Folder::removeFile(int fileId) {
-    size_t i;
-    for (i = 0; i < this->filesIds->size(); i++) {
-        if (this->filesIds->at(i) == fileId) break;
+    int position = 0;
+    bool found = false;
+
+    for (int id: *(this->filesIds)) {
+        if (id == fileId) {
+            found = true;
+            break;
+        }
+        position++;
     }
-    if (i == this->filesIds->size()) throw FileNotInFolderException();
-    this->filesIds->erase(this->filesIds->begin() + i);
-    this->filesNames->erase(this->filesNames->begin() + i);
+
+    if (found == false) throw FileNotInFolderException();
+
+    this->filesIds->erase(this->filesIds->begin() + position);
+    this->filesNames->erase(this->filesNames->begin() + position);
 }
 
 Json::Value Folder::getJson() {
@@ -111,6 +119,7 @@ void Folder::renameFolder(std::string oldName, std::string newName) {
     this->folders->erase(this->folders->begin() + position);
     this->folders->push_back(newName);
 }
+
 
 void Folder::renamePath(std::string newName) {
     this->fullName = newName;

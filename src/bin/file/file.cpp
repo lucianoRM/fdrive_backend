@@ -262,14 +262,18 @@ void File::checkIfUserIsOwner(std::string email) {
 
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     if (user.compare(this->metadata->owner)) {
-        for (std::string sharedUser : *this->users) {
-            this->deleteFromUser(db, sharedUser, "shared");
-        }
-        this->deleteFromUser(db, user, path);
+        //for (std::string sharedUser : *this->users) {
+          //  this->deleteFromUser(db, sharedUser, "shared");
+        //}
+        //this->deleteFromUser(db, user, path);
         Folder* folder = NULL;
         try {
             folder = Folder::load(db, user, "trash");
             folder->addFile(this->metadata->id, this->metadata->name + "." + this->metadata->extension);
+            folder->save(db);
+            delete folder;
+            folder = Folder::load(db, user, path);
+            folder->removeFile(this->metadata->id);
             folder->save(db);
         } catch (std::exception& e) {
             if (folder != NULL) delete folder;
@@ -278,7 +282,7 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
         delete folder;
         this->users->clear();
     } else {
-        this->deleteFromUser(db, user, "shared");
+        //this->deleteFromUser(db, user, "shared");
         this->users->remove(user);
     }
 }
