@@ -139,10 +139,20 @@ SHARE FILE:
 
 
 UPLOAD FILE:
-	url: <dirección server>/filesupload?id=<id>&email=<email>&token=<token>
+	url: <dirección server>/filesupload?email=<email>&token=<token>
 	Método: POST
 	Multipart
 	Body:{
 		"upload":<data>
 	}
+	Respuesta: {"result": true}
+
+ADD FOLDER:
+	url: <dirección server>/addfolder?email=<email>&token=<token>&path=<path>&name=<name>
+	Método: POST
+	Respuesta: {"result": true}
+
+RENAME FOLDER:
+	url: <dirección server>/renamefolder?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
+	Método: POST
 	Respuesta: {"result": true}

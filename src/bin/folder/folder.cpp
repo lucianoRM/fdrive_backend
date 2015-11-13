@@ -23,11 +23,32 @@ bool Folder::checkIfExisting(std::vector<int>* listToCheck, int value) {
     return (std::find(listToCheck->begin(), listToCheck->end(), value) != listToCheck->end());
 }
 
-void Folder::addFolder(std::string folder) {
+std::string Folder::getJsonFileStructure() {
+    Json::Value root;
+    Json::StyledWriter writer;
+
+    Json::Value folders (Json::arrayValue);
+    Json::Value files (Json::arrayValue);
+    Json::Value filesNames (Json::arrayValue);
+
+    root["folders"] = folders;
+    root["files"] = files;
+    root["filesNames"] = filesNames;
+
+    std::string json = writer.write(root);
+
+    return json;
+}
+
+
+void Folder::addFolder(std::string folder, rocksdb::DB* db) {
     if (checkIfExisting(this->folders, folder) ) {
         throw AlreadyExistentFolderException();
     }
     this->folders->push_back(folder);
+
+    std::string fileStructure = getJsonFileStructure();
+    rocksdb::Status status = db->Put(rocksdb::WriteOptions(),user+"."+fullName+"/"+folder,fileStructure);
 }
 
 void Folder::addFile(int fileId, std::string fileName) {
@@ -79,6 +100,21 @@ Json::Value Folder::getJson() {
     return root;
 }
 
+void Folder::renameFolder(std::string oldName, std::string newName) {
+    int position = 0;
+    for (std::string folder: *(this->folders)) {
+        if (folder.compare(oldName) == 0) {
+            break;
+        }
+        position++;
+    }
+    this->folders->erase(this->folders->begin() + position);
+    this->folders->push_back(newName);
+}
+
+void Folder::renamePath(std::string newName) {
+    this->fullName = newName;
+}
 
 Folder* Folder::load(rocksdb::DB* db, std::string email, std::string path) {
     Folder* folder = new Folder();

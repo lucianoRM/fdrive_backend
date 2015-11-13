@@ -27,11 +27,13 @@ class Folder {
         bool checkIfExisting(std::vector<std::string>* listToCheck, std::string value);
         bool checkIfExisting(std::vector<int>* listToCheck, int value);
         Json::Value getJson();
+        std::string getJsonFileStructure();
 
-    public:
+
+        public:
         Folder();
         ~Folder();
-        void addFolder(std::string folder);
+        void addFolder(std::string folder, rocksdb::DB* db);
         void addFile(int fileId, std::string fileName);
         void removeFile(int fileId);
 
@@ -39,6 +41,8 @@ class Folder {
         void save(rocksdb::DB* db);
 
         std::string getContent();
+        void renameFolder(std::string oldName, std::string newName);
+        void renamePath(std::string newName);
 };
 
 #endif //FDRIVE_FOLDER_H
