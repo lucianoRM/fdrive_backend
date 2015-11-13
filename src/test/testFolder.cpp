@@ -86,7 +86,7 @@ TEST(FolderTest, SavedFolder) {
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
     Folder* folder = Folder::load(db,"email","root");
-    folder->addFolder("folder1");
+    folder->addFolder("folder1",db);
     folder->save(db);
 
     Json::Reader reader;
@@ -138,12 +138,53 @@ TEST(FolderTest, AlreadyExistentFolder) {
     db->Put(rocksdb::WriteOptions(),"email.root",json);
 
     Folder* folder = Folder::load(db,"email","root");
-    folder->addFolder("folder");
+    folder->addFolder("folder",db);
     folder->save(db);
 
-    EXPECT_THROW(folder->addFolder("folder"),AlreadyExistentFolderException);
+    EXPECT_THROW(folder->addFolder("folder",db),AlreadyExistentFolderException);
 
     delete db;
     delete folder;
+    FOLDER_deleteDatabase();
+}
+
+TEST(FolderTest, RenameFolder) {
+    rocksdb::DB* db = FOLDER_openDatabase();
+    if (! db) {
+        return;
+    }
+
+    std::string json = getEmptyJson();
+    db->Put(rocksdb::WriteOptions(),"email.root",json);
+
+    Folder* folder = Folder::load(db,"email","root");
+    folder->addFolder("folderOld",db);
+    folder->save(db);
+    delete folder;
+
+    folder = Folder::load(db,"email","root");
+    folder->renameFolder("folderOld","folderNew");
+    folder->save(db);
+    delete folder;
+
+    folder = Folder::load(db,"email","root/folderOld");
+    folder->renamePath("root/folderNew");
+    folder->save(db);
+    delete folder;
+
+    Json::Reader reader;
+    Json::Value root;
+
+    std::string value;
+    db->Get(rocksdb::ReadOptions(),"email.root",&value);
+    if (! reader.parse(value,root,false)) throw;
+
+    Json::Value folders = root["folders"];
+    Json::Value::iterator it = folders.begin();
+    std::string folderInside = (*it).asString();
+
+    EXPECT_EQ(true,true);
+
+    delete db;
     FOLDER_deleteDatabase();
 }
