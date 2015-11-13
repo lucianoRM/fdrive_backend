@@ -29,6 +29,8 @@ std::string UserManager::addUser(std::string email, std::string password) {
         user->signup(db);
         mkdir(("files/"+email).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
         mkdir(("files/"+email+"/root").c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+        mkdir(("files/"+email+"/shared").c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+        mkdir(("files/"+email+"/trash").c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     } catch (std::exception& e) {
         delete user;
         if (db != NULL) {

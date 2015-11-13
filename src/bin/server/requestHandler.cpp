@@ -20,6 +20,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
 	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
 	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
+	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
 }
 
 RequestHandler::~RequestHandler(){
@@ -318,6 +319,22 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->folderManager->addFolder(std::string(cemail), std::string(cpath), std::string(cname));
 				break;
 			}
+
+			case requestCodes::RENAMEFOLDER_POST:
+			{
+				char cemail[100], ctoken[100], cpath[100], cnameold[100], cnamenew[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				mg_get_var(conn, "path", cpath, sizeof(cpath));
+				mg_get_var(conn, "nameold", cnameold, sizeof(cnameold));
+				mg_get_var(conn, "namenew", cnamenew, sizeof(cnamenew));
+				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0 || strlen(cnameold) == 0 || strlen(cnamenew) == 0) throw RequestException();
+
+				this->userManager->checkIfLoggedIn(cemail, ctoken);
+				result = this->folderManager->renameFolder(cemail,cpath,cnameold,cnamenew);
+				break;
+			}
+
 			default:
 				return -1;
 		}
