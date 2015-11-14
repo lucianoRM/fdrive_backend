@@ -21,6 +21,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
 	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
 	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
+	(*this->codesMap)["/searches:GET"] = requestCodes::SEARCHES_GET;
 }
 
 RequestHandler::~RequestHandler(){
@@ -337,6 +338,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->folderManager->renameFolder(cemail,cpath,cnameold,cnamenew);
 				break;
 			}
+			case requestCodes::SEARCHES_GET:
+			{
+				char cemail[100], ctoken[100], cpath[100], ctypeOfSearch[100], celement[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				mg_get_var(conn, "typeofsearch", ctypeOfSearch, sizeof(ctypeOfSearch));
+				mg_get_var(conn, "element", celement, sizeof(celement));
+				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0 || strlen(ctypeOfSearch) == 0 || strlen(celement) == 0) throw RequestException();
+
+				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+				result = this->fileManager->getSearches(std::string(cemail),std::string(ctypeOfSearch),std::string(celement));
+				break;
+			}
+
 
 			default:
 				return -1;
