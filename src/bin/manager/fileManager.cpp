@@ -5,6 +5,7 @@
 #include <folder/folder.h>
 #include "fileManager.h"
 #include "userManager.h"
+#include <stdio.h>
 
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
@@ -227,7 +228,15 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
         throw;
     }
 
+    // If we are in this point the logical remove (metadata) was correct
+    std::string result = "false";
+
+    int success = rename( ("files/"+email+"/path/"+std::to_string(id)).c_str(),("files/"+email+"/trash/"+std::to_string(id)).c_str());
+    if (success == 0) {
+        result = "true";
+    }
+
     delete file;
     delete db;
-    return "{ \"result\" : true }";
+    return "{ \"result\" : " + result + " }";
 }

@@ -254,21 +254,21 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
             this->eraseFromUser(db, sharedUser, "shared");
         }
     }
-    //this->deleteFromUser(db, user, path);
-    Folder* folder = NULL;
-    try {
-        folder = Folder::load(db, user, "trash");
-        folder->addFile(this->id, metadata->name + "." + metadata->extension);
-        folder->save(db);
+        //this->deleteFromUser(db, user, path);
+        Folder* folder = NULL;
+        try {
+            folder = Folder::load(db, user, "trash");
+            folder->addFile(this->id, metadata->name + "." + metadata->extension);
+            folder->save(db);
+            delete folder;
+            folder = Folder::load(db, user, path);
+            folder->removeFile(this->getId());
+            folder->save(db);
+        } catch (std::exception& e) {
+            if (folder != NULL) delete folder;
+            throw;
+        }
         delete folder;
-        folder = Folder::load(db, user, path);
-        folder->removeFile(this->getId());
-        folder->save(db);
-    } catch (std::exception& e) {
-        if (folder != NULL) delete folder;
-        throw;
-    }
-    delete folder;
     //this->users->clear();
 //} else {
     //this->deleteFromUser(db, user, "shared");
