@@ -53,6 +53,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     try {
         folder->addFile(fileID, name+extension);
         folder->save(db);
+
         file->save(db);
         file->saveSearches(email, path, db);
     } catch (std::exception& e) {
@@ -241,4 +242,24 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     delete file;
     delete db;
     return "{ \"result\" : " + result + " }";
+}
+
+std::string FileManager::getSearches(std::string email, std::string typeOfSearch, std::string element) {
+    rocksdb::DB* db = openDatabase("En get Searches",'r');
+    ///std::cout << "Abrí la base de datos en LoadUserFiles." << std::endl;
+    SearchInformation* search = NULL;
+
+    try {
+        search = SearchInformation::load(db, typeOfSearch, email, element);
+    } catch (std::exception& e) {
+        if (search != NULL) delete search;
+        delete db;
+        throw;
+    }
+
+    std::string content = search->getContent();
+    delete search;
+    delete db;
+    ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
+    return "{ \"result\" : true , \"content\" : " + content + " }";
 }
