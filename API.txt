@@ -156,3 +156,13 @@ RENAME FOLDER:
 	url: <dirección server>/renamefolder?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
 	Método: POST
 	Respuesta: {"result": true}
+
+GET SEARCHES:
+    url: <dirección server>/searches?email=<email>&token=<token>&typeofsearch=<typeofsearch>&element=<element>
+    Método: GET
+    Body:
+	Respuesta:
+		{ "result" : true ,
+		  { "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
+		}
+
