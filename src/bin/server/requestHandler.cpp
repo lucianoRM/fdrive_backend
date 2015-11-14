@@ -99,6 +99,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
                 int id, size, version;
                 std::string email, token, name, extension, path;
+				bool overwrite;
 
                 if (!root.isMember("id")) {
                     id = -1;
@@ -109,7 +110,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (! root.isMember("name") || ! root.isMember("extension")) throw RequestException();
 				if (! root.isMember("tags") || !root.isMember("size")) throw RequestException();
                 if (id == -1 && !root.isMember("path")) throw RequestException();
-				//if (id != -1 && !root.isMember("version")) throw RequestException();
+				if (id != -1 && !root.isMember("version") && !root.isMember("overwrite")) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
@@ -127,9 +128,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                     path = root["path"].asString();
 					result = this->fileManager->saveFile(email, name, extension, path, vtags, size);
 				} else {
-					//version = root["version"].asInt();
+					version = root["version"].asInt();
+					overwrite = root["overwrite"].asBool();
                     this->fileManager->checkIfUserHasFilePermits(id, email);
-					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags, size); //TODO terminar bien esta función.
+					result = this->fileManager->saveNewVersionOfFile(email, id, version, overwrite, name, extension, vtags, size);
 				}
 				break;
 			}

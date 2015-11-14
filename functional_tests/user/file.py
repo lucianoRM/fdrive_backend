@@ -33,7 +33,25 @@ class TestFile(unittest.TestCase):
 		self.assertEqual(True, r.json()["result"])
 		self.assertIn("fileID", r.json())
 		self.assertIsNotNone(r.json()["fileID"])
+		self.assertEqual(0, r.json()["version"])
 		return r.json()["fileID"]
+
+	def _save_new_version_of_file(self, fileid, token, old_version, filename, overwrite = False):
+		payload = {
+			"email":		"testemail",
+			"token":		token,
+			"name":			filename,
+			"extension":	".txt2",
+			"path":			"root/files",
+			"tags":			["palabra1"],
+			"size":			2.5,		# En MB.
+			"version":		old_version,
+			"overwrite": 	overwrite,
+			"id" :			fileid
+		}
+		r = requests.post("http://localhost:8000/files", json = payload)
+		print json.dumps(r.json())
+		return r.json()
 
 	def test_save_new_file_then_get(self):
 		token = self._signup_and_login()
@@ -46,7 +64,6 @@ class TestFile(unittest.TestCase):
 			"id":			fileid
 		}
 		r = requests.get("http://localhost:8000/files", params = payload)
-		
 		self.assertEqual(".txt", r.json()["extension"])
 		self.assertEqual(fileid, r.json()["id"])
 		modificationTime = datetime.datetime.strptime(r.json()["lastModified"], "%a %b %d %H:%M:%S %Y")
@@ -56,6 +73,7 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("somefilename", r.json()["name"])
 		self.assertEqual("testemail", r.json()["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["tags"])
+		self.assertEqual(0, r.json()["lastVersion"])
 
 	def test_save_two_new_files_then_get(self):
 		token = self._signup_and_login()
@@ -68,7 +86,6 @@ class TestFile(unittest.TestCase):
 			"id":			fileid
 		}
 		r = requests.get("http://localhost:8000/files", params = payload)
-
 		self.assertEqual(".txt", r.json()["extension"])
 		self.assertEqual(fileid, r.json()["id"])
 		modificationTime = datetime.datetime.strptime(r.json()["lastModified"], "%a %b %d %H:%M:%S %Y")
@@ -78,7 +95,7 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("somefilename", r.json()["name"])
 		self.assertEqual("testemail", r.json()["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["tags"])
-
+		self.assertEqual(0, r.json()["lastVersion"])
 		fileid2 = self._save_new_file(token, "otherfilename")
 		#print "Voy a pedir el archivo."
 		payload = {
@@ -87,7 +104,6 @@ class TestFile(unittest.TestCase):
 			"id":			fileid2
 		}
 		r = requests.get("http://localhost:8000/files", params = payload)
-
 		self.assertEqual(".txt", r.json()["extension"])
 		self.assertEqual(fileid2, r.json()["id"])
 		modificationTime = datetime.datetime.strptime(r.json()["lastModified"], "%a %b %d %H:%M:%S %Y")
@@ -97,10 +113,10 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("otherfilename", r.json()["name"])
 		self.assertEqual("testemail", r.json()["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["tags"])
+		self.assertEqual(0, r.json()["lastVersion"])
 		
 	def test_save_new_file_wrong_token(self):
 		token = self._signup_and_login()
-
 		payload = {
 			"email":		"testemail",
 			"token":		"asd",
@@ -110,14 +126,11 @@ class TestFile(unittest.TestCase):
 			"tags":			["palabra1","palabra2"]
 		}
 		r = requests.post("http://localhost:8000/files", json = payload)
-		
 		self.assertFalse(r.json()["result"])
 		
 	def test_get_file_wrong_id(self):
 		token = self._signup_and_login()
-
 		fileid = self._save_new_file(token, "somefilename")
-		
 		payload = {
 			"email":		"testemail",
 			"token":		token,
@@ -131,9 +144,7 @@ class TestFile(unittest.TestCase):
 	def test_get_file_not_authorized(self):
 		token = self._signup_and_login()
 		token2 = self._signup_and_login("testemail2")
-
 		fileid = self._save_new_file(token, "somefilename")
-		
 		payload = {
 			"email":		"testemail2",
 			"token":		token2,
@@ -143,6 +154,74 @@ class TestFile(unittest.TestCase):
 		self.assertFalse(r.json()["result"])
 		self.assertEqual(["The user has no permits for specified file."], r.json()["errors"])
 		self.assertEqual(2, len(r.json()))
+		
+	def test_save_new_version_of_file_then_get(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
+		self.assertTrue(json["result"])
+		self.assertIn("version", json)
+		self.assertTrue(1, json["version"])
+		payload = {
+			"email":		"testemail",
+			"token":		token,
+			"id":			fileid
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		self.assertEqual(".txt2", r.json()["extension"])
+		self.assertEqual(fileid, r.json()["id"])
+		modificationTime = datetime.datetime.strptime(r.json()["lastModified"], "%a %b %d %H:%M:%S %Y")
+		self.assertGreater(modificationTime + datetime.timedelta(minutes=1), modificationTime)
+		self.assertLess(modificationTime - datetime.timedelta(minutes=1), modificationTime)
+		self.assertEqual("testemail", r.json()["lastUser"])
+		self.assertEqual("otherfilename", r.json()["name"])
+		self.assertEqual("testemail", r.json()["owner"])
+		self.assertEqual(["palabra1"], r.json()["tags"])
+		self.assertEqual(1, r.json()["lastVersion"])
+	
+	def test_save_new_version_wrong_token(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		json = self._save_new_version_of_file(fileid, token + "wrong", 0, "somefilename")
+		self.assertFalse(json["result"])
+		
+	def test_save_new_version_of_inexistent_file(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		json = self._save_new_version_of_file(fileid + 6, token, 0, "otherFilename")
+		self.assertFalse(json["result"])
+
+	def test_save_new_version_from_not_last_version_error(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
+		json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename")
+		self.assertFalse(json["result"])
+
+	def test_save_new_version_from_not_last_version_with_overwrite_then_get(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
+		json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename", True)
+		self.assertTrue(json["result"])
+		self.assertEqual(2, json["version"])
+		payload = {
+			"email":		"testemail",
+			"token":		token,
+			"id":			fileid
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		self.assertEqual(".txt2", r.json()["extension"])
+		self.assertEqual(fileid, r.json()["id"])
+		modificationTime = datetime.datetime.strptime(r.json()["lastModified"], "%a %b %d %H:%M:%S %Y")
+		self.assertGreater(modificationTime + datetime.timedelta(minutes=1), modificationTime)
+		self.assertLess(modificationTime - datetime.timedelta(minutes=1), modificationTime)
+		self.assertEqual("testemail", r.json()["lastUser"])
+		self.assertEqual("AnotherFilename", r.json()["name"])
+		self.assertEqual("testemail", r.json()["owner"])
+		self.assertEqual(["palabra1"], r.json()["tags"])
+		self.assertEqual(2, r.json()["lastVersion"])
+		
 
 	def test_file_upload(self):
 		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
