@@ -210,11 +210,12 @@ TEST(FolderTest, RemoveFile) {
     file->setOwnerPath("root");
     file->setLastUser("owner");
     file->save(db);
+    file->saveSearches("owner","root",db);
     int id = file->getId();
     delete file;
 
     Folder* folder = Folder::load(db,"owner","root");
-    folder->addFile(id,"Nombre");
+    folder->addFile(id,"Nombre.ext");
     folder->save(db);
 
     file = File::load(db,id);
