@@ -62,4 +62,12 @@ class InexistentVersion : public FileException {
 
 };
 
+class UserIsOwnerOfFileException : public FileException {
+
+    virtual const char* what() const throw() {
+        return "The user trying to.";
+    }
+
+};
+
 #endif //TALLER_FILEEXCEPTIONS_H

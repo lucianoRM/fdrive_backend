@@ -190,11 +190,27 @@ void FileManager::checkIfUserIsOwner(int id, std::string email) {
 std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users) {
 	File* file = this->openFile(id);
 	delete file;
-	UserManager u_manager;
-	for (std::string user : users) {
+    for (std::string user : users) {
+        this->checkFileSharedToUser(id, user);
+    }
+    for (std::string user : users) {
 		this->shareFileToUser(id, user);
 	}
 	return "{ \"result\" : true }";
+}
+
+void FileManager::checkFileSharedToUser(int id, std::string email) {
+    UserManager u_manager;
+    if (!u_manager.checkExistentUser(email)) {
+        throw NonExistentUserException();
+    }
+    File* file = this->openFile(id);
+    try {
+        file->addSharedUser(email);
+    } catch (std::exception& e) {
+        delete file;
+        throw;
+    }
 }
 
 void FileManager::shareFileToUser(int id, std::string email) {

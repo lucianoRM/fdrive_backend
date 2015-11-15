@@ -21,6 +21,7 @@ class UserManager:public Manager {
         UserManager();
         ~UserManager();
 
+        bool checkExistentUser(std::string email); // Devuelve true si existe.
         std::string addUser(std::string email, std::string password);
         void checkIfLoggedIn(std::string email, std::string token);
         std::string loginUser(std::string email, std::string password);

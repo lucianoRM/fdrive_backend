@@ -340,6 +340,9 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
 */
 
 void File::addSharedUser(std::string user) {
+    if (user.compare(this->owner) == 0) {
+        throw UserIsOwnerOfFileException();
+    }
     if (std::find(this->users->begin(), this->users->end(), user) != this->users->end()) {
         throw UserAlreadyHasFileSharedException();
     } else {

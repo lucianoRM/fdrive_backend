@@ -19,9 +19,9 @@ class TestFile(unittest.TestCase):
 		r = requests.get("http://localhost:8000/login", params = payload)
 		return r.json()["token"]
 	
-	def _save_new_file(self, token, filename):
+	def _save_new_file(self, token, filename, email = "testemail"):
 		payload = {
-			"email":		"testemail",
+			"email":		email,
 			"token":		token,
 			"name":			filename,
 			"extension":	".txt",
@@ -50,6 +50,17 @@ class TestFile(unittest.TestCase):
 			"id" :			fileid
 		}
 		r = requests.post("http://localhost:8000/files", json = payload)
+		print json.dumps(r.json())
+		return r.json()
+
+	def _share_file(token, fileid, email, users):
+		payload = {
+			"email":		email,
+			"token":		token,
+			"id":			fileid,
+			"users":		users
+		}
+		r = requests.post("http://localhost:8000/share", json = payload)
 		print json.dumps(r.json())
 		return r.json()
 
@@ -251,6 +262,125 @@ class TestFile(unittest.TestCase):
 					f.write(chunk)
 		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
 		call(["rm", "-rf", downloaded_file_path])
+
+	def share_file(self):
+		token = self._signup_and_login("user1")
+		token2 = self._signup_and_login("user2")
+		file_id = self._save_new_file(token, "file", "user1")
+		json = self._share_file(token, file_id, "user1" , ["user2"])
+		self.assertTrue(json["result"])
+		payload = {
+			"email":		"user2",
+			"token":		token2,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertTrue(r.json()["result"])
+
+	def share_file_not_by_owner(self):
+		token1 = self._signup_and_login("user1")
+		token2 = self._signup_and_login("user2")
+		file_id = self._save_new_file(token1, "file", "user1")
+		json = self._share_file(token2, file_id, "user2" , ["user1"])
+		self.assertFalse(json["result"])
+		payload = {
+			"email":		"user2",
+			"token":		token2,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertFalse(r.json()["result"])
+
+	def share_file_twice_to_the_same_user(self):
+		token = self._signup_and_login("user1")
+		self._signup_and_login("user2")
+		file_id = self._save_new_file(token, "file", "user1")
+		self._share_file(token, file_id, "user1" , ["user2"])
+		json = self._share_file(token, file_id, "user1" , ["user2"])
+		self.assertFalse(json["result"])
+
+	def share_file_to_inexistent_user(self):
+		token = self._signup_and_login("user1")
+		file_id = self._save_new_file(token, "file", "user1")
+		json = self._share_file(token, file_id, "user1" , ["user2"])
+		self.assertFalse(json["result"])
+
+	def share_file_to_many_users(self):
+		token = self._signup_and_login("user1")
+		token2 = self._signup_and_login("user2")
+		token3 = self._signup_and_login("user3")
+		token4 = self._signup_and_login("user4")
+		file_id = self._save_new_file(token, "file", "user1")
+		json = self._share_file(token, file_id, "user1" , ["user2", "user2", "user3"])
+		self.assertTrue(json["result"])
+		payload = {
+			"email":		"user2",
+			"token":		token2,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertTrue(r.json()["result"])
+		payload = {
+			"email":		"user3",
+			"token":		token3,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertTrue(r.json()["result"])
+		payload = {
+			"email":		"user4",
+			"token":		token4,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertTrue(r.json()["result"])
+
+	def share_file_with_some_inexistent_user(self):
+		token = self._signup_and_login("user1")
+		token2 = self._signup_and_login("user2")
+		token3 = self._signup_and_login("user3")
+		file_id = self._save_new_file(token, "file", "user1")
+		json = self._share_file(token, file_id, "user1" , ["user2", "user4", "user3"])
+		self.assertFalse(json["result"])
+		payload = {
+			"email":		"user2",
+			"token":		token2,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertFalse(r.json()["result"])
+		payload = {
+			"email":		"user3",
+			"token":		token3,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertFalse(r.json()["result"])
+
+	def share_file_with_some_already_shared_user(self):
+		token = self._signup_and_login("user1")
+		self._signup_and_login("user2")
+		token3 = self._signup_and_login("user3")
+		token4 = self._signup_and_login("user4")
+		file_id = self._save_new_file(token, "file", "user1")
+		json = self._share_file(token, file_id, "user1" , ["user2"])
+		json = self._share_file(token, file_id, "user1" , ["user3", "user2", "user4"])
+		self.assertFalse(json["result"])
+		payload = {
+			"email":		"user3",
+			"token":		token3,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertFalse(r.json()["result"])
+		payload = {
+			"email":		"user4",
+			"token":		token4,
+			"id":			file_id
+		}
+		r = requests.get("http://localhost:8000/files", params = payload)
+		assertFalse(r.json()["result"])
+
 
 if __name__ == '__main__':
     unittest.main()

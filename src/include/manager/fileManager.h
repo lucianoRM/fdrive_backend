@@ -17,6 +17,7 @@ class FileManager: public Manager {
 
     private:
         void shareFileToUser(int id, std::string email);
+        void checkFileSharedToUser(int id, std::string email);
 
     public:
         FileManager();

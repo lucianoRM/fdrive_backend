@@ -16,7 +16,28 @@ std::string UserManager::createToken() {
     return token;
 }
 
+bool UserManager::checkExistentUser(std::string email) {
+    rocksdb::DB* db = NULL;
+    User* user = NULL;
+    try {
+        db = this->openDatabase("En checkIfexistentUser: ",'w');
+        user = User::load(db, email);
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        if (db != NULL) delete db;
+        ///std::cout << "ERROR pero Cerré la base de datos en LoginUser." << std::endl;
+        return false;
+    }
+    delete user;
+    delete db;
+    return true;
+}
+
 std::string UserManager::addUser(std::string email, std::string password) {
+    if (this->checkExistentUser(email)) {
+        throw AlreadyExistentUserException();
+    }
+
     User* user = new User();
     user->setEmail(email);
     user->setPassword(password);
