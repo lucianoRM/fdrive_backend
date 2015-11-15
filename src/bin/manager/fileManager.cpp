@@ -290,7 +290,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     rocksdb::DB *db = NULL;
     try {
         db = this->openDatabase("En eraseFileFromUser: ",'w');
-        file->recoverFromUser(db, email, path);
+        file->eraseFromUser(db, email, path);
         file->save(db);
     } catch (std::exception& e) {
         if (db != NULL) delete db;
@@ -359,7 +359,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
         result = "false";
     }
     file->saveSearches(email,path,db);
-    
+
     delete file;
     delete db;
     return "{ \"result\" : " + result + " }";

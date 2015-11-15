@@ -24,6 +24,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
 	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
 	(*this->codesMap)["/searches:GET"] = requestCodes::SEARCHES_GET;
+	(*this->codesMap)["/recoverfile:GET"] = requestCodes::RECOVERFILE_GET;
 }
 
 RequestHandler::~RequestHandler(){
@@ -409,7 +410,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->fileManager->getSearches(std::string(cemail),std::string(ctypeOfSearch),std::string(celement));
 				break;
 			}
+			case requestCodes::RECOVERFILE_GET:
+			{
+				char email[100], token[100], id[100],path[300];
+				mg_get_var(conn, "email", email, sizeof(email));
+				mg_get_var(conn, "token", token, sizeof(token));
+				mg_get_var(conn, "id", id, sizeof(id));
+				if (strlen(email) == 0) throw RequestException();
+				if (strlen(token) == 0) throw RequestException();
+				if (strlen(id) == 0) throw RequestException();
 
+				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
+				result = this->fileManager->recoverFile(std::string(email), atoi(id));
+				break;
+			}
 
 			default:
 				return -1;
