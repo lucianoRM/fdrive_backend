@@ -187,7 +187,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
                 this->userManager->checkIfLoggedIn(email, token);
                 this->fileManager->checkIfUserHasFilePermits(id, email);
-                result = this->fileManageer->changeFileData(id, name, tag);
+                result = this->fileManager->changeFileData(id, name, tag);
 			}
 			case requestCodes::LOADFILE_GET: {
 				char cemail[100], ctoken[100], cid[100];

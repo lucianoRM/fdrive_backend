@@ -70,7 +70,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " , \"version\" : 0 }";
 }
 
-std::string changeFileData(int id, std::string name, std::string tag) {
+std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
     File* file = this->openFile(id);
     if (!name.empty()) file->setName(name);
     if (!tag.empty()) file->setTag(tag);
