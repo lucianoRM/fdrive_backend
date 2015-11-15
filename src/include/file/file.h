@@ -32,7 +32,7 @@ class File {
         std::unordered_map<int, Version*>* versions;
 
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
-        void deleteFromUser(rocksdb::DB* db, std::string email, std::string path);
+        void removeSearchInformation(rocksdb::DB* db, std::string email);
         Json::Value addFileData(Json::Value json);
         Json::Value getJson(int version);
 
@@ -70,7 +70,7 @@ class File {
         void save(rocksdb::DB* db); // Saves the metadata to the db
         //TODO save devuelve el número de la nueva versión.
         void saveSearches(std::string user, std::string path, rocksdb::DB* db); // Saves tag, name, extension and owner information for future searches done by the user.
-        void changeSearchInformation(File* oldFile);
+        void changeSearchInformation(rocksdb::DB* db, std::string email, File* oldFile);
 
         void checkIfUserHasPermits(std::string email);
         void checkIfUserIsOwner(std::string email);

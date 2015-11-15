@@ -205,7 +205,7 @@ TEST(FolderTest, RemoveFile) {
     File* file = new File();
     file->genId(db);
     file->setName("Nombre");
-    file->setExtension("ext");
+    file->setExtension(".ext");
     file->setOwner("owner");
     file->setOwnerPath("root");
     file->setLastUser("owner");
@@ -221,6 +221,7 @@ TEST(FolderTest, RemoveFile) {
     file = File::load(db,id);
     file->eraseFromUser(db,"owner","root");
     file->save(db);
+    file->saveSearches("owner","trash",db);
 
     folder = Folder::load(db,"owner","root");
     std::string json = folder->getContent();
@@ -236,8 +237,20 @@ TEST(FolderTest, RemoveFile) {
         EXPECT_NE(it->asInt(),id);
     }
 
+    Folder* folderTrash = Folder::load(db,"owner","trash");
+    json = folderTrash->getContent();
+
+    std::cout << "El json es: " << json << std::endl;
+
+    EXPECT_TRUE(reader.parse(json, root, false));
+    files = root["files"];
+    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
+        std::cout << "\n TIENE: " << it->asString();
+    }
+
     delete db;
     delete file;
     delete folder;
+    delete folderTrash;
     FOLDER_deleteDatabase();
 }
