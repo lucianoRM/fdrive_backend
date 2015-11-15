@@ -290,7 +290,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     rocksdb::DB *db = NULL;
     try {
         db = this->openDatabase("En eraseFileFromUser: ",'w');
-        file->eraseFromUser(db, email, path);
+        file->recoverFromUser(db, email, path);
         file->save(db);
     } catch (std::exception& e) {
         if (db != NULL) delete db;
@@ -303,7 +303,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     bool isOwner = (email.compare(file->getOwner()) == 0);
     if (isOwner) {
         file->saveSearches(email,"trash",db);
-        int success = rename(("files/" + email + "/path/" + std::to_string(id)).c_str(),
+        int success = rename(("files/" + email + "/" + path + "/" + std::to_string(id)).c_str(),
                              ("files/" + email + "/trash/" + std::to_string(id)).c_str());
         if (success != 0) {
             result = "false";
@@ -333,4 +333,34 @@ std::string FileManager::getSearches(std::string email, std::string typeOfSearch
     delete db;
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
     return "{ \"result\" : true , \"content\" : " + content + " }";
+}
+
+std::string FileManager::recoverFile(std::string email, int id) {
+    File* file = this->openFile(id);
+    // We don't have to check if the user is the owner, because only the owner can recover something from the trash.
+    std::string path = file->getMetadata()->ownerPath;
+    rocksdb::DB *db = NULL;
+    try {
+        db = this->openDatabase("En recoverFile: ",'w');
+        file->recoverFromUser(db, email, path);
+        file->save(db);
+    } catch (std::exception& e) {
+        if (db != NULL) delete db;
+        delete file;
+        throw;
+    }
+
+    // If we are in this point the logical remove (metadata) was correct
+    std::string result = "true";
+
+    int success = rename(("files/" + email + "/trash/" + std::to_string(id)).c_str(),
+                         ("files/" + email + "/" + path + "/" + std::to_string(id)).c_str());
+    if (success != 0) {
+        result = "false";
+    }
+    file->saveSearches(email,path,db);
+    
+    delete file;
+    delete db;
+    return "{ \"result\" : " + result + " }";
 }

@@ -78,6 +78,7 @@ class File {
         void addSharedUser(std::string user);
         void eraseFromUser(rocksdb::DB* db, std::string email, std::string path);
 
+        void recoverFromUser(rocksdb::DB* db, std::string email, std::string path);
 };
 
 #endif //TALLER_FILE_H

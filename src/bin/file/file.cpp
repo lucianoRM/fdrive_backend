@@ -332,6 +332,27 @@ void File::removeSearchInformation(rocksdb::DB* db, std::string user) {
     }
 }
 
+void File::recoverFromUser(rocksdb::DB* db, std::string user, std::string path) {
+    struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
+    Folder *folder = NULL;
+
+    try {
+        folder = Folder::load(db, user, path);
+        folder->addFile(this->id, metadata->name + metadata->extension);
+        folder->save(db);
+        delete folder;
+        folder = Folder::load(db, user, "trash");
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception &e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+
+    delete folder;
+    // Remove searches.
+    this->removeSearchInformation(db, user);
+}
 
 void File::addSharedUser(std::string user) {
     if (user.compare(this->owner) == 0) {
