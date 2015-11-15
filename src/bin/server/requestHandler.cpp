@@ -10,6 +10,7 @@ RequestHandler::RequestHandler() {
 	this->codesMap = new std::unordered_map<std::string,int>;
 	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;
 	(*this->codesMap)["/users:GET"] = requestCodes::USERS_GET;
+	(*this->codesMap)["/users:PUT"] = requestCodes::USERS_PUT;
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
@@ -65,6 +66,31 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->userManager->getUsers(std::string(cemail));
 				break;
 			}
+            case requestCodes::USERS_PUT: {
+                //Needed for filtering unnecesary headers
+                char json[conn->content_len + 1];
+                char *content = conn->content;
+                content[conn->content_len] = '\0';
+                strcpy(json, conn->content);
+                Json::Value root;
+                Json::Reader reader;
+                if (!reader.parse(json, root, false))
+                    throw RequestException();
+
+                std::string email, token, name, lastLocation;
+
+                if (!root.isMember("email") || !root.isMember("token") ) throw RequestException();
+                if (!root.isMember("name") && !root.isMember("lastLocation") ) throw RequestException();
+                // La foto de perfil se maneja del cliente.
+                email = root["email"].asString();
+                token = root["token"].asString();
+                if (root.isMember("name")) name = root["name"].asString();
+                if (root.isMember("lastLocation")) name = root["lastLocation"].asString();
+
+                this->userManager->checkIfLoggedIn(email, token);
+                result = this->userManager->saveUserData(email, name, lastLocation);
+                break;
+            }
 			case requestCodes::LOGIN_GET: {
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));

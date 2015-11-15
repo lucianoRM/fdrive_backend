@@ -267,3 +267,21 @@ void UserManager::changeFileSize(std::string email, int oldSize, int newSize) {
     delete user;
 	delete db;
 }
+
+std::string UserManager::saveUserData(std::string email, std::string name, std::string lastLocation) {
+    rocksdb::DB* db = openDatabase("En changeFileSize: ", 'w');
+    User* user= NULL;
+    try {
+        user = User::load(db, email);
+        if (!name.empty()) user->setName(name);
+        if (!lastLocation.empty()) user->setLocation(lastLocation);
+        if (!user->save(db)) throw DBException();
+    } catch (std::exception& e) {
+        if (user != NULL) delete user;
+        delete db;
+        throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
+    }
+    delete user;
+    delete db;
+    return "{ \"result\" : true }";
+}
