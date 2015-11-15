@@ -1,6 +1,5 @@
 #include "userManager.h"
 #include "file.h"
-#include "fileManager.h"
 #include "folder/folder.h"
 #include <iostream>
 #include <sys/stat.h>
@@ -164,7 +163,6 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
 
 std::string UserManager::getUsers(std::string email) {
     rocksdb::DB* db = openDatabase("En getUsers", 'r');
-
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
     if (!status.ok()) {

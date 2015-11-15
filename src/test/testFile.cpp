@@ -6,7 +6,7 @@
 #include "file.h"
 #include "fileExceptions.h"
 
-
+/*
 rocksdb::DB* FILE_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -295,3 +295,4 @@ TEST(VersionTest, LoadVersionAndChangeData) {
     delete db;
     FILE_deleteDatabase();
 }
+*/

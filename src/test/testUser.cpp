@@ -12,7 +12,7 @@
 #include "googletest/include/gtest/internal/gtest-internal.h"
 #include "googletest/include/gtest/internal/gtest-port.h"
 #include "googletest/include/gtest/gtest_pred_impl.h"
-
+/*
 rocksdb::DB* USER_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -413,5 +413,5 @@ TEST(ProfilePictureTest, AddedPictureToDatabase) {
     USER_deleteDatabase();
 }
 
-
+*/
 

@@ -4,6 +4,12 @@ static const char *s_no_cache_header =
   "Cache-Control: max-age=0, post-check=0, "
   "pre-check=0, no-store, no-cache, must-revalidate\r\n";
 
+rocksdb::DB* Server::db = NULL;
+
+void Server::setDatabase(rocksdb::DB* db) {
+    Server::db = db;
+}
+
 Server::Server(std::string port) {
 	// Creates mongoose's server.
 	mongooseServer = mg_create_server(NULL, this->eventHandler);
@@ -51,7 +57,7 @@ void Server::copyListeners(Server* server0) {
 }
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
-    RequestHandler* reqHandler = new RequestHandler();
+    RequestHandler* reqHandler = new RequestHandler(Server::db);
 	int result;
     switch (ev) {
 		case MG_AUTH:

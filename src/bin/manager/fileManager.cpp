@@ -23,6 +23,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     }
 
     UserManager u_manager;
+    u_manager.setDatabase(this->db);
     try {
         u_manager.checkFileAddition(email, size);
     } catch (std::exception& e) {
@@ -126,6 +127,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
     int newVersion = file->getLatestVersion();
 
     UserManager u_manager;
+    u_manager.setDatabase(this->db);
     try {
         u_manager.checkFileSizeChange(owner, oldSize, size);
     } catch (std::exception& e) {
@@ -231,6 +233,7 @@ std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users
 
 void FileManager::checkFileSharedToUser(int id, std::string email) {
     UserManager u_manager;
+    u_manager.setDatabase(this->db);
     if (!u_manager.checkExistentUser(email)) {
         throw NonExistentUserException();
     }

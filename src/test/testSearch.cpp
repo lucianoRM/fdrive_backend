@@ -15,7 +15,7 @@
 #include <file/file.h>
 
 #include "fileExceptions.h"
-
+/*
 rocksdb::DB* SEARCH_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -207,4 +207,4 @@ TEST(SearchTest, TwoFilesWithSameOwner) {
     delete file2;
     SEARCH_deleteDatabase();
 }
-
+*/

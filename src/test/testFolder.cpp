@@ -12,7 +12,7 @@
 #include "fileExceptions.h"
 #include "folder.h"
 #include "folderExceptions.h"
-
+/*
 rocksdb::DB* FOLDER_openDatabase() {
     rocksdb::DB* db;
     rocksdb::Options options;
@@ -241,3 +241,4 @@ TEST(FolderTest, RemoveFile) {
     delete folder;
     FOLDER_deleteDatabase();
 }
+*/

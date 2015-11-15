@@ -5,6 +5,20 @@
 #define LISTENING_PORT "8000"
 
 int main() {
+	rocksdb::DB* db;
+	rocksdb::Options options;
+	options.create_if_missing = true;
+	rocksdb::Status status = rocksdb::DB::Open(options, "testdb", &db);
+    system("chmod -R a+rwx testdb");
+
+    if (!status.ok()) {
+        // The database didn't open correctly.
+        std::cout << "No se pudo abrir la DB." << std::endl;
+        return 1;
+    }
+
+    Server::setDatabase(db);
+
 	// Creates main server.
 	Server* mainServer = new Server(LISTENING_PORT);
 
@@ -18,5 +32,6 @@ int main() {
 	// Prevents from closing.
 	while(true) usleep(10000);
 
+    delete db;
 	return 0;
 }

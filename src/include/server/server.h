@@ -18,6 +18,7 @@ class Server {
 	private:
 		struct mg_server* mongooseServer;
 		int listenerTimeOut;
+		static rocksdb::DB* db;
 
 	private:
 		// Returns mongoose server.
@@ -43,6 +44,8 @@ class Server {
 
 		// Copies listeners from server0.
 		void copyListeners(Server* server0);
+
+        static void setDatabase(rocksdb::DB* db);
 
 		static int eventHandler(struct mg_connection *conn, enum mg_event ev);
 

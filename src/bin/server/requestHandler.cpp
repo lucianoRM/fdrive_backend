@@ -1,11 +1,14 @@
 #include "requestHandler.h"
 #include <cstring>
 
-RequestHandler::RequestHandler() {
+RequestHandler::RequestHandler(rocksdb::DB* db) {
 
 	this->userManager = new UserManager();
+    this->userManager->setDatabase(db);
 	this->fileManager = new FileManager();
+    this->fileManager->setDatabase(db);
 	this->folderManager = new FolderManager();
+    this->folderManager->setDatabase(db);
 
 	this->codesMap = new std::unordered_map<std::string,int>;
 	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;

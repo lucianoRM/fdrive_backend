@@ -1,7 +1,3 @@
-//
-// Created by martin on 6/10/15.
-//
-
 #ifndef FDRIVE_MANAGER_H
 #define FDRIVE_MANAGER_H
 
@@ -13,8 +9,13 @@
 #include <iostream>
 
 class Manager {
+
     protected:
         rocksdb::DB* openDatabase(std::string message,char openMode);
+        rocksdb::DB* db = NULL;
+
+    public:
+        void setDatabase(rocksdb::DB* db);
 };
 
 #endif //FDRIVE_MANAGER_H

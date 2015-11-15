@@ -30,7 +30,7 @@ class RequestHandler {
 		std::unordered_map<std::string,int >* codesMap;
 
 	public:
-		RequestHandler();
+		RequestHandler(rocksdb::DB* db);
 		~RequestHandler();
 
 		// Returns true if was a valid request (no matter its result).
