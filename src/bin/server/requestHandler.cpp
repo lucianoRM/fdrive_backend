@@ -14,6 +14,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
+	(*this->codesMap)["/files:PUT"] = requestCodes::SAVEFILE_PUT;
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
@@ -162,18 +163,50 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				}
 				break;
 			}
+			case requestCodes::SAVEFILE_PUT: {
+				//Needed for filtering unnecesary headers
+				char json[conn->content_len + 1];
+				char *content = conn->content;
+				content[conn->content_len] = '\0';
+				strcpy(json, conn->content);
+				Json::Value root;
+				Json::Reader reader;
+				if (!reader.parse(json, root, false))
+					throw RequestException();
+
+				std::string email, token, name, tag;
+                int id;
+				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("name") && ! root.isMember("tag")) throw RequestException();
+
+                id = root["id"].asInt();
+                email = root["email"].asString();
+                token = root["token"].asString();
+                if (root.isMember("name")) name = root["name"].asString();
+                if (root.isMember("tag")) tag = root["tag"].asString();
+
+                this->userManager->checkIfLoggedIn(email, token);
+                this->fileManager->checkIfUserHasFilePermits(id, email);
+                result = this->fileManager->changeFileData(id, name, tag);
+			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], cid[100];
+				char cemail[100], ctoken[100], cid[100], cversion[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "id", cid, sizeof(cid));
+				mg_get_var(conn, "version", cversion, sizeof(cversion));
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
                 if (strlen(cid) == 0) throw RequestException();
 
-				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
-				result = this->fileManager->loadFile(atoi(cid));
+                this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+                this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+
+                if (strlen(cversion) != 0) {
+                    result = this->fileManager->loadFile(atoi(cid), atoi(cversion));
+                } else {
+                    result = this->fileManager->loadFile(atoi(cid));
+                }
 				break;
 			}
 			case requestCodes::ERASEFILE_DELETE:

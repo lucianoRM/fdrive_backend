@@ -10,8 +10,6 @@
 FileManager::FileManager() { }
 FileManager::~FileManager() { }
 
-
-
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
     File* file = new File();
     file->setName(name);
@@ -70,6 +68,26 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     u_manager.addFile(email, size);
 
     return "{ \"result\" : true , \"fileID\" : " + std::to_string(fileID) + " , \"version\" : 0 }";
+}
+
+std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
+    File* file = this->openFile(id);
+    if (!name.empty()) file->setName(name);
+    if (!tag.empty()) file->setTag(tag);
+
+    rocksdb::DB* db = NULL;
+    try {
+        db = this->openDatabase("En OpenFile: ",'r');
+        file->save(db);
+    } catch(std::exception& e) {
+        delete file;
+        if (db != NULL) delete db;
+        throw;
+    }
+    delete db;
+    delete file;
+    
+    return "{ \"result\" : true }";
 }
 
 std::string FileManager::saveNewVersionOfFile(std::string email, int id, int oldVersion, bool overwrite, std::string name, std::string extension, std::vector<std::string> tags, int size) {
@@ -179,6 +197,19 @@ std::string FileManager::loadFile(int id) {
     std::string json = "{ \"result\" : true , \"file\" : " + writer.write(file->getJson()) + " }";
     delete file;
     return json;
+}
+
+std::string FileManager::loadFile(int id, int version) {
+    File* file = this->openFile(id);
+    try {
+        Json::StyledWriter writer;
+        std::string json = "{ \"result\" : true , \"file\" : " + writer.write(file->getJson(version)) + " }";
+        delete file;
+        return json;
+    } catch(std::exception& e) {
+        delete file;
+        throw;
+    }
 }
 
 void FileManager::checkIfUserHasFilePermits(int id, std::string email) {

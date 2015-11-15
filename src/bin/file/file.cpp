@@ -84,6 +84,7 @@ Json::Value File::addFileData(Json::Value json) {
 }
 
 Json::Value File::getJson(int version) {
+    if (version > this->lastVersion) throw InexistentVersion();
     return (*this->versions)[version]->getJson();
 }
 
