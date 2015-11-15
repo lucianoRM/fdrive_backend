@@ -14,6 +14,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
 	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
 	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
+	(*this->codesMap)["/files:PUT"] = requestCodes::SAVEFILE_PUT;
 	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
 	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
 	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
@@ -161,6 +162,32 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 					result = this->fileManager->saveNewVersionOfFile(email, id, version, overwrite, name, extension, vtags, size);
 				}
 				break;
+			}
+			case requestCodes::SAVEFILE_PUT: {
+				//Needed for filtering unnecesary headers
+				char json[conn->content_len + 1];
+				char *content = conn->content;
+				content[conn->content_len] = '\0';
+				strcpy(json, conn->content);
+				Json::Value root;
+				Json::Reader reader;
+				if (!reader.parse(json, root, false))
+					throw RequestException();
+
+				std::string email, token, name, tag;
+                int id;
+				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("name") && ! root.isMember("tag")) throw RequestException();
+
+                id = root["id"].asInt();
+                email = root["email"].asString();
+                token = root["token"].asString();
+                if (root.isMember("name")) name = root["name"].asString();
+                if (root.isMember("tag")) tag = root["tag"].asString();
+
+                this->userManager->checkIfLoggedIn(email, token);
+                this->fileManager->checkIfUserHasFilePermits(id, email);
+                result = this->fileManageer->changeFileData(id, name, tag);
 			}
 			case requestCodes::LOADFILE_GET: {
 				char cemail[100], ctoken[100], cid[100];
