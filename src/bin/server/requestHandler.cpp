@@ -205,11 +205,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				for (Json::ValueIterator itr = root["users"].begin(); itr != root["users"].end(); itr++) {
 					users.push_back((*itr).asString());
 				}
-				
+
 				this->userManager->checkIfLoggedIn(email, token);
 				this->fileManager->checkIfUserIsOwner(id, email);
-				this->fileManager->shareFileToUsers(id, users);
-
+				result = this->fileManager->shareFileToUsers(id, users);
 				break;
 			}
 			case requestCodes::FILEUPLOAD_POST:

@@ -158,9 +158,8 @@ File* FileManager::openFile(int id) {
 std::string FileManager::loadFile(int id) {
     File* file = this->openFile(id);
 
-    Json::Value value;
     Json::StyledWriter writer;
-    std::string json = writer.write(file->getJson());
+    std::string json = "{ \"result\" : true , \"file\" : " + writer.write(file->getJson()) + " }";
     delete file;
     return json;
 }
@@ -188,7 +187,7 @@ void FileManager::checkIfUserIsOwner(int id, std::string email) {
 }
 
 std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users) {
-	File* file = this->openFile(id);
+	File* file = this->openFile(id); // Tira excepción si no existe.
 	delete file;
     for (std::string user : users) {
         this->checkFileSharedToUser(id, user);
@@ -211,6 +210,7 @@ void FileManager::checkFileSharedToUser(int id, std::string email) {
         delete file;
         throw;
     }
+    delete file;
 }
 
 void FileManager::shareFileToUser(int id, std::string email) {
@@ -231,6 +231,9 @@ void FileManager::shareFileToUser(int id, std::string email) {
         delete file;
         throw;
     }
+    delete file;
+    delete db;
+    delete folder;
 }
 
 
