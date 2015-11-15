@@ -182,6 +182,19 @@ std::string FileManager::loadFile(int id) {
     return json;
 }
 
+std::string FileManager::loadFile(int id, int version) {
+    File* file = this->openFile(id);
+    try {
+        Json::StyledWriter writer;
+        std::string json = "{ \"result\" : true , \"file\" : " + writer.write(file->getJson(version)) + " }";
+        delete file;
+        return json;
+    } catch(std::exception& e) {
+        delete file;
+        throw;
+    }
+}
+
 void FileManager::checkIfUserHasFilePermits(int id, std::string email) {
     File* file = this->openFile(id);
     try {

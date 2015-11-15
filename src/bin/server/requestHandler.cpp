@@ -190,17 +190,23 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 result = this->fileManager->changeFileData(id, name, tag);
 			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], cid[100];
+				char cemail[100], ctoken[100], cid[100], cversion[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "id", cid, sizeof(cid));
+				mg_get_var(conn, "version", cversion, sizeof(cversion));
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
                 if (strlen(cid) == 0) throw RequestException();
 
-				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
-				result = this->fileManager->loadFile(atoi(cid));
+                this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+                this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+
+                if (strlen(cversion) != 0) {
+                    result = this->fileManager->loadFile(atoi(cid), atoi(cversion));
+                } else {
+                    result = this->fileManager->loadFile(atoi(cid));
+                }
 				break;
 			}
 			case requestCodes::ERASEFILE_DELETE:

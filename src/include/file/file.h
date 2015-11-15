@@ -34,7 +34,6 @@ class File {
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
         void deleteFromUser(rocksdb::DB* db, std::string email, std::string path);
         Json::Value addFileData(Json::Value json);
-        Json::Value getJson(int version);
 
     public:
         /* In the File constructor:
@@ -62,6 +61,7 @@ class File {
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata and users.
+        Json::Value getJson(int version);
 
         void startNewVersion();
 
