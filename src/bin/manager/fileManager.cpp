@@ -251,11 +251,14 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     }
 
     // If we are in this point the logical remove (metadata) was correct
-    std::string result = "false";
-
-    int success = rename( ("files/"+email+"/path/"+std::to_string(id)).c_str(),("files/"+email+"/trash/"+std::to_string(id)).c_str());
-    if (success == 0) {
-        result = "true";
+    std::string result = "true";
+    bool isOwner = (email.compare(file->getOwner()) == 0);
+    if (isOwner) {
+        int success = rename(("files/" + email + "/path/" + std::to_string(id)).c_str(),
+                             ("files/" + email + "/trash/" + std::to_string(id)).c_str());
+        if (success != 0) {
+            result = "false";
+        }
     }
 
     delete file;
