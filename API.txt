@@ -59,11 +59,7 @@ SAVE FILE: Para OLD files (the user sending it will be creating a new version)
 		“name”:”<name>”,
 		“extension”:”<extension>”,
 		"id":<id>,
-		"path":<path>,
-		"size":<size>,
-		“tags”:[<tag1>, <tag2>, ...],
-		"version":<ultima version vista>,
-		"overwrite":<bool: false->devuelve error si version no es la última versión, true->no tira error>
+		“tags”:[<tag1>, <tag2>, ...]
 	}
 	Respuesta: En caso de que todos los campos sean correctos y el usuario tenga permisos para acceder al archivo, { "result" : true }.
 
@@ -71,7 +67,7 @@ LOAD FILE:
 	url: <dirección server>/files?email=<email>&token=<token>&id=<id>
 	Método: GET
 	Body:
-	Respuesta: En caso de que el token sea correcto y el usuario tenga permisos,
+	Respuesta: En caso de que el token sea correcto,
 	    {
     		"extension" : "<extension>",
             "id" : <id>,
@@ -81,35 +77,6 @@ LOAD FILE:
             "owner" : "<owner>",
             "tags" : [ "<tag1>", "<tag2>", ... ]
     	}
-    	
-LOAD FILE VERSION:
-	url: <dirección server>/files?email=<email>&token=<token>&id=<id>&version=<version>
-	Método: GET
-	Body:
-	Respuesta: En caso de que el token sea correcto y el usuario tenga permisos,
-	    {
-    		"extension" : "<extension>",
-            "id" : <id>,
-            "lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
-            "lastUser" : "<user>",
-            "name" : "<file1>",
-            "owner" : "<owner>",
-            "tags" : [ "<tag1>", "<tag2>", ... ]
-    	}
-
-
-CHANGE FILE METADATA:
-	url: <dirección server>/files
-	Método: PUT
-	Body: {
-		“email”:”<email>”,
-		“token”:”<token>”,
-		"id":<id>,
-		“name”:”<name>”,			(opcional)		-| Pero uno de ellos debe estar presente.
-		“tag”:<newTag>				(opcional)		-| Sino no tiene sentido la request.
-	}
-	Respuesta: Si el usuario tiene permisos para modificar el archivo, devuelve
-				{ "result" : true }.
 
 GET USER'S FILES:
     url: <dirección server>/userfiles?email=<email>&token=<token>
@@ -196,4 +163,12 @@ GET SEARCHES:
 		{ "result" : true ,
 		  { "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
 		}
+
+GET SEARCHES:
+    url: <dirección server>/recoverfile?email=<email>&token=<token>&id=<id>
+    Método: GET
+    Body:
+	Respuesta:
+		{ "result" : true }
+
 
