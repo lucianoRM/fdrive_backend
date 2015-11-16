@@ -46,4 +46,28 @@ class UserAlreadyHasFileSharedException: public FileException {
 
 };
 
+class LastFileVersionNotDownload : public FileException {
+
+    virtual const char* what() const throw() {
+        return "Trying to update a file without viewing its last version.";
+    }
+
+};
+
+class InexistentVersion : public FileException {
+
+    virtual const char* what() const throw() {
+        return "The version specified does not exists.";
+    }
+
+};
+
+class UserIsOwnerOfFileException : public FileException {
+
+    virtual const char* what() const throw() {
+        return "The user trying to.";
+    }
+
+};
+
 #endif //TALLER_FILEEXCEPTIONS_H

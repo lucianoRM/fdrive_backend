@@ -13,10 +13,10 @@
 
 // Struct containing the information of each file
 // that must be stored to complete a search from a user.
-struct searchFile {
+typedef struct searchFile {
     int id;
     std::string path;
-};
+} searchFile;
 
 
 // Class that represents all files available to a user that
@@ -28,6 +28,8 @@ class SearchInformation {
         std::string typeOfSearch;
         std::string user;
         std::string element;
+        Json::Value getJson();
+        Json::Value jsonFiles;
 
     public:
 
@@ -41,6 +43,8 @@ class SearchInformation {
         void addFile(int id, std::string path);
     /* Supone que no hay copias de un mismo archivo en distintos paths.*/
         void eraseFile(int id);
+
+        std::string getContent();
 
 
 };

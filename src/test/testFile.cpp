@@ -295,4 +295,3 @@ TEST(VersionTest, LoadVersionAndChangeData) {
     delete db;
     FILE_deleteDatabase();
 }
-

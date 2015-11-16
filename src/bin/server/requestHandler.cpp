@@ -31,6 +31,10 @@ RequestHandler::RequestHandler() {
 
 	this->routeTree->add("renamefolder", "POST", requestCodes::RENAMEFOLDER_POST);
 
+	this->routeTree->add("searches", "GET", requestCodes::SEARCHES_GET);
+
+	this->routeTree->add("recoverfile", "GET", requestCodes::RECOVERFILE_GET);
+
 }
 
 RequestHandler::~RequestHandler(){
@@ -78,6 +82,31 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->userManager->getUsers(std::string(cemail));
 				break;
 			}
+            case requestCodes::USERS_PUT: {
+                //Needed for filtering unnecesary headers
+                char json[conn->content_len + 1];
+                char *content = conn->content;
+                content[conn->content_len] = '\0';
+                strcpy(json, conn->content);
+                Json::Value root;
+                Json::Reader reader;
+                if (!reader.parse(json, root, false))
+                    throw RequestException();
+
+                std::string email, token, name, lastLocation;
+
+                if (!root.isMember("email") || !root.isMember("token") ) throw RequestException();
+                if (!root.isMember("name") && !root.isMember("lastLocation") ) throw RequestException();
+                // La foto de perfil se maneja del cliente.
+                email = root["email"].asString();
+                token = root["token"].asString();
+                if (root.isMember("name")) name = root["name"].asString();
+                if (root.isMember("lastLocation")) name = root["lastLocation"].asString();
+
+                this->userManager->checkIfLoggedIn(email, token);
+                result = this->userManager->saveUserData(email, name, lastLocation);
+                break;
+            }
 			case requestCodes::LOGIN_GET: {
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
@@ -113,6 +142,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
                 int id, size, version;
                 std::string email, token, name, extension, path;
+				bool overwrite;
 
                 if (!root.isMember("id")) {
                     id = -1;
@@ -123,7 +153,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (! root.isMember("name") || ! root.isMember("extension")) throw RequestException();
 				if (! root.isMember("tags") || !root.isMember("size")) throw RequestException();
                 if (id == -1 && !root.isMember("path")) throw RequestException();
-				//if (id != -1 && !root.isMember("version")) throw RequestException();
+				if (id != -1 && !root.isMember("version") && !root.isMember("overwrite")) throw RequestException();
 
 				email = root["email"].asString();
 				token = root["token"].asString();
@@ -141,24 +171,58 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                     path = root["path"].asString();
 					result = this->fileManager->saveFile(email, name, extension, path, vtags, size);
 				} else {
-					//version = root["version"].asInt();
+					version = root["version"].asInt();
+					overwrite = root["overwrite"].asBool();
                     this->fileManager->checkIfUserHasFilePermits(id, email);
-					result = this->fileManager->saveNewVersionOfFile(email, id, name, extension, vtags, size); //TODO terminar bien esta función.
+					result = this->fileManager->saveNewVersionOfFile(email, id, version, overwrite, name, extension, vtags, size);
 				}
 				break;
 			}
+			case requestCodes::SAVEFILE_PUT: {
+				//Needed for filtering unnecesary headers
+				char json[conn->content_len + 1];
+				char *content = conn->content;
+				content[conn->content_len] = '\0';
+				strcpy(json, conn->content);
+				Json::Value root;
+				Json::Reader reader;
+				if (!reader.parse(json, root, false))
+					throw RequestException();
+
+				std::string email, token, name, tag;
+                int id;
+				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("name") && ! root.isMember("tag")) throw RequestException();
+
+                id = root["id"].asInt();
+                email = root["email"].asString();
+                token = root["token"].asString();
+                if (root.isMember("name")) name = root["name"].asString();
+                if (root.isMember("tag")) tag = root["tag"].asString();
+
+                this->userManager->checkIfLoggedIn(email, token);
+                this->fileManager->checkIfUserHasFilePermits(id, email);
+                result = this->fileManager->changeFileData(id, name, tag);
+                break;
+			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], cid[100];
+				char cemail[100], ctoken[100], cid[100], cversion[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				mg_get_var(conn, "id", cid, sizeof(cid));
+				mg_get_var(conn, "version", cversion, sizeof(cversion));
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
                 if (strlen(cid) == 0) throw RequestException();
 
-				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-				this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
-				result = this->fileManager->loadFile(atoi(cid));
+                this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+                this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+
+                if (strlen(cversion) != 0) {
+                    result = this->fileManager->loadFile(atoi(cid), atoi(cversion));
+                } else {
+                    result = this->fileManager->loadFile(atoi(cid));
+                }
 				break;
 			}
 			case requestCodes::ERASEFILE_DELETE:
@@ -216,11 +280,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				for (Json::ValueIterator itr = root["users"].begin(); itr != root["users"].end(); itr++) {
 					users.push_back((*itr).asString());
 				}
-				
+
 				this->userManager->checkIfLoggedIn(email, token);
 				this->fileManager->checkIfUserIsOwner(id, email);
-				this->fileManager->shareFileToUsers(id, users);
-
+				result = this->fileManager->shareFileToUsers(id, users);
 				break;
 			}
 			case requestCodes::FILEUPLOAD_POST:
@@ -347,6 +410,33 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				this->userManager->checkIfLoggedIn(cemail, ctoken);
 				result = this->folderManager->renameFolder(cemail,cpath,cnameold,cnamenew);
+				break;
+			}
+			case requestCodes::SEARCHES_GET:
+			{
+				char cemail[100], ctoken[100], cpath[100], ctypeOfSearch[100], celement[100];
+				mg_get_var(conn, "email", cemail, sizeof(cemail));
+				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
+				mg_get_var(conn, "typeofsearch", ctypeOfSearch, sizeof(ctypeOfSearch));
+				mg_get_var(conn, "element", celement, sizeof(celement));
+				if (strlen(cemail) == 0 || strlen(ctoken) == 0 || strlen(cpath) == 0 || strlen(ctypeOfSearch) == 0 || strlen(celement) == 0) throw RequestException();
+
+				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
+				result = this->fileManager->getSearches(std::string(cemail),std::string(ctypeOfSearch),std::string(celement));
+				break;
+			}
+			case requestCodes::RECOVERFILE_GET:
+			{
+				char email[100], token[100], id[100],path[300];
+				mg_get_var(conn, "email", email, sizeof(email));
+				mg_get_var(conn, "token", token, sizeof(token));
+				mg_get_var(conn, "id", id, sizeof(id));
+				if (strlen(email) == 0) throw RequestException();
+				if (strlen(token) == 0) throw RequestException();
+				if (strlen(id) == 0) throw RequestException();
+
+				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
+				result = this->fileManager->recoverFile(std::string(email), atoi(id));
 				break;
 			}
 

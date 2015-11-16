@@ -21,6 +21,7 @@ class UserManager:public Manager {
         UserManager();
         ~UserManager();
 
+        bool checkExistentUser(std::string email); // Devuelve true si existe.
         std::string addUser(std::string email, std::string password);
         void checkIfLoggedIn(std::string email, std::string token);
         std::string loginUser(std::string email, std::string password);
@@ -33,6 +34,7 @@ class UserManager:public Manager {
         void changeFileSize(std::string email, int oldSize, int newSize);
         // Returns all user's metadata except the one it receives.
         std::string getUsers(std::string email);
+        std::string saveUserData(std::string email, std::string name, std::string lastLocation);
 };
 
 #endif //TALLER_USERMANAGER_H

@@ -131,11 +131,9 @@ SHARE FILE:
 		“id”:”<id>”,
 		"users" : [ <email1>, <email2>, ...]
 		}
-	Respuesta: Si el que lo pide es el dueño, y todos tienen la cuota necesaria, hay éxito y se devuelve:
+	Respuesta: Si el que lo pide es el dueño y todos los usuarios a los que se les quiere compartir existen 
+					y no tiene ya compartido el archivo, hay éxito y se devuelve:
 				{ "result" : true }
-			   En el caso de que alguno no tenga la cuota necesaria, no se le agregará a ninguna y 
-				  en el mensaje se indicará qué usuario no tenía lugar:
-				{ "result" : false , "errors" : ["The user <email> doesn't have enough space in the account."] }
 
 
 UPLOAD FILE:
@@ -156,6 +154,23 @@ RENAME FOLDER:
 	url: <dirección server>/renamefolder?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
 	Método: POST
 	Respuesta: {"result": true}
+
+GET SEARCHES:
+    url: <dirección server>/searches?email=<email>&token=<token>&typeofsearch=<typeofsearch>&element=<element>
+    Método: GET
+    Body:
+	Respuesta:
+		{ "result" : true ,
+		  { "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
+		}
+
+GET SEARCHES:
+    url: <dirección server>/recoverfile?email=<email>&token=<token>&id=<id>
+    Método: GET
+    Body:
+	Respuesta:
+		{ "result" : true }
+
 
 PROPOSED NEW FILES API
 

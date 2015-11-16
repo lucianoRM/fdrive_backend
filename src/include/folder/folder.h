@@ -43,6 +43,7 @@ class Folder {
         std::string getContent();
         void renameFolder(std::string oldName, std::string newName);
         void renamePath(std::string newName);
+        void eraseFolder(std::string folder, rocksdb::DB* db);
 };
 
 #endif //FDRIVE_FOLDER_H

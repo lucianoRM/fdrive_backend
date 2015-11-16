@@ -84,6 +84,7 @@ Json::Value File::addFileData(Json::Value json) {
 }
 
 Json::Value File::getJson(int version) {
+    if (version > this->lastVersion) throw InexistentVersion();
     return (*this->versions)[version]->getJson();
 }
 
@@ -230,8 +231,8 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     }
 }
 
-void File::changeSearchInformation(File* oldFile) {
-    //TODO ver diferencias de tags, name y extension para cambiarlos. (owner no se puede cambiar)
+void File::changeSearchInformation(rocksdb::DB* db, std::string email, File* oldFile) {
+    oldFile->removeSearchInformation(db,email);
 }
 
 void File::checkIfUserHasPermits(std::string email) {
@@ -248,35 +249,44 @@ void File::checkIfUserIsOwner(std::string email) {
 }
 
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
-    struct metadata* metadata = (*this->versions)[this->lastVersion]->getMetadata();
-    if (user.compare(this->owner)) {
+    struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
+    Folder *folder = NULL;
+    if (user.compare(this->owner) == 0) {
         for (std::string sharedUser : *this->users) {
-            this->deleteFromUser(db, sharedUser, "shared");
+            this->eraseFromUser(db, sharedUser, "shared");
+            this->users->remove(sharedUser);
         }
-        this->deleteFromUser(db, user, path);
-        Folder* folder = NULL;
+
+        // If is the owner it moves the file from the path to trash
         try {
             folder = Folder::load(db, user, "trash");
-            folder->addFile(this->id, metadata->name + "." + metadata->extension);
+            folder->addFile(this->id, metadata->name + metadata->extension);
             folder->save(db);
-        } catch (std::exception& e) {
+            delete folder;
+        } catch (std::exception &e) {
             if (folder != NULL) delete folder;
             throw;
         }
-        delete folder;
-        this->users->clear();
-    } else {
-        this->deleteFromUser(db, user, "shared");
-        this->users->remove(user);
     }
+    try {
+        folder = Folder::load(db, user, path);
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception &e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+    delete folder;
+    // Remove searches.
+    this->removeSearchInformation(db, user);
 }
 
-void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
+void File::removeSearchInformation(rocksdb::DB* db, std::string user) {
 
     SearchInformation* owner = NULL;
     try {
         owner =  SearchInformation::load(db, "owner", user, this->owner);
-        owner->eraseFile(this->id); //, path);
+        owner->eraseFile(this->getId());
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
@@ -288,7 +298,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     SearchInformation* name = NULL;
     try {
         name = SearchInformation::load(db, "name", user, metadata->name);
-        name->eraseFile(this->id); //, path);
+        name->eraseFile(this->id);
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
@@ -300,7 +310,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     SearchInformation* extension = NULL;
     try {
         extension = SearchInformation::load(db, "extension", user, metadata->extension);
-        extension->eraseFile(this->id); //, path);
+        extension->eraseFile(this->id);
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
@@ -312,7 +322,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         SearchInformation* tagInfo = NULL;
         try {
             tagInfo = SearchInformation::load(db, "tag", user, tag);
-            tagInfo->eraseFile(this->id); //, path);
+            tagInfo->eraseFile(this->id);
             tagInfo->save(db);
         } catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
@@ -320,20 +330,34 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         }
         delete tagInfo;
     }
+}
 
-    Folder* folder = NULL;
+void File::recoverFromUser(rocksdb::DB* db, std::string user, std::string path) {
+    struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
+    Folder *folder = NULL;
+
     try {
         folder = Folder::load(db, user, path);
-        folder->removeFile(this->id);
+        folder->addFile(this->id, metadata->name + metadata->extension);
         folder->save(db);
-    } catch (std::exception& e) {
+        delete folder;
+        folder = Folder::load(db, user, "trash");
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception &e) {
         if (folder != NULL) delete folder;
         throw;
     }
+
     delete folder;
+    // Remove searches.
+    this->removeSearchInformation(db, user);
 }
 
 void File::addSharedUser(std::string user) {
+    if (user.compare(this->owner) == 0) {
+        throw UserIsOwnerOfFileException();
+    }
     if (std::find(this->users->begin(), this->users->end(), user) != this->users->end()) {
         throw UserAlreadyHasFileSharedException();
     } else {

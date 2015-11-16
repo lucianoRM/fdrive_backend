@@ -2,6 +2,7 @@
 // Created by martin on 13/11/15.
 //
 
+#include <user/user.h>
 #include "googletest/include/gtest/gtest.h"
 #include "googletest/include/gtest/internal/gtest-internal.h"
 #include "googletest/include/gtest/internal/gtest-port.h"
@@ -186,5 +187,70 @@ TEST(FolderTest, RenameFolder) {
     EXPECT_EQ(true,true);
 
     delete db;
+    FOLDER_deleteDatabase();
+}
+
+TEST(FolderTest, RemoveFile) {
+    rocksdb::DB* db = FOLDER_openDatabase();
+    if (! db) {
+        return;
+    }
+
+    User* user = new User();
+    user->setEmail("owner");
+    user->setPassword("password");
+    user->signup(db);
+    user = user->load(db,"owner");
+
+    File* file = new File();
+    file->genId(db);
+    file->setName("Nombre");
+    file->setExtension(".ext");
+    file->setOwner("owner");
+    file->setOwnerPath("root");
+    file->setLastUser("owner");
+    file->save(db);
+    file->saveSearches("owner","root",db);
+    int id = file->getId();
+    delete file;
+
+    Folder* folder = Folder::load(db,"owner","root");
+    folder->addFile(id,"Nombre.ext");
+    folder->save(db);
+
+    file = File::load(db,id);
+    file->eraseFromUser(db,"owner","root");
+    file->save(db);
+    file->saveSearches("owner","trash",db);
+
+    folder = Folder::load(db,"owner","root");
+    std::string json = folder->getContent();
+    Json::Reader reader;
+    Json::Value root;
+
+    std::cout << "El json es: " << json << std::endl;
+
+    EXPECT_TRUE(reader.parse(json, root, false));
+    Json::Value files = root["files"];
+    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
+        std::cout << "\n TIENE: " << it->asString();
+        EXPECT_NE(it->asInt(),id);
+    }
+
+    Folder* folderTrash = Folder::load(db,"owner","trash");
+    json = folderTrash->getContent();
+
+    std::cout << "El json es: " << json << std::endl;
+
+    EXPECT_TRUE(reader.parse(json, root, false));
+    files = root["files"];
+    for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
+        std::cout << "\n TIENE: " << it->asString();
+    }
+
+    delete db;
+    delete file;
+    delete folder;
+    delete folderTrash;
     FOLDER_deleteDatabase();
 }

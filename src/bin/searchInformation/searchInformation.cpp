@@ -27,6 +27,7 @@ SearchInformation* SearchInformation::load(rocksdb::DB* db, std::string typeOfSe
             delete info;
             throw std::exception();
         } else {
+            info->jsonFiles = jsonFiles;
             for (Json::Value::iterator it = jsonFiles["files"].begin(); it != jsonFiles["files"].end(); it++) {
                 struct searchFile* file = new searchFile;
                 file->id = (*it)["id"].asInt();
@@ -70,4 +71,27 @@ void SearchInformation::eraseFile(int id) {
     }
     if (foundFile == NULL) throw FileToEraseNotInSearch();
     this->files->remove(foundFile);
+}
+
+Json::Value SearchInformation::getJson() {
+
+    Json::Value root;
+
+    Json::Value filesIds (Json::arrayValue);
+    Json::Value filesPaths (Json::arrayValue);
+
+    for (searchFile* file : *(this->files)) {
+        filesIds.append(file->id);
+        filesPaths.append(file->path);
+    }
+
+    root["filesIds"] = filesIds;
+    root["filesPaths"] = filesPaths;
+
+    return root;
+}
+
+std::string SearchInformation::getContent() {
+    Json::StyledWriter writer;
+    return writer.write(this->jsonFiles);
 }
