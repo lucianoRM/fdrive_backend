@@ -7,7 +7,9 @@
 #include "userManager.h"
 #include "fileManager.h"
 #include "folderManager.h"
+#include "routeTree.h"
 #include <vector>
+#include <regex>
 
 // Needed for switch case.
 enum requestCodes : int { USERS_POST = 1, USERS_GET, USERS_PUT,
@@ -27,7 +29,9 @@ class RequestHandler {
 		FileManager* fileManager;
 		FolderManager* folderManager;
 
-		std::unordered_map<std::string,int >* codesMap;
+		RouteTree* routeTree;
+
+
 
 	public:
 		RequestHandler();

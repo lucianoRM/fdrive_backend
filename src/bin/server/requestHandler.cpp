@@ -7,29 +7,42 @@ RequestHandler::RequestHandler() {
 	this->fileManager = new FileManager();
 	this->folderManager = new FolderManager();
 
-	this->codesMap = new std::unordered_map<std::string,int>;
-	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;
-	(*this->codesMap)["/users:GET"] = requestCodes::USERS_GET;
-	(*this->codesMap)["/users:PUT"] = requestCodes::USERS_PUT;
-	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
-	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
-	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
-	(*this->codesMap)["/files:PUT"] = requestCodes::SAVEFILE_PUT;
-	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
-	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
-	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
-	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
-	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
-	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
-	(*this->codesMap)["/share/folder:POST"] = requestCodes::SHAREFOLDER_POST;
-	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
-	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
-	(*this->codesMap)["/searches:GET"] = requestCodes::SEARCHES_GET;
-	(*this->codesMap)["/recoverfile:GET"] = requestCodes::RECOVERFILE_GET;
+	this->routeTree = new RouteTree();
+	this->routeTree->add("users", "POST", requestCodes::USERS_POST);
+	this->routeTree->add("users", "GET", requestCodes::USERS_GET);
+	this->routeTree->add("users", "PUT", requestCodes::USERS_PUT);
+
+	this->routeTree->add("login", "GET", requestCodes::LOGIN_GET);
+
+	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
+
+	this->routeTree->add("files", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
+	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
+
+	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+
+	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
+
+	this->routeTree->add("filesupload", "POST", requestCodes::FILEUPLOAD_POST);
+
+	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
+
+	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
+	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
+
+	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
+
+	this->routeTree->add("renamefolder", "POST", requestCodes::RENAMEFOLDER_POST);
+
+	this->routeTree->add("searches", "GET", requestCodes::SEARCHES_GET);
+
+	this->routeTree->add("recoverfile", "GET", requestCodes::RECOVERFILE_GET);
+
 }
 
 RequestHandler::~RequestHandler(){
-	delete this->codesMap;
 	delete this->userManager;
 	delete this->fileManager;
 	delete this->folderManager;
@@ -38,12 +51,21 @@ RequestHandler::~RequestHandler(){
 int RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
 	// Combine uri+request_method.
 	std::string uriPlusMethod = uri + ":" + request_method;
-	std::cout << uriPlusMethod << std::endl;
-	if (!this->codesMap->count(uriPlusMethod)) {
+	//std::cout << uriPlusMethod << std::endl;
+
+	std::string s = uri.substr(1);
+	int reqCode;
+	try {
+		reqCode = this->routeTree->get(s, request_method);
+	} catch (RouteNotFoundException e) {
+		std::cout << uriPlusMethod << " NOT FOUND" << std::endl;
 		return -1;
 	}
+	//std::cout << reqCode << " METADATA " << requestCodes::LOADFILE_GET << std::endl;
 
-	int reqCode = codesMap->at(uriPlusMethod);
+
+	std::vector<std::string>* routeParameterVector = routeTree->getRouteParameterVector(s);
+
 	try {
 		std::string result;
 
@@ -200,15 +222,17 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_get_var(conn, "version", cversion, sizeof(cversion));
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
-                if (strlen(cid) == 0) throw RequestException();
+                //if (strlen(cid) == 0) throw RequestException();
+
+				int id = atoi(routeParameterVector->at(1).c_str());
 
                 this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
                 this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
 
                 if (strlen(cversion) != 0) {
-                    result = this->fileManager->loadFile(atoi(cid), atoi(cversion));
+                    result = this->fileManager->loadFile(id, atoi(cversion));
                 } else {
-                    result = this->fileManager->loadFile(atoi(cid));
+                    result = this->fileManager->loadFile(id);
                 }
 				break;
 			}
@@ -304,7 +328,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
             }
 			case requestCodes::FILEUPLOAD_POST:
 			{
-				std::cout << "FILEUPLOAD" << std::endl;
+				//std::cout << "FILEUPLOAD" << std::endl;
 				/*FILE *fp = (FILE *) conn->connection_param;
 				if (fp != NULL) {
 					fwrite(conn->content, 1, conn->content_len, fp); // Write last bits

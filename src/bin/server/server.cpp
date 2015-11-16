@@ -59,13 +59,11 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 			return MG_TRUE;
 		case MG_REQUEST:
 			result = reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn);
-		std::cout << result << std::endl;
 			if (result == -1) {
 				mg_send_file(conn, "index.html", s_no_cache_header);
 				delete reqHandler;
 				return MG_MORE;
 			} else if (result == -2) {
-				std::cout << "Poniendo MG_TRUE" << std::endl;
 				delete reqHandler;
 				return MG_TRUE;
 			} else {
