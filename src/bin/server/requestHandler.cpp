@@ -30,8 +30,6 @@ RequestHandler::RequestHandler() {
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
-	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
-
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
 	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
@@ -402,8 +400,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				token = std::string(ctoken);
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				id = atoi(cid);
+				id = atoi(routeParameterVector->at(1).c_str());
+				int version = atoi(routeParameterVector->at(2).c_str());
 
 				const char *data;
 				char *filedata;
@@ -422,7 +420,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
-				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str(), "w");
+				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str(), "w");
 				fwrite(filedata, filedata_len, 1, fout);
 				free(filedata);
 				fclose(fout);
@@ -442,12 +440,18 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				token = std::string(ctoken);
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				id = atoi(cid);
+				id = atoi(routeParameterVector->at(1).c_str());
+				int version;
+				if (routeParameterVector->size() == 4)
+					version = atoi(routeParameterVector->at(2).c_str());
+				else
+					version = -1;
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
-				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
+				if (version == -1)
+					version = file->getLatestVersion();
+				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str();
 				const char* extraHeaders = ("Content-Disposition: attachment; filename=\""+file->getMetadata()->name+file->getMetadata()->extension+"\"\r\n").c_str();
 				mg_send_file(conn, path, extraHeaders);
 				return MG_MORE;

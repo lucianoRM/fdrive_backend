@@ -244,7 +244,7 @@ class TestFile(unittest.TestCase):
 		fileid = self._save_new_file(token, "somefilename")
 		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
 		self.assertTrue(r.json()["result"])
-		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)
+		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)+".0"
 		self.assertTrue(os.path.isfile(server_file_path))
 		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
 
@@ -263,6 +263,22 @@ class TestFile(unittest.TestCase):
 
 		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
 		call(["rm", "-rf", downloaded_file_path])
+		with open(downloaded_file_path, 'wb') as f:
+			for chunk in r.iter_content(chunk_size=1024):
+				if chunk:
+					f.write(chunk)
+		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
+		call(["rm", "-rf", downloaded_file_path])
+
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token)
+		with open(downloaded_file_path, 'wb') as f:
+			for chunk in r.iter_content(chunk_size=1024):
+				if chunk:
+					f.write(chunk)
+		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
+		call(["rm", "-rf", downloaded_file_path])
+
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token)
 		with open(downloaded_file_path, 'wb') as f:
 			for chunk in r.iter_content(chunk_size=1024):
 				if chunk:
