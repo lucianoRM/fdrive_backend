@@ -10,6 +10,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree = new RouteTree();
 	this->routeTree->add("users", "POST", requestCodes::USERS_POST);
 	this->routeTree->add("users", "GET", requestCodes::USERS_GET);
+	this->routeTree->add("users", "PUT", requestCodes::USERS_PUT);
 
 	this->routeTree->add("login", "GET", requestCodes::LOGIN_GET);
 
@@ -18,6 +19,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("files", "POST", requestCodes::SAVEFILE_POST);
 	this->routeTree->add("files", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
+	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
