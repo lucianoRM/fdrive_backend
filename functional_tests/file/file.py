@@ -92,7 +92,7 @@ class TestFile(unittest.TestCase):
 			"token":		token,
 			"id":			fileid
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual(".txt", r.json()["file"]["extension"])
 		self.assertEqual(fileid, r.json()["file"]["id"])
@@ -108,10 +108,9 @@ class TestFile(unittest.TestCase):
 		#print "Voy a pedir el archivo."
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid2
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid2)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual(".txt", r.json()["file"]["extension"])
 		self.assertEqual(fileid2, r.json()["file"]["id"])
@@ -142,10 +141,9 @@ class TestFile(unittest.TestCase):
 		fileid = self._save_new_file(token, "somefilename")
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid+1
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid+1)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 		self.assertEqual(["File not found"], r.json()["errors"])
 		self.assertEqual(2, len(r.json()))
@@ -156,10 +154,9 @@ class TestFile(unittest.TestCase):
 		fileid = self._save_new_file(token, "somefilename")
 		payload = {
 			"email":		"testemail2",
-			"token":		token2,
-			"id":			fileid
+			"token":		token2
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 		self.assertEqual(["The user has no permits for specified file."], r.json()["errors"])
 		self.assertEqual(2, len(r.json()))
@@ -173,10 +170,9 @@ class TestFile(unittest.TestCase):
 		self.assertTrue(1, _json["version"])
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual(".txt2", r.json()["file"]["extension"])
 		self.assertEqual(fileid, r.json()["file"]["id"])
@@ -217,10 +213,9 @@ class TestFile(unittest.TestCase):
 		self.assertEqual(2, _json["version"])
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertEqual(".txt2", r.json()["file"]["extension"])
 		self.assertEqual(fileid, r.json()["file"]["id"])
 		modificationTime = datetime.datetime.strptime(r.json()["file"]["lastModified"], "%a %b %d %H:%M:%S %Y")
@@ -270,10 +265,9 @@ class TestFile(unittest.TestCase):
 		self.assertTrue(_json["result"])
 		payload = {
 			"email":		"user2",
-			"token":		token2,
-			"id":			file_id
+			"token":		token2
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 
 	def test_share_inexistent_file(self):
@@ -290,10 +284,9 @@ class TestFile(unittest.TestCase):
 		self.assertFalse(_json["result"])
 		payload = {
 			"email":		"user2",
-			"token":		token2,
-			"id":			file_id
+			"token":		token2
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 
 	def test_share_file_twice_to_the_same_user(self):
@@ -320,24 +313,21 @@ class TestFile(unittest.TestCase):
 		self.assertTrue(_json["result"])
 		payload = {
 			"email":		"user2",
-			"token":		token2,
-			"id":			file_id
+			"token":		token2
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		payload = {
 			"email":		"user3",
-			"token":		token3,
-			"id":			file_id
+			"token":		token3
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		payload = {
 			"email":		"user4",
-			"token":		token4,
-			"id":			file_id
+			"token":		token4
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 
 	def test_share_file_with_some_inexistent_user(self):
@@ -349,17 +339,15 @@ class TestFile(unittest.TestCase):
 		self.assertFalse(_json["result"])
 		payload = {
 			"email":		"user2",
-			"token":		token2,
-			"id":			file_id
+			"token":		token2
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 		payload = {
 			"email":		"user3",
-			"token":		token3,
-			"id":			file_id
+			"token":		token3
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 
 	def test_share_file_with_some_already_shared_user(self):
@@ -373,17 +361,15 @@ class TestFile(unittest.TestCase):
 		self.assertFalse(_json["result"])
 		payload = {
 			"email":		"user3",
-			"token":		token3,
-			"id":			file_id
+			"token":		token3
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 		payload = {
 			"email":		"user4",
-			"token":		token4,
-			"id":			file_id
+			"token":		token4
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertFalse(r.json()["result"])
 
 

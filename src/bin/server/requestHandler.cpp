@@ -62,6 +62,9 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 	}
 	//std::cout << reqCode << " METADATA " << requestCodes::LOADFILE_GET << std::endl;
 
+
+	std::vector<std::string>* routeParameterVector = routeTree->getRouteParameterVector(s);
+
 	try {
 		std::string result;
 
@@ -220,13 +223,15 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 if (strlen(ctoken) == 0) throw RequestException();
                 //if (strlen(cid) == 0) throw RequestException();
 
+				int id = atoi(routeParameterVector->at(1).c_str());
+
                 this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
                 this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
 
                 if (strlen(cversion) != 0) {
-                    result = this->fileManager->loadFile(atoi(cid), atoi(cversion));
+                    result = this->fileManager->loadFile(id, atoi(cversion));
                 } else {
-                    result = this->fileManager->loadFile(atoi(cid));
+                    result = this->fileManager->loadFile(id);
                 }
 				break;
 			}
@@ -293,7 +298,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::FILEUPLOAD_POST:
 			{
-				std::cout << "FILEUPLOAD" << std::endl;
+				//std::cout << "FILEUPLOAD" << std::endl;
 				/*FILE *fp = (FILE *) conn->connection_param;
 				if (fp != NULL) {
 					fwrite(conn->content, 1, conn->content_len, fp); // Write last bits

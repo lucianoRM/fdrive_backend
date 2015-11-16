@@ -49,10 +49,9 @@ class TestChangeFileData(unittest.TestCase):
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",
-			"token":		token,
-			"id":			file_id
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertEqual("nuevoNombre", r.json()["file"]["name"])
 		
@@ -69,10 +68,9 @@ class TestChangeFileData(unittest.TestCase):
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",
-			"token":		token,
-			"id":			file_id
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertEqual(["palabra1", "palabra2", "nuevoTag"], r.json()["file"]["tags"])
 		
@@ -90,10 +88,9 @@ class TestChangeFileData(unittest.TestCase):
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",
-			"token":		token,
-			"id":			file_id
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertEqual("nuevoNombre", r.json()["file"]["name"])
 		self.assertEqual(["palabra1", "palabra2", "nuevoTag"], r.json()["file"]["tags"])

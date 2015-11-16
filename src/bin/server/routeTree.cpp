@@ -44,3 +44,20 @@ std::list<std::string>* RouteTree::getRouteParameterList(std::string route) {
     parameterList->push_back(routeCopy);
     return parameterList;
 }
+
+std::vector<std::string>* RouteTree::getRouteParameterVector(std::string route) {
+    std::vector<std::string>* parameterList = new std::vector<std::string>();
+    std::string delimiter = "/";
+    size_t pos = 0;
+    std::string token;
+    std::string routeCopy = route;
+    while ((pos = routeCopy.find(delimiter)) != std::string::npos) {
+        token = routeCopy.substr(0, pos);
+        //std::cout << "adding " << token << std::endl;
+        parameterList->push_back(token);
+        routeCopy.erase(0, pos + delimiter.length());
+    }
+    //std::cout << "adding " << routeCopy << std::endl;
+    parameterList->push_back(routeCopy);
+    return parameterList;
+}

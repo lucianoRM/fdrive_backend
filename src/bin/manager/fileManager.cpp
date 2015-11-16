@@ -118,7 +118,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
     // The user is the owner
     if (owner.compare(email) == 0) {
         path = oldFile->getMetadata()->ownerPath;
-        std::cout << "\nNEW PATH: " << path;
+        //std::cout << "\nNEW PATH: " << path;
     }
 
     file->startNewVersion();
