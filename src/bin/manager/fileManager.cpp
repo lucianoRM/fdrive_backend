@@ -5,6 +5,7 @@
 #include <folder/folder.h>
 #include "fileManager.h"
 #include "userManager.h"
+#include "folderManager.h"
 #include <stdio.h>
 
 FileManager::FileManager() { }
@@ -281,6 +282,21 @@ void FileManager::shareFileToUser(int id, std::string email) {
     delete file;
     delete db;
     delete folder;
+}
+
+std::string FileManager::shareFolder(std::string email, std::string path, std::vector<std::string> users) {
+    FolderManager f_manager;
+    std::vector<int> files = f_manager.getFilesFromFolder(email, path);
+    for (std::string user : users) {
+        for (int id : files) {
+            try {
+                this->shareFileToUser(id, user);
+            } catch (FileAlreadyInFolderException &ex) {
+                continue;
+            }
+        }
+    }
+    return "{ \"result\" : true }";
 }
 
 

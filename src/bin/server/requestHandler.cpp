@@ -21,6 +21,7 @@ RequestHandler::RequestHandler() {
 	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
 	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
 	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
+	(*this->codesMap)["/share/folder:POST"] = requestCodes::SHAREFOLDER_POST;
 	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
 	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
 	(*this->codesMap)["/searches:GET"] = requestCodes::SEARCHES_GET;
@@ -272,6 +273,35 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->fileManager->shareFileToUsers(id, users);
 				break;
 			}
+            case requestCodes::SHAREFOLDER_POST:
+            {
+                //Needed for filtering unnecesary headers
+                char json[conn->content_len + 1];
+                char *content = conn->content;
+                content[conn->content_len] = '\0';
+                strcpy(json, conn->content);
+                Json::Value root;
+                Json::Reader reader;
+                if (!reader.parse(json, root, false))
+                    throw RequestException();
+
+                std::string email, token, path;
+                if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("path")) throw RequestException();
+                if (! root.isMember("users") ) throw RequestException();
+
+                email = root["email"].asString();
+                token = root["token"].asString();
+                path = root["path"].asString();
+                std::vector<std::string> users;
+                for (Json::ValueIterator itr = root["users"].begin(); itr != root["users"].end(); itr++) {
+                    users.push_back((*itr).asString());
+                }
+
+
+                this->userManager->checkIfLoggedIn(email, token);
+                result = this->fileManager->shareFolder(email, path, users);
+                break;
+            }
 			case requestCodes::FILEUPLOAD_POST:
 			{
 				std::cout << "FILEUPLOAD" << std::endl;
@@ -413,7 +443,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::RECOVERFILE_GET:
 			{
-				char email[100], token[100], id[100],path[300];
+				char email[100], token[100], id[100];
 				mg_get_var(conn, "email", email, sizeof(email));
 				mg_get_var(conn, "token", token, sizeof(token));
 				mg_get_var(conn, "id", id, sizeof(id));

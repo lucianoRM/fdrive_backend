@@ -10,6 +10,8 @@
 #include "Manager.h"
 #include <string>
 #include <iostream>
+#include "fileExceptions.h"
+#include "folderExceptions.h"
 
 // Class to manage the requests related to files.
 
@@ -37,6 +39,7 @@ class FileManager: public Manager {
         std::string eraseFileFromUser(int id, std::string email, std::string path);
 
 		std::string shareFileToUsers(int id, std::vector<std::string> users);
+        std::string shareFolder(std::string email, std::string path, std::vector<std::string> users);
         std::string getSearches(std::string email, std::string typeOfSearch, std::string element);
 
         std::string recoverFile(std::string email,int id);

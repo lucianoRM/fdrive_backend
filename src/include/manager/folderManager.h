@@ -6,6 +6,7 @@
 #define FDRIVE_FOLDERMANAGER_H
 
 #include "Manager.h"
+#include <vector>
 
 class FolderManager: public Manager {
 
@@ -17,6 +18,7 @@ public:
 
     std::string addFolder(std::string email, std::string path, std::string nameFolder); // Saves new folder
     std::string renameFolder(std::string email, std::string path, std::string oldName, std::string newName); //Saves the new name of the folder
+    std::vector<int> getFilesFromFolder(std::string email, std::string path);
 
     };
 
