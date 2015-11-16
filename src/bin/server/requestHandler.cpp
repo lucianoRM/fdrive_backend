@@ -16,13 +16,13 @@ RequestHandler::RequestHandler() {
 
 	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
 
-	this->routeTree->add("files", "POST", requestCodes::SAVEFILE_POST);
-	this->routeTree->add("files", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
-	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
 
 	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files/:int/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files/:int/metadata", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files/metadata", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files/:int/metadata", "PUT", requestCodes::SAVEFILE_PUT);
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
@@ -155,10 +155,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 std::string email, token, name, extension, path;
 				bool overwrite;
 
-                if (!root.isMember("id")) {
-                    id = -1;
+				if (routeParameterVector->size() == 2) {
+					id = -1;
 				} else {
-                    id = root["id"].asInt();
+					id = atoi(routeParameterVector->at(1).c_str());
 				}
 				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
 				if (! root.isMember("name") || ! root.isMember("extension")) throw RequestException();
@@ -202,10 +202,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				std::string email, token, name, tag;
                 int id;
-				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
 				if (! root.isMember("name") && ! root.isMember("tag")) throw RequestException();
 
-                id = root["id"].asInt();
+				id = atoi(routeParameterVector->at(1).c_str());
                 email = root["email"].asString();
                 token = root["token"].asString();
                 if (root.isMember("name")) name = root["name"].asString();

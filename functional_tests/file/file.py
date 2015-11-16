@@ -29,7 +29,7 @@ class TestFile(unittest.TestCase):
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertIn("fileID", r.json())
 		self.assertIsNotNone(r.json()["fileID"])
@@ -46,10 +46,9 @@ class TestFile(unittest.TestCase):
 			"tags":			["palabra1"],
 			"size":			2.5,		# En MB.
 			"version":		old_version,
-			"overwrite": 	overwrite,
-			"id" :			fileid
+			"overwrite": 	overwrite
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
 
 	def _share_file(self, token, fileid, email, users):
@@ -89,8 +88,7 @@ class TestFile(unittest.TestCase):
 		#print "Voy a pedir el archivo."
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid
+			"token":		token
 		}
 		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
@@ -133,7 +131,7 @@ class TestFile(unittest.TestCase):
 			"path":			"root",
 			"tags":			["palabra1","palabra2"]
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
 		self.assertFalse(r.json()["result"])
 		
 	def test_get_file_wrong_id(self):
@@ -249,6 +247,28 @@ class TestFile(unittest.TestCase):
 		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)
 		self.assertTrue(os.path.isfile(server_file_path))
 		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
+
+	def test_save_new_version_of_file_with_upload(self):
+		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
+		python_file_path_2 = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_reduced.png'
+		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
+		files = {'upload': open(python_file_path, 'rb')}
+		token = self._signup_and_login("testemail")
+		fileid = self._save_new_file(token, "somefilename")
+		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+
+		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
+		files = {'upload': open(python_file_path_2, 'rb')}
+		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+
+		r = requests.get("http://localhost:8000/filesdownload?id="+str(fileid)+"&email=testemail&token="+token)
+		call(["rm", "-rf", downloaded_file_path])
+		with open(downloaded_file_path, 'wb') as f:
+			for chunk in r.iter_content(chunk_size=1024):
+				if chunk:
+					f.write(chunk)
+		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
+		call(["rm", "-rf", downloaded_file_path])
 
 	def test_file_download(self):
 		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'

@@ -29,7 +29,7 @@ class TestSharingFiles(unittest.TestCase):
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertIn("fileID", r.json())
 		self.assertIsNotNone(r.json()["fileID"])
@@ -46,10 +46,9 @@ class TestSharingFiles(unittest.TestCase):
 			"tags":			["palabra1"],
 			"size":			2.5,		# En MB.
 			"version":		old_version,
-			"overwrite": 	overwrite,
-			"id" :			fileid
+			"overwrite": 	overwrite
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
 
 	def _share_file(self, token, fileid, email, users):
