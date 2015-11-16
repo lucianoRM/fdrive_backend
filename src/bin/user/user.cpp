@@ -1,6 +1,6 @@
 #include "user.h"
 
-#define INICIAL_QUOTA 10
+#define INICIAL_QUOTA  2147483647
 
 User::User() {
 	this->tokens = new std::vector<UserToken*>();

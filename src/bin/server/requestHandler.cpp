@@ -33,7 +33,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
 
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
-	this->routeTree->add("share", "DELETE", requestCodes::SHAREFILE_DELETE);
+	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
 
 	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
