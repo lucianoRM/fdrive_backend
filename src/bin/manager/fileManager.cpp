@@ -77,7 +77,7 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
 
     rocksdb::DB* db = NULL;
     try {
-        db = this->openDatabase("En OpenFile: ",'r');
+        db = this->openDatabase("En ChangeFileData: ",'w');
         file->save(db);
     } catch(std::exception& e) {
         delete file;
@@ -86,7 +86,6 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
     }
     delete db;
     delete file;
-    
     return "{ \"result\" : true }";
 }
 
