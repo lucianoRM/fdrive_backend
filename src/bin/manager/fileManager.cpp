@@ -113,12 +113,20 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
     }
     int oldSize = oldFile->getSize();
     std::string owner = oldFile->getOwner();
+    std::string ownerPath = oldFile->getMetadata()->ownerPath;
+    std::string path = "shared";
+    // The user is the owner
+    if (owner.compare(email) == 0) {
+        path = oldFile->getMetadata()->ownerPath;
+        std::cout << "\nNEW PATH: " << path;
+    }
 
     file->startNewVersion();
     file->setName(name);
     file->setExtension(extension);
     file->setLastUser(email);
     file->setSize(size);
+    file->setOwnerPath(ownerPath);
     for (std::string tag : tags) {
         file->setTag(tag);
     }
@@ -134,19 +142,28 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
         throw;
     }
 
+    Folder* folder = NULL;
     rocksdb::DB* db = this->openDatabase("En SaveNewVersionOfFile: ",'w');
     try {
-        file->changeSearchInformation(oldFile);
+        folder = Folder::load(db,email,path);
+        folder->removeFile(id);
+        folder->addFile(id,name+extension);
+        folder->save(db);
+
         file->save(db);
+        file->changeSearchInformation(db,email,oldFile);
+        file->saveSearches(email,path,db);
     } catch(std::exception& e) {
         delete oldFile;
         delete file;
+        delete folder;
         delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed,
     }
     delete db;
     delete file;
     delete oldFile;
+    delete folder;
 
     u_manager.changeFileSize(owner, oldSize, size);
 
@@ -284,7 +301,8 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     std::string result = "true";
     bool isOwner = (email.compare(file->getOwner()) == 0);
     if (isOwner) {
-        int success = rename(("files/" + email + "/path/" + std::to_string(id)).c_str(),
+        file->saveSearches(email,"trash",db);
+        int success = rename(("files/" + email + "/" + path + "/" + std::to_string(id)).c_str(),
                              ("files/" + email + "/trash/" + std::to_string(id)).c_str());
         if (success != 0) {
             result = "false";
@@ -314,4 +332,34 @@ std::string FileManager::getSearches(std::string email, std::string typeOfSearch
     delete db;
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
     return "{ \"result\" : true , \"content\" : " + content + " }";
+}
+
+std::string FileManager::recoverFile(std::string email, int id) {
+    File* file = this->openFile(id);
+    // We don't have to check if the user is the owner, because only the owner can recover something from the trash.
+    std::string path = file->getMetadata()->ownerPath;
+    rocksdb::DB *db = NULL;
+    try {
+        db = this->openDatabase("En recoverFile: ",'w');
+        file->recoverFromUser(db, email, path);
+        file->save(db);
+    } catch (std::exception& e) {
+        if (db != NULL) delete db;
+        delete file;
+        throw;
+    }
+
+    // If we are in this point the logical remove (metadata) was correct
+    std::string result = "true";
+
+    int success = rename(("files/" + email + "/trash/" + std::to_string(id)).c_str(),
+                         ("files/" + email + "/" + path + "/" + std::to_string(id)).c_str());
+    if (success != 0) {
+        result = "false";
+    }
+    file->saveSearches(email,path,db);
+
+    delete file;
+    delete db;
+    return "{ \"result\" : " + result + " }";
 }

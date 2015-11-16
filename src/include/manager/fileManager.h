@@ -38,6 +38,8 @@ class FileManager: public Manager {
 
 		std::string shareFileToUsers(int id, std::vector<std::string> users);
         std::string getSearches(std::string email, std::string typeOfSearch, std::string element);
+
+        std::string recoverFile(std::string email,int id);
         
 };
 

@@ -231,8 +231,8 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     }
 }
 
-void File::changeSearchInformation(File* oldFile) {
-    //TODO ver diferencias de tags, name y extension para cambiarlos. (owner no se puede cambiar)
+void File::changeSearchInformation(rocksdb::DB* db, std::string email, File* oldFile) {
+    oldFile->removeSearchInformation(db,email);
 }
 
 void File::checkIfUserHasPermits(std::string email) {
@@ -278,15 +278,15 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
     delete folder;
     // Remove searches.
-    this->deleteFromUser(db, user, path);
+    this->removeSearchInformation(db, user);
 }
 
-void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
+void File::removeSearchInformation(rocksdb::DB* db, std::string user) {
 
     SearchInformation* owner = NULL;
     try {
         owner =  SearchInformation::load(db, "owner", user, this->owner);
-        owner->eraseFile(this->getId()); //, path);
+        owner->eraseFile(this->getId());
         owner->save(db);
     } catch (std::exception& e) {
         if (owner != NULL) delete owner;
@@ -298,7 +298,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     SearchInformation* name = NULL;
     try {
         name = SearchInformation::load(db, "name", user, metadata->name);
-        name->eraseFile(this->id); //, path);
+        name->eraseFile(this->id);
         name->save(db);
     } catch (std::exception& e) {
         if (name != NULL) delete name;
@@ -310,7 +310,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     SearchInformation* extension = NULL;
     try {
         extension = SearchInformation::load(db, "extension", user, metadata->extension);
-        extension->eraseFile(this->id); //, path);
+        extension->eraseFile(this->id);
         extension->save(db);
     } catch (std::exception& e) {
         if (extension != NULL) delete extension;
@@ -322,7 +322,7 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
         SearchInformation* tagInfo = NULL;
         try {
             tagInfo = SearchInformation::load(db, "tag", user, tag);
-            tagInfo->eraseFile(this->id); //, path);
+            tagInfo->eraseFile(this->id);
             tagInfo->save(db);
         } catch (std::exception& e) {
             if (tagInfo != NULL) delete tagInfo;
@@ -332,6 +332,27 @@ void File::deleteFromUser(rocksdb::DB* db, std::string user, std::string path) {
     }
 }
 
+void File::recoverFromUser(rocksdb::DB* db, std::string user, std::string path) {
+    struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
+    Folder *folder = NULL;
+
+    try {
+        folder = Folder::load(db, user, path);
+        folder->addFile(this->id, metadata->name + metadata->extension);
+        folder->save(db);
+        delete folder;
+        folder = Folder::load(db, user, "trash");
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception &e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+
+    delete folder;
+    // Remove searches.
+    this->removeSearchInformation(db, user);
+}
 
 void File::addSharedUser(std::string user) {
     if (user.compare(this->owner) == 0) {
