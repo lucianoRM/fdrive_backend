@@ -22,6 +22,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
 
 	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files/:int/:int/metadata", "GET", requestCodes::LOADFILE_GET);
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
@@ -214,22 +215,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 break;
 			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], cid[100], cversion[100];
+				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				mg_get_var(conn, "version", cversion, sizeof(cversion));
-                if (strlen(cemail) == 0) throw RequestException();
+				if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
-                //if (strlen(cid) == 0) throw RequestException();
 
 				int id = atoi(routeParameterVector->at(1).c_str());
 
                 this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-                this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+                this->fileManager->checkIfUserHasFilePermits(id, std::string(cemail));
 
-                if (strlen(cversion) != 0) {
-                    result = this->fileManager->loadFile(id, atoi(cversion));
+                if (routeParameterVector->size() == 4) {
+					int version = atoi(routeParameterVector->at(2).c_str());
+                    result = this->fileManager->loadFile(id, version);
                 } else {
                     result = this->fileManager->loadFile(id);
                 }
@@ -387,7 +386,6 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
 				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
 				const char* extraHeaders = ("Content-Disposition: attachment; filename=\""+file->getMetadata()->name+file->getMetadata()->extension+"\"\r\n").c_str();
-				std::cout << extraHeaders << std::endl;
 				mg_send_file(conn, path, extraHeaders);
 				return MG_MORE;
 

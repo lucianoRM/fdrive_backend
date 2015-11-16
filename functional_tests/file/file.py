@@ -184,6 +184,17 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1"], r.json()["file"]["tags"])
 		self.assertEqual(1, r.json()["file"]["lastVersion"])
+
+	def test_save_new_version_of_file_then_get_metadata_of_earlier(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename")
+		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
+		payload = {
+			"email":		"testemail",
+			"token":		token
+		}
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/0/metadata", params = payload)
+		self.assertEqual("somefilename", r.json()["file"]["name"])
 	
 	def test_save_new_version_wrong_token(self):
 		token = self._signup_and_login()
