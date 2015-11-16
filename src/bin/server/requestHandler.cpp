@@ -30,8 +30,6 @@ RequestHandler::RequestHandler() {
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
-	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
-
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
 	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
