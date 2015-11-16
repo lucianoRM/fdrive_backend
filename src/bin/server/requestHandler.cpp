@@ -16,7 +16,7 @@ RequestHandler::RequestHandler() {
 
 	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
 
-	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
+	this->routeTree->add("files/:int", "DELETE", requestCodes::ERASEFILE_DELETE);
 
 	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files/:int/:int/metadata", "GET", requestCodes::LOADFILE_GET);
@@ -24,9 +24,11 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("files/metadata", "POST", requestCodes::SAVEFILE_POST);
 	this->routeTree->add("files/:int/metadata", "PUT", requestCodes::SAVEFILE_PUT);
 
-	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
+	this->routeTree->add("files/:int/:int/data", "POST", requestCodes::FILEUPLOAD_POST);
+	this->routeTree->add("files/:int/:int/data", "GET", requestCodes::FILEDOWNLOAD_GET);
+	this->routeTree->add("files/:int/data", "GET", requestCodes::FILEDOWNLOAD_GET);
 
-	this->routeTree->add("filesupload", "POST", requestCodes::FILEUPLOAD_POST);
+	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
 	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
 

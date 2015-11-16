@@ -242,7 +242,7 @@ class TestFile(unittest.TestCase):
 		files = {'upload': open(python_file_path, 'rb')}
 		token = self._signup_and_login("testemail")
 		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
 		self.assertTrue(r.json()["result"])
 		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)
 		self.assertTrue(os.path.isfile(server_file_path))
@@ -255,13 +255,13 @@ class TestFile(unittest.TestCase):
 		files = {'upload': open(python_file_path, 'rb')}
 		token = self._signup_and_login("testemail")
 		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
 
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
 		files = {'upload': open(python_file_path_2, 'rb')}
-		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token, files = files)
 
-		r = requests.get("http://localhost:8000/filesdownload?id="+str(fileid)+"&email=testemail&token="+token)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
 		call(["rm", "-rf", downloaded_file_path])
 		with open(downloaded_file_path, 'wb') as f:
 			for chunk in r.iter_content(chunk_size=1024):
@@ -276,10 +276,10 @@ class TestFile(unittest.TestCase):
 		files = {'upload': open(python_file_path, 'rb')}
 		token = self._signup_and_login("testemail")
 		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/filesupload?id="+str(fileid)+"&email=testemail&token="+token, files = files)
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
 		self.assertTrue(r.json()["result"])
 
-		r = requests.get("http://localhost:8000/filesdownload?id="+str(fileid)+"&email=testemail&token="+token)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
 		call(["rm", "-rf", downloaded_file_path])
 		with open(downloaded_file_path, 'wb') as f:
 			for chunk in r.iter_content(chunk_size=1024):
