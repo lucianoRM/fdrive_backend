@@ -14,10 +14,11 @@ void RouteTreeNode::addRoute(std::list<std::string>* routeList, int function) {
     } else {
         std::string nextParam = routeList->front();
         routeList->pop_front();
-        RouteTreeNode* routeTreeNode = new RouteTreeNode();
-        //this->children->insert(std::pair<std::string, RouteTreeNode*> (nextParam, routeTreeNode));
-        (*this->children)[nextParam] = routeTreeNode;
-        routeTreeNode->addRoute(routeList, function);
+        if (this->children->find(nextParam) == this->children->end()) {
+            RouteTreeNode* routeTreeNode = new RouteTreeNode();
+            (*this->children)[nextParam] = routeTreeNode;
+        }
+        this->children->at(nextParam)->addRoute(routeList, function);
     }
 }
 

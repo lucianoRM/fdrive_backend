@@ -21,6 +21,8 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
 	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
 
+	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
 
 	this->routeTree->add("filesupload", "POST", requestCodes::FILEUPLOAD_POST);
@@ -48,7 +50,7 @@ RequestHandler::~RequestHandler(){
 int RequestHandler::handle(std::string uri, std::string request_method, struct mg_connection* conn) {
 	// Combine uri+request_method.
 	std::string uriPlusMethod = uri + ":" + request_method;
-	std::cout << uriPlusMethod << std::endl;
+	//std::cout << uriPlusMethod << std::endl;
 
 	std::string s = uri.substr(1);
 	int reqCode;
@@ -58,6 +60,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 		std::cout << uriPlusMethod << " NOT FOUND" << std::endl;
 		return -1;
 	}
+	//std::cout << reqCode << " METADATA " << requestCodes::LOADFILE_GET << std::endl;
 
 	try {
 		std::string result;
@@ -215,7 +218,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				mg_get_var(conn, "version", cversion, sizeof(cversion));
                 if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
-                if (strlen(cid) == 0) throw RequestException();
+                //if (strlen(cid) == 0) throw RequestException();
 
                 this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
                 this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));

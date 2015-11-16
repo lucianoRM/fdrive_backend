@@ -50,7 +50,6 @@ class TestFile(unittest.TestCase):
 			"id" :			fileid
 		}
 		r = requests.post("http://localhost:8000/files", json = payload)
-		print json.dumps(r.json())
 		return r.json()
 
 	def _share_file(self, token, fileid, email, users):
@@ -61,7 +60,6 @@ class TestFile(unittest.TestCase):
 			"users":		users
 		}
 		r = requests.post("http://localhost:8000/share", json = payload)
-		print json.dumps(r.json())
 		return r.json()
 
 	def test_save_new_file_then_get(self):
@@ -69,10 +67,9 @@ class TestFile(unittest.TestCase):
 		fileid = self._save_new_file(token, "somefilename")
 		payload = {
 			"email":		"testemail",
-			"token":		token,
-			"id":			fileid
+			"token":		token
 		}
-		r = requests.get("http://localhost:8000/files", params = payload)
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual(".txt", r.json()["file"]["extension"])
 		self.assertEqual(fileid, r.json()["file"]["id"])
