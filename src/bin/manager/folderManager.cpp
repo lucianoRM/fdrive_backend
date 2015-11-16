@@ -5,12 +5,14 @@
 #include <folder/folder.h>
 #include <sys/stat.h>
 #include "folderManager.h"
+#include "folderExceptions.h"
 #include <stdio.h>
 
 FolderManager::FolderManager() { }
 FolderManager::~FolderManager() { }
 
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
+	if (path.compare("shared") == 0 || path.compare("trash")) throw InvalidFolderPath();
     rocksdb::DB* db = this->openDatabase("En AddFolder: ",'w');
 
     Folder* folder = NULL;
