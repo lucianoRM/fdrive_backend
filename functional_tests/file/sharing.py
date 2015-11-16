@@ -189,7 +189,7 @@ class TestSharingFiles(unittest.TestCase):
 			"token":		token,
 			"id":			file_id
 		}
-		r = requests.delete("http://localhost:8000/share", json = payload)
+		r = requests.put("http://localhost:8000/unshare", json = payload)
 		self.assertTrue(r.json()["result"])
 		payload = {
 			"email":		"user2",
@@ -223,7 +223,7 @@ class TestSharingFiles(unittest.TestCase):
 			"id":			file_id,
 			"users":		["user3", "user2"]
 		}
-		r = requests.delete("http://localhost:8000/share", json = payload)
+		r = requests.put("http://localhost:8000/unshare", json = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertTrue(r.json()["result"])
 		payload = {
