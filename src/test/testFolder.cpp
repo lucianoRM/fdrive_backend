@@ -1,7 +1,3 @@
-//
-// Created by martin on 13/11/15.
-//
-
 #include <user/user.h>
 #include "googletest/include/gtest/gtest.h"
 #include "googletest/include/gtest/internal/gtest-internal.h"
@@ -228,24 +224,24 @@ TEST(FolderTest, RemoveFile) {
     Json::Reader reader;
     Json::Value root;
 
-    std::cout << "El json es: " << json << std::endl;
+    //std::cout << "El json es: " << json << std::endl;
 
     EXPECT_TRUE(reader.parse(json, root, false));
     Json::Value files = root["files"];
     for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
-        std::cout << "\n TIENE: " << it->asString();
+        //std::cout << "\n TIENE: " << it->asString();
         EXPECT_NE(it->asInt(),id);
     }
 
     Folder* folderTrash = Folder::load(db,"owner","trash");
     json = folderTrash->getContent();
 
-    std::cout << "El json es: " << json << std::endl;
+    //std::cout << "El json es: " << json << std::endl;
 
     EXPECT_TRUE(reader.parse(json, root, false));
     files = root["files"];
     for (Json::Value::iterator it = files.begin(); it != files.end();it++) {
-        std::cout << "\n TIENE: " << it->asString();
+        //std::cout << "\n TIENE: " << it->asString();
     }
 
     delete db;

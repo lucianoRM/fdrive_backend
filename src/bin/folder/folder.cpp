@@ -15,6 +15,14 @@ Folder::~Folder() {
     delete this->folders;
 }
 
+void Folder::setName(std::string path) {
+    this->fullName = path;
+}
+
+void Folder::setUser(std::string user) {
+    this->user = user;
+}
+
 bool Folder::checkIfExisting(std::vector<std::string>* listToCheck, std::string value) {
     return (std::find(listToCheck->begin(), listToCheck->end(), value) != listToCheck->end());
 }
@@ -181,4 +189,12 @@ std::string Folder::getContent() {
     Json::Value json = getJson();
     Json::StyledWriter writer;
     return writer.write(json);
+}
+
+std::vector<int> Folder::getDirectFiles() {
+    return (*this->filesIds);
+}
+
+std::vector<std::string> Folder::getDirectFolders() {
+    return (*this->folders);
 }

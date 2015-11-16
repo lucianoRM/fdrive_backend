@@ -5,12 +5,14 @@
 #include <folder/folder.h>
 #include <sys/stat.h>
 #include "folderManager.h"
+#include "folderExceptions.h"
 #include <stdio.h>
 
 FolderManager::FolderManager() { }
 FolderManager::~FolderManager() { }
 
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
+	if (path.compare("shared") == 0 || path.compare("trash")) throw InvalidFolderPath();
     rocksdb::DB* db = this->openDatabase("En AddFolder: ",'w');
 
     Folder* folder = NULL;
@@ -64,4 +66,32 @@ std::string FolderManager::renameFolder(std::string email, std::string path, std
         return "{ \"result\" : true }";
 
     return "{ \"result\" : false }";
+}
+
+std::vector<int> FolderManager::getFilesFromFolder(std::string email, std::string path) {
+    rocksdb::DB* db = this->openDatabase("En getFilesFromFolder: ",'r');
+
+    Folder* folder = NULL;
+    std::vector<int> files;
+    std::vector<std::string> folders ({path});
+    while (!folders.empty()) {
+        std::string actualPath = folders.back();
+        folders.pop_back();
+        try {
+            folder = Folder::load(db, email, actualPath);
+        } catch (std::exception& e) {   // Si el primero existe, todos los otros seguro existen.
+            delete db;
+            throw;
+        }
+        for (int id : folder->getDirectFiles()) {
+            files.push_back(id);
+        }
+        for (std::string newFolder : folder->getDirectFolders()) {
+            folders.push_back(actualPath + "/" + newFolder);
+        }
+        std::cout << std::endl;
+        delete folder;
+    }
+    delete db;
+    return files;
 }

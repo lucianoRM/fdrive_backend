@@ -30,9 +30,12 @@ class Folder {
         std::string getJsonFileStructure();
 
 
-        public:
+    public:
         Folder();
         ~Folder();
+
+        void setName(std::string path);
+        void setUser(std::string user);
         void addFolder(std::string folder, rocksdb::DB* db);
         void addFile(int fileId, std::string fileName);
         void removeFile(int fileId);
@@ -44,6 +47,9 @@ class Folder {
         void renameFolder(std::string oldName, std::string newName);
         void renamePath(std::string newName);
         void eraseFolder(std::string folder, rocksdb::DB* db);
+
+        std::vector<int> getDirectFiles();
+        std::vector<std::string> getDirectFolders();
 };
 
 #endif //FDRIVE_FOLDER_H

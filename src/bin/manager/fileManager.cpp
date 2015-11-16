@@ -5,6 +5,7 @@
 #include <folder/folder.h>
 #include "fileManager.h"
 #include "userManager.h"
+#include "folderManager.h"
 #include <stdio.h>
 
 FileManager::FileManager() { }
@@ -283,6 +284,21 @@ void FileManager::shareFileToUser(int id, std::string email) {
     delete folder;
 }
 
+std::string FileManager::shareFolder(std::string email, std::string path, std::vector<std::string> users) {
+    FolderManager f_manager;
+    std::vector<int> files = f_manager.getFilesFromFolder(email, path);
+    for (std::string user : users) {
+        for (int id : files) {
+            try {
+                this->shareFileToUser(id, user);
+            } catch (FileAlreadyInFolderException &ex) {
+                continue;
+            }
+        }
+    }
+    return "{ \"result\" : true }";
+}
+
 
 std::string FileManager::eraseFileFromUser(int id, std::string email, std::string path) {
     File* file = this->openFile(id);
@@ -362,4 +378,42 @@ std::string FileManager::recoverFile(std::string email, int id) {
     delete file;
     delete db;
     return "{ \"result\" : " + result + " }";
+}
+
+std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {
+    File* file = this->openFile(id);
+    if (users.empty()) {
+        std::list<std::string> l = file->getUsers();
+        users = std::vector<std::string>( std::make_move_iterator(std::begin(l)),
+                                          std::make_move_iterator(std::end(l)) );
+    }
+    rocksdb::DB *db = NULL;
+    try {
+        db = this->openDatabase("En deleteFileSharedPermits: ",'w');
+    } catch (std::exception& e) {
+        delete file;
+        throw;
+    }
+    for (std::string user: users) {
+        try {
+            file->eraseFromUser(db, user, "shared");
+        } catch (HasNoPermits& ex) {
+            continue;
+        } catch (std::exception& e) {
+            delete file;
+            delete db;
+            throw;
+        }
+    }
+    try {
+        file->save(db);
+    } catch (std::exception& e) {
+        delete file;
+        delete db;
+        throw;
+    }
+
+    delete file;
+    delete db;
+    return "{ \"result\" : true }";
 }
