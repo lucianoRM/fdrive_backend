@@ -72,7 +72,7 @@ TEST(SearchTest, TagFileSearch) {
     EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    delete db;
+    //delete db;
     delete file;
     SEARCH_deleteDatabase();
 }
@@ -101,7 +101,7 @@ TEST(SearchTest, OwnerFileSearch) {
     EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    delete db;
+    //delete db;
     delete file;
     SEARCH_deleteDatabase();
 }
@@ -130,7 +130,7 @@ TEST(SearchTest, NameFileSearch) {
     EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    delete db;
+    //delete db;
     delete file;
     SEARCH_deleteDatabase();
 }
@@ -159,7 +159,7 @@ TEST(SearchTest, ExtensionFileSearch) {
     EXPECT_EQ(0,id);
     EXPECT_EQ("root",path);
 
-    delete db;
+    //delete db;
     delete file;
     SEARCH_deleteDatabase();
 }
@@ -202,7 +202,7 @@ TEST(SearchTest, TwoFilesWithSameOwner) {
     EXPECT_EQ("root/other",fileSearch2->path);
 
 
-    delete db;
+    //delete db;
     delete file1;
     delete file2;
     SEARCH_deleteDatabase();

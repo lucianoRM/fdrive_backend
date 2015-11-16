@@ -18,6 +18,7 @@ class Server {
 	private:
 		struct mg_server* mongooseServer;
 		int listenerTimeOut;
+		static rocksdb::DB* database;
 
 	private:
 		// Returns mongoose server.
@@ -28,7 +29,7 @@ class Server {
 
 	public:
 		// Creates a new server listening in port: port.
-		Server(std::string port);
+		Server(std::string port,rocksdb::DB* database);
 
 		// Destroys the server.
 		~Server();

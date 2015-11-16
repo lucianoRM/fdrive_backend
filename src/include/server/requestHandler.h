@@ -35,7 +35,7 @@ class RequestHandler {
 
 
 	public:
-		RequestHandler();
+		RequestHandler(rocksdb::DB* database);
 		~RequestHandler();
 
 		// Returns true if was a valid request (no matter its result).

@@ -24,8 +24,8 @@ TEST(GetFilesTest, GetVariousRootFiles) {
 
 TEST(GetUsersTest, GetUsersWhenNoOther) {
 	USERMANAGER_deleteDatabase();
-	
-	UserManager manager;
+	rocksdb::DB* db;
+	UserManager manager = UserManager(db);
 	manager.addUser("email", "password");
 	std::string result = manager.getUsers("email");
 	Json::Reader reader;
@@ -41,8 +41,9 @@ TEST(GetUsersTest, GetUsersWhenNoOther) {
 
 TEST(GetUsersTest, GetUsersWhenTwoOthers) {
 	USERMANAGER_deleteDatabase();
-	
-	UserManager manager;
+
+	rocksdb::DB* db;
+	UserManager manager = UserManager(db);
 	manager.addUser("email", "password");
 	manager.addUser("email2", "password");
 	manager.addUser("email3", "password");

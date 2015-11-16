@@ -1,11 +1,11 @@
 #include "requestHandler.h"
 #include <cstring>
 
-RequestHandler::RequestHandler() {
+RequestHandler::RequestHandler(rocksdb::DB* database) {
 
-	this->userManager = new UserManager();
-	this->fileManager = new FileManager();
-	this->folderManager = new FolderManager();
+	this->userManager = new UserManager(database);
+	this->fileManager = new FileManager(database);
+	this->folderManager = new FolderManager(database);
 
 	this->routeTree = new RouteTree();
 	this->routeTree->add("users", "POST", requestCodes::USERS_POST);
@@ -30,7 +30,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
 
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
-	this->routeTree->add("share", "DELETE", requestCodes::SHAREFILE_DELETE);
+	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
 
 	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);

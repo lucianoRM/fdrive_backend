@@ -7,7 +7,7 @@
 
 int UserManager::counter = 0;
 
-UserManager::UserManager() { }
+UserManager::UserManager(rocksdb::DB* database) : Manager(database) { }
 UserManager::~UserManager() { }
 
 std::string UserManager::createToken() {
@@ -24,12 +24,12 @@ bool UserManager::checkExistentUser(std::string email) {
         user = User::load(db, email);
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        if (db != NULL) delete db;
+        if (db != NULL) ////delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en LoginUser." << std::endl;
         return false;
     }
     delete user;
-    delete db;
+    ////delete db;
     return true;
 }
 
@@ -55,13 +55,13 @@ std::string UserManager::addUser(std::string email, std::string password) {
     } catch (std::exception& e) {
         delete user;
         if (db != NULL) {
-            delete db;
+            ////delete db;
             ///std::cout << "ERROR pero Cerré la base de datos en AddUser." << std::endl;
         }
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
 
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en AddUser." << std::endl;
     delete user;
 
@@ -80,7 +80,7 @@ std::string UserManager::loginUser(std::string email, std::string password) {
         }
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en LoginUser." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
@@ -90,11 +90,11 @@ std::string UserManager::loginUser(std::string email, std::string password) {
         token = user->getNewToken(db);
     } catch (std::exception& e) {
         delete user;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en LoginUser." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en LoginUser." << std::endl;
     delete user;
 
@@ -113,11 +113,11 @@ std::string UserManager::logoutUser(std::string email, std::string token) {
         }
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en LogoutUser." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en LogoutUser." << std::endl;
     delete user;
 
@@ -133,12 +133,12 @@ void UserManager::checkIfLoggedIn(std::string email, std::string token) {
         user->checkToken(token);
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR pero Cerré la base de datos en CheckIfLoggedIn." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en CheckIfLoggedIn." << std::endl;
 }
 
@@ -150,14 +150,14 @@ std::string UserManager::loadUserFiles(std::string email, std::string path) {
         folder = Folder::load(db, email, path);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
-        delete db;
+        ////delete db;
         ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
 
     std::string content = folder->getContent();
     delete folder;
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
     return "{ \"result\" : true , \"content\" : " + content + " }";
 }
@@ -168,14 +168,14 @@ std::string UserManager::getUsers(std::string email) {
     std::string value;
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "users", &value);
     if (!status.ok()) {
-		delete db;
+		////delete db;
 		throw DBException();
 	}
     Json::Reader reader;
     Json::Value root;
     if (!reader.parse(value, root, false)) {
         std::cout << "Json no pudo parsear los users en GetUsers." << std::endl;
-        delete db;
+        ////delete db;
         throw DBException();
     }
     Json::Value otherUsers(Json::arrayValue);
@@ -188,12 +188,12 @@ std::string UserManager::getUsers(std::string email) {
 				otherUsers.append(user->getJsonValue());
 			} catch (std::exception& e) {
 				if (user != NULL) delete user;
-				delete db;
+				////delete db;
 				throw;
 			}
 		}
     }
-    delete db;
+    ////delete db;
     Json::StyledWriter writer;
     return "{ \"result\" : true , \"users\" : " + writer.write(otherUsers) + " }";
 }
@@ -208,11 +208,11 @@ void UserManager::checkFileAddition(std::string email, int size) {
 		}
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-	delete db;
+	////delete db;
 }
 
 void UserManager::addFile(std::string email, int size) {
@@ -226,11 +226,11 @@ void UserManager::addFile(std::string email, int size) {
         if (!user->save(db)) throw DBException();
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-	delete db;
+	////delete db;
 }
 
 void UserManager::checkFileSizeChange(std::string email, int oldSize, int newSize) {
@@ -243,11 +243,11 @@ void UserManager::checkFileSizeChange(std::string email, int oldSize, int newSiz
 		}
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-	delete db;
+	////delete db;
 }
 
 void UserManager::changeFileSize(std::string email, int oldSize, int newSize) {
@@ -261,11 +261,11 @@ void UserManager::changeFileSize(std::string email, int oldSize, int newSize) {
 		if (!user->save(db)) throw DBException();
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-	delete db;
+	////delete db;
 }
 
 std::string UserManager::saveUserData(std::string email, std::string name, std::string lastLocation) {
@@ -278,10 +278,10 @@ std::string UserManager::saveUserData(std::string email, std::string name, std::
         if (!user->save(db)) throw DBException();
     } catch (std::exception& e) {
         if (user != NULL) delete user;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed.
     }
     delete user;
-    delete db;
+    ////delete db;
     return "{ \"result\" : true }";
 }

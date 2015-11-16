@@ -43,8 +43,8 @@ TEST(GetFiles, EmptyFolder) {
 	FOLDERMANAGER_deleteDatabase();
 	rocksdb::DB* db = FOLDERMANAGER_openDatabase();
 	createFolder(db, "root/folder", "owner", {}, {});
-	delete db;
-	FolderManager manager;
+	//delete db;
+	FolderManager manager = FolderManager(db);
 	std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
 	EXPECT_TRUE(files.empty());
 
@@ -55,8 +55,8 @@ TEST(GetFiles, FolderWithFiles) {
     FOLDERMANAGER_deleteDatabase();
     rocksdb::DB* db = FOLDERMANAGER_openDatabase();
     createFolder(db, "root/folder", "owner", {2, 3}, {});
-    delete db;
-    FolderManager manager;
+    //delete db;
+    FolderManager manager  = FolderManager(db);
     std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
     EXPECT_EQ((unsigned) 2, files.size());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 2) != files.end());
@@ -72,8 +72,8 @@ TEST(GetFiles, FolderWithFilesAndEmptyFolders) {
     createFolder(db, "root/folder", "owner", {2, 3, 4}, {"otherFolder", "another"});
     createFolder(db, "root/folder/otherFolder", "owner", {}, {});
     createFolder(db, "root/folder/another", "owner", {}, {});
-    delete db;
-    FolderManager manager;
+    //delete db;
+    FolderManager manager  = FolderManager(db);
     std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
     EXPECT_EQ((unsigned) 3, files.size());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 2) != files.end());
@@ -90,8 +90,8 @@ TEST(GetFiles, FolderWithFilesAndOtherFoldersWithFiles) {
     createFolder(db, "root/folder", "owner", {2, 3}, {"other", "another"});
     createFolder(db, "root/folder/other", "owner", {8,6}, {});
     createFolder(db, "root/folder/another", "owner", {}, {});
-    delete db;
-    FolderManager manager;
+    //delete db;
+    FolderManager manager  = FolderManager(db);
     std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
     EXPECT_EQ((unsigned) 4, files.size());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 2) != files.end());
@@ -110,8 +110,8 @@ TEST(GetFiles, FolderWithTwoLevels) {
     createFolder(db, "root/folder/other", "owner", {8,6}, {});
     createFolder(db, "root/folder/another", "owner", {1}, {"andAnother"});
     createFolder(db, "root/folder/another/andAnother", "owner", {7}, {});
-    delete db;
-    FolderManager manager;
+    //delete db;
+    FolderManager manager  = FolderManager(db);
     std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
     EXPECT_EQ((unsigned) 6, files.size());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 1) != files.end());
