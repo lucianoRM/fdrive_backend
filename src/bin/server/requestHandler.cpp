@@ -7,24 +7,33 @@ RequestHandler::RequestHandler() {
 	this->fileManager = new FileManager();
 	this->folderManager = new FolderManager();
 
-	this->codesMap = new std::unordered_map<std::string,int>;
-	(*this->codesMap)["/users:POST"] = requestCodes::USERS_POST;
-	(*this->codesMap)["/users:GET"] = requestCodes::USERS_GET;
-	(*this->codesMap)["/login:GET"] = requestCodes::LOGIN_GET;
-	(*this->codesMap)["/logout:GET"] = requestCodes::LOGOUT_GET;
-	(*this->codesMap)["/files:POST"] = requestCodes::SAVEFILE_POST;
-	(*this->codesMap)["/files:GET"] = requestCodes::LOADFILE_GET;
-	(*this->codesMap)["/userfiles:GET"] = requestCodes::LOADUSERFILES_GET;
-	(*this->codesMap)["/files:DELETE"] = requestCodes::ERASEFILE_DELETE;
-	(*this->codesMap)["/filesupload:POST"] = requestCodes::FILEUPLOAD_POST;
-	(*this->codesMap)["/filesdownload:GET"] = requestCodes::FILEDOWNLOAD_GET;
-	(*this->codesMap)["/share:POST"] = requestCodes::SHAREFILE_POST;
-	(*this->codesMap)["/addfolder:POST"] = requestCodes::ADDFOLDER_POST;
-	(*this->codesMap)["/renamefolder:POST"] = requestCodes::RENAMEFOLDER_POST;
+	this->routeTree = new RouteTree();
+	this->routeTree->add("users", "POST", requestCodes::USERS_POST);
+	this->routeTree->add("users", "GET", requestCodes::USERS_GET);
+
+	this->routeTree->add("login", "GET", requestCodes::LOGIN_GET);
+
+	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
+
+	this->routeTree->add("files", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
+
+	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
+
+	this->routeTree->add("filesupload", "POST", requestCodes::FILEUPLOAD_POST);
+
+	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
+
+	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
+
+	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
+
+	this->routeTree->add("renamefolder", "POST", requestCodes::RENAMEFOLDER_POST);
+
 }
 
 RequestHandler::~RequestHandler(){
-	delete this->codesMap;
 	delete this->userManager;
 	delete this->fileManager;
 	delete this->folderManager;
@@ -34,11 +43,16 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 	// Combine uri+request_method.
 	std::string uriPlusMethod = uri + ":" + request_method;
 	std::cout << uriPlusMethod << std::endl;
-	if (!this->codesMap->count(uriPlusMethod)) {
+
+	std::string s = uri.substr(1);
+	int reqCode;
+	try {
+		reqCode = this->routeTree->get(s, request_method);
+	} catch (RouteNotFoundException e) {
+		std::cout << uriPlusMethod << " NOT FOUND" << std::endl;
 		return -1;
 	}
 
-	int reqCode = codesMap->at(uriPlusMethod);
 	try {
 		std::string result;
 

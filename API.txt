@@ -156,3 +156,22 @@ RENAME FOLDER:
 	url: <dirección server>/renamefolder?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
 	Método: POST
 	Respuesta: {"result": true}
+
+PROPOSED NEW FILES API
+
+METADATA
+/files/:id/metadata            [GET]    Obtener la metadata de la última versión de un archivo
+/files/:id/:version/metadata   [GET]    Obtener la metadata de una versión de un archivo
+
+/files/:id/metadata            [POST]   Subir la metadata de una versión nueva de un archivo
+/files/metadata                [POST]   Subir la metadata de un archivo nuevo
+
+/files/:id/:version/metadata   [PUT]    Cambiar la metadata de la última versión de un archivo
+
+DATA
+/files/:id/:version/data       [GET]    Obtener una versión de un archivo
+/files/:id/data                [GET]    Obtener la última versión de un archivo
+/files/:id/:version/data       [POST]   Subir una versión de un archivo
+
+GENERICOS
+/files/:id                     [DELETE]
