@@ -268,6 +268,13 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
             throw;
         }
     }
+    if (user.compare(this->owner) != 0) {
+        if (std::find(this->users->begin(), this->users->end(), user) == this->users->end()) {
+            throw HasNoPermits();
+        }
+        this->users->remove(user);
+    }
+
     try {
         folder = Folder::load(db, user, path);
         folder->removeFile(this->getId());

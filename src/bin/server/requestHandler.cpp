@@ -30,6 +30,7 @@ RequestHandler::RequestHandler() {
 	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
 
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
+	this->routeTree->add("share", "DELETE", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
 
 	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
@@ -297,6 +298,36 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				result = this->fileManager->shareFileToUsers(id, users);
 				break;
 			}
+            case requestCodes::SHAREFILE_DELETE:
+            {
+                //Needed for filtering unnecesary headers
+                char json[conn->content_len + 1];
+                char *content = conn->content;
+                content[conn->content_len] = '\0';
+                strcpy(json, conn->content);
+                Json::Value root;
+                Json::Reader reader;
+                if (!reader.parse(json, root, false))
+                    throw RequestException();
+
+                std::string email, token;
+                int id;
+                if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+                email = root["email"].asString();
+                token = root["token"].asString();
+                id = root["id"].asInt();
+                std::vector<std::string> users;
+                if (root.isMember("users")) {
+                    for (Json::ValueIterator itr = root["users"].begin(); itr != root["users"].end(); itr++) {
+                        users.push_back((*itr).asString());
+                    }
+                }
+
+                this->userManager->checkIfLoggedIn(email, token);
+                this->fileManager->checkIfUserIsOwner(id, email);
+                result = this->fileManager->deleteFileSharedPermits(id, users);
+                break;
+            }
             case requestCodes::SHAREFOLDER_POST:
             {
                 //Needed for filtering unnecesary headers

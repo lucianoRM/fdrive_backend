@@ -379,3 +379,41 @@ std::string FileManager::recoverFile(std::string email, int id) {
     delete db;
     return "{ \"result\" : " + result + " }";
 }
+
+std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {
+    File* file = this->openFile(id);
+    if (users.empty()) {
+        std::list<std::string> l = file->getUsers();
+        users = std::vector<std::string>( std::make_move_iterator(std::begin(l)),
+                                          std::make_move_iterator(std::end(l)) );
+    }
+    rocksdb::DB *db = NULL;
+    try {
+        db = this->openDatabase("En deleteFileSharedPermits: ",'w');
+    } catch (std::exception& e) {
+        delete file;
+        throw;
+    }
+    for (std::string user: users) {
+        try {
+            file->eraseFromUser(db, user, "shared");
+        } catch (HasNoPermits& ex) {
+            continue;
+        } catch (std::exception& e) {
+            delete file;
+            delete db;
+            throw;
+        }
+    }
+    try {
+        file->save(db);
+    } catch (std::exception& e) {
+        delete file;
+        delete db;
+        throw;
+    }
+
+    delete file;
+    delete db;
+    return "{ \"result\" : true }";
+}
