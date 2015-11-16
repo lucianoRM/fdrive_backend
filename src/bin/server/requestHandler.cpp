@@ -241,20 +241,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			case requestCodes::ERASEFILE_DELETE:
 			{
 
-				char email[100], token[100], id[100],path[300];
+				char email[100], token[100],path[300];
 				mg_get_var(conn, "email", email, sizeof(email));
 				mg_get_var(conn, "token", token, sizeof(token));
-				mg_get_var(conn, "id", id, sizeof(id));
 				mg_get_var(conn, "path", path, sizeof(path));
 				if (strlen(email) == 0) throw RequestException();
 				if (strlen(token) == 0) throw RequestException();
-				if (strlen(id) == 0) throw RequestException();
 				if (strlen(path) == 0) throw RequestException();
+
+				int id = atoi(routeParameterVector->at(1).c_str());
 
 
 				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
-                this->fileManager->checkIfUserHasFilePermits(atoi(id), std::string(email));
-				result = this->fileManager->eraseFileFromUser(atoi(id), std::string(email), std::string(path));
+                this->fileManager->checkIfUserHasFilePermits(id, std::string(email));
+				result = this->fileManager->eraseFileFromUser(id, std::string(email), std::string(path));
 				break;
 			}
 			case requestCodes::LOADUSERFILES_GET:
