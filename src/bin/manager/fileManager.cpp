@@ -73,6 +73,8 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
 std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
     File* file = this->openFile(id);
+    File* oldFile = this->openFile(id);
+
     if (!name.empty()) file->setName(name);
     if (!tag.empty()) file->setTag(tag);
 
@@ -85,6 +87,12 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
         if (db != NULL) delete db;
         throw;
     }
+
+    // Change search info for owner and all shared users
+    if (oldFile->getMetadata()->name.compare(name) != 0 || !tag.empty()) {
+        file->changeSearchInformation(db,oldFile);
+    }
+
     delete db;
     delete file;
     return "{ \"result\" : true }";
@@ -152,7 +160,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
         folder->save(db);
 
         file->save(db);
-        file->changeSearchInformation(db,email,oldFile);
+        oldFile->removeSearchInformation(db,email);
         file->saveSearches(email,path,db);
     } catch(std::exception& e) {
         delete oldFile;

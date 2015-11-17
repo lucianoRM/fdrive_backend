@@ -45,7 +45,8 @@ class SearchInformation {
         void eraseFile(int id);
 
         std::string getContent();
-
+        void changeElement(int id, std::string element);
+        std::string getUserPath(int id);
 
 };
 

@@ -18,7 +18,16 @@ File::~File() {
 }
 
 void File::setName(std::string newName) {
+    std::string oldName = (*this->versions)[this->lastVersion]->getMetadata()->name;
     (*this->versions)[this->lastVersion]->setName(newName);
+    // We are loading a new File or the name is the same
+    if ((oldName.compare("")) == 0 || (oldName.compare(newName) == 0)) {
+        return;
+    }
+
+    // The file has changed its name
+    std::string owner = this->owner;
+
 }
 
 void File::setExtension(std::string newExt) {
@@ -231,8 +240,19 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
     }
 }
 
-void File::changeSearchInformation(rocksdb::DB* db, std::string email, File* oldFile) {
+void File::changeSearchInformation(rocksdb::DB* db, File* oldFile) {
+    std::string email = this->getOwner();
+    std::string path = this->getMetadata()->ownerPath;
+
     oldFile->removeSearchInformation(db,email);
+    this->saveSearches(email,path,db);
+
+    for (std::string user : *users) {
+        SearchInformation* info = SearchInformation::load(db,"name",user,oldFile->getMetadata()->name);
+        path = info->getUserPath(id); // Gets the path of the sharedUser because it could be shared or trash
+        oldFile->removeSearchInformation(db,user);
+        this->saveSearches(user,path,db);
+    }
 }
 
 void File::checkIfUserHasPermits(std::string email) {
