@@ -11,7 +11,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro.rst
+   ejemplo.rst
+   intro_al_proyecto.rst
+   manual_de_proyecto.rst
+   manual_de_administrador.rst
+   manual_de_usuario.rst
+   documentacion_tecnica.rst
 
 Indices and tables
 ==================
