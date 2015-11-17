@@ -56,7 +56,9 @@ class File {
         int getId();
         int getSize();
         int getLatestVersion();
+        std::string getName();
         std::string getOwner();
+        std::string getOwnerPath();
         std::list<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.

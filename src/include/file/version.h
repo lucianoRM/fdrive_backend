@@ -40,6 +40,7 @@ class Version {
         struct metadata* getMetadata();
         Json::Value getJson();
         int getSize();
+        std::string getName();
         static Version* load(Json::Value json);
 
 };

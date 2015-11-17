@@ -61,6 +61,10 @@ std::string File::getOwner() {
     return this->owner;
 }
 
+std::string File::getOwnerPath() {
+    return (*this->versions)[this->lastVersion]->getMetadata()->ownerPath;
+}
+
 int File::getLatestVersion() {
     return this->lastVersion;
 }
@@ -382,6 +386,10 @@ void File::setSize(int size) {
 
 int File::getSize() {
 	return (*this->versions)[this->lastVersion]->getSize();
+}
+
+std::string File::getName() {
+    return (*this->versions)[this->lastVersion]->getName();
 }
 
 void File::startNewVersion() {

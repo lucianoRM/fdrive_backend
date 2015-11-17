@@ -74,6 +74,10 @@ int Version::getSize() {
     return this->metadata->size;
 }
 
+std::string Version::getName() {
+    return this->metadata->name;
+}
+
 void Version::setUpFromJson(Json::Value json) {
     this->metadata->size = json["size"].asInt();
     this->metadata->name = json["name"].asString();
