@@ -75,11 +75,19 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
     File* file = this->openFile(id);
     File* oldFile = this->openFile(id);
 
+    std::string oldName = file->getName();
     if (!name.empty()) file->setName(name);
     if (!tag.empty()) file->setTag(tag);
 
     rocksdb::DB* db = NULL;
+    FolderManager f_manager;
     try {
+        if (!name.empty()) {
+            f_manager.renameFile(oldName, name, file->getOwner(), file->getOwnerPath());
+            for (std::string user : file->getUsers()) {
+                f_manager.renameFile(oldName, name, user, "shared");
+            }
+        }
         db = this->openDatabase("En ChangeFileData: ",'w');
         file->save(db);
     } catch(std::exception& e) {

@@ -9,9 +9,8 @@ Welcome to Fdrive's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   ejemplo.rst
    intro_al_proyecto.rst
    manual_de_proyecto.rst
    manual_de_administrador.rst

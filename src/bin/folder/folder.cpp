@@ -71,6 +71,12 @@ void Folder::addFile(int fileId, std::string fileName) {
     this->filesNames->push_back(fileName);
 }
 
+void Folder::renameFile(std::string oldName, std::string newName) {
+    if (this->checkIfExisting(this->filesNames, oldName)) {
+        std::replace(this->filesNames->begin(), this->filesNames->end(), oldName, newName);
+    }
+}
+
 void Folder::removeFile(int fileId) {
     int position = 0;
     bool found = false;
