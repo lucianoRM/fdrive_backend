@@ -12,7 +12,7 @@ FolderManager::FolderManager() { }
 FolderManager::~FolderManager() { }
 
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
-	if (path.compare("shared") == 0 || path.compare("trash")) throw InvalidFolderPath();
+	if (path.compare("shared") == 0 || path.compare("trash") == 0) throw InvalidFolderPath();
     rocksdb::DB* db = this->openDatabase("En AddFolder: ",'w');
 
     Folder* folder = NULL;
