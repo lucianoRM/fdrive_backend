@@ -39,3 +39,13 @@ Once you have it, place yourself in rocksdb and run
 	`sudo mkdir /rocksdb`
 	`sudo mkdir /rocksdb/rocksdb`
 	`sudo mv librocksdb.a /rocksdb/rocksdb/`
+	
+
+#Sphinx installation
+
+Install it with: `sudo apt-get install python-sphinx`
+Check installation with: `which sphinx-quickstart` (should show something like: /usr/bin/sphinx-quickstart)
+
+
+
+
