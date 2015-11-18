@@ -137,6 +137,7 @@ Cuenta de usuario
 --------------------
 
 
+
 Creación de cuenta
 +++++++++++++++++++
 
@@ -148,7 +149,7 @@ Una vez en la ventana de creación de cuenta, se deben completar los datos neces
 |main-screen|  |register-screen|
 
 Login
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para llegar a la ventana de login se podrá acceder desde la ventana principal mediante el botón "Login" o se accede automáticamente luego de un registro exitoso de cuenta.
 
@@ -162,7 +163,7 @@ En caso de error será notificado por la aplicación
 
 
 Logout
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Desde la ventana central se debe presionar el simbolo de "Menu" |menu-icon| ubicado en la esquina superior izquierda(También se puede deslizar desde el borde izquierdo de la pantalla). Una vez presionado aparecerá un menú en donde se encuentra la opción de logout |logout-icon|.
 
@@ -182,6 +183,7 @@ Una vez presionado apareceran 2 botones más.Para crear una carpeta se debe pres
 
 Acceso
 +++++++++++++++++++
+
 El acceso a la carpeta se logra presionando el rectángulo que representa la misma.
 
 Para volver a la carpeta anterior, se deberá presionar la carpeta de retorno, nombrada: ".."
@@ -190,15 +192,16 @@ Si se quiere acceder a las carpetas de archivos compartidos(Shared) |shared-fold
 
 |left-drawer-open|
 
+
 Renombrado
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para renombrado de carpetas se debe mantener presionada la carpeta hasta que aparezca una nueva ventana con las opciones de compartido y renombrado de carpeta. Si se ingresa un nuevo nombre en el campo de texto y se presiona "Rename", se renombrara la carpeta
 
 |folder-long-clicked|
 
 Compartido
-+++++++++++++++++++
++++++++++++++++++++++++
 Compartir carpetas es equivalente a compartir todos los archivos que se encuentren dentro.
 
 Para llegar a la ventana de compartido, seguir los pasos de renombrar carpeta hasta llegar a la ventana emergente. Si se presiona "Share contents" se pasará a un nuevo pop up donde podrá seleccionar los usuarios a los cuales compartir la carpeta. Más información en compartir archivos.
@@ -211,7 +214,7 @@ Archivos
 
 
 Subida
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para subir un archivo se debe navegar hasta la carpeta donde se desee subir el mismo. Una vez dentro de la carpeta,se deberá presionar el botón circular con el icono |plus-icon|. Luego de los nuevos botones que aparezcan, presionar |upload-icon|.
 Aparecerá en una ventana de navegación, en donde podrá seleccionar el archivo a subir. El archivo presionado se subirá a la carpeta seleccionada
@@ -223,7 +226,7 @@ Si se quiere subir una nueva versión de un archivo existente, se debe acceder a
 
 
 Descarga
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Si se quiere descargar un archivo, se debe navegar hasta la carpeta donde se encuentre. Se debe seleccionar el archivo a descargar y un menú se deslizara desde la derecha de la pantalla.
 
@@ -232,7 +235,7 @@ Para descarga presionar el botón |download-icon| y aparecerá una ventana de se
 |right-drawer-open| |choose-version|
 
 Compartir
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para compartir, desde la ventana deslizante derecha, se debe presionar el botón |share-icon|.
 Aparecerá una ventana con todos los usuarios a los cuales se puede compartir. Se deben seleccionar los que se deseen y aceptar.
@@ -244,13 +247,13 @@ Se debe tener en cuenta en cuenta que si el archivo es compartido no se podrá r
 |right-drawer-open| |share|
 
 Eliminar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Desde la ventana deslizante derecha, presionar el botón |delete-icon|. El archivo pasará a la carpeta "Trash", a la cual se puede acceder desde el menú deslizante izquierdo por el boton de |delete-icon|.
 
 
 Agregar tags
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para agregar tags, se debe presionar el archivo al cual se quieren agregar los tags, y en el menú derecho presionar el botón |circle-icon|. Aparecerá una ventana donde se podrá escribir un nuevo tag y aceptar para agregarlo
 Se debe tener en cuenta en cuenta que si el archivo es compartido no se podrá renombrar
@@ -258,7 +261,7 @@ Se debe tener en cuenta en cuenta que si el archivo es compartido no se podrá r
 |add-tag|
 
 Renombrar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Si se desea renombrar un archivo se debe seleccionar el mismo y presionar el botón |edit-icon| en el menú lateral derecho.
 Una nueva ventana donde se podrá completar el nuevo nombre aparecerá. Se debe tener en cuenta en cuenta que si el archivo es compartido no se podrá renombrar.
@@ -266,7 +269,7 @@ Una nueva ventana donde se podrá completar el nuevo nombre aparecerá. Se debe 
 |rename-file|
 
 Buscar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para buscar archivos se debe seleccionar |search-icon|.
 Se abrirá una ventana donde se puede completar el texto a buscar y en qué campo se quiere buscar.
@@ -283,12 +286,12 @@ Extras
 
 
 Configurar la ip
-+++++++++++++++++++
++++++++++++++++++++++++
 
 La configuración de ip del servidor será accesible desde cualquier ventana via |config-icon|.
 
 Conocer ubicacion
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para conocer su ubicacion se deberá seleccionar |location-icon| en el menú deslizante izquierdo.
 Una vez presionado se abrirá una ventana de navegador con un mapa donde estara marcada la última ubicacion registrada.
@@ -299,7 +302,6 @@ Cambiar foto de perfil
 Si se desea cambiar la foto de perfil se debe presionar sobre la foto default(o la ya cargada) en la imagen circular del menú izquierdo.
 
 Se llevará a una ventana de selección de imágenes donde se podrá elegir la imagen a subir como foto de perfil.
-
 
 Known Issues
 ============================
