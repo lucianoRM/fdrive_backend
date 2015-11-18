@@ -83,7 +83,7 @@ Cuenta de usuario
 
 
 Creacion de cuenta
-+++++++++++++++++++
++++++++++++++++++++++++
 
 
 Desde la ventana principal se debe presionar el boton de sign up en la parte inferior
@@ -93,7 +93,7 @@ Una vez en la ventana de cracion de cuenta, se deben completar los datos necesar
 |main-screen|  |register-screen|
 
 Login
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Para llegar a la ventana de login se podra acceder desde la ventana principal mediante el boton "Login" o se accedera automaticamente luego de un registro exitoso de cuenta.
 
@@ -105,7 +105,7 @@ Se debe ingresar el email y contrasena registrados y en caso de exito se procede
 En caso de error sera notificado por la aplicacion
 
 Logout
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Desde la ventana central se debe presionar el simbolo de "Menu" ubicado en la ezquina superior izquierda(Tambien se puede deslizar desde el borde izquierdo de la pantalla). Una vez presionado aparecera un menu en donde se encuetra la opcion de logout.
 
@@ -115,20 +115,20 @@ Carpetas
 --------------------
 
 Navegacion
-+++++++++++++++++++
++++++++++++++++++++++++
 
 
 Creacion
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Acceso
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Renombrado
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Compartido
-+++++++++++++++++++
++++++++++++++++++++++++
 Compartir carpetas es equivalente a compartir todos los archivos que se encuentren dentro.
 
 
@@ -137,25 +137,25 @@ Archivos
 
 
 Subida
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Descarga
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Compartir
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Eliminar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Agregar tags
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Renombrar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Buscar
-+++++++++++++++++++
++++++++++++++++++++++++
 
 
 Extras
@@ -163,13 +163,13 @@ Extras
 
 
 Configurar la ip
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Conocer ubicacion
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Cambiar foto de perfil
-+++++++++++++++++++
++++++++++++++++++++++++
 
 Known Issues
 ============================

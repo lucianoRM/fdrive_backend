@@ -1,6 +1,11 @@
 Manual del Proyecto
 ********************
 
+	Este manual describe la forma en que se desarrolló este proyecto,
+	desde sus herramientas tecnológicas hasta los aspectos humanos del 
+	eequipo.
+
+
 Gestión del Proyecto
 =================================
 
@@ -22,8 +27,8 @@ Gestión del Proyecto
 	tener la capacidad de avanzar en todos los aspectos del proyecto.
 
 	El proyecto involucra dos grandes componentes. Por un lado, el
-	servidor que almacena toda la información y archivos y gestiona
-	el acceso a ellos, y por el otro, el cliente, la aplicación de
+	*servidor* que almacena toda la información y archivos y gestiona
+	el acceso a ellos, y por el otro, el *cliente*, la aplicación de
 	Android descargada en un teléfono, que envía requests al servidor
 	para acceder a la información que necesite para ofrecerle al
 	usuario lo que pide.
@@ -47,7 +52,7 @@ Gestión del Proyecto
 	unitarias, sin dejar estas últimas de lado, sobre todo para elementos
 	o funciones de alta complejidad.
 	
-	Se usó la herramienta Taiga para llevar cuenta de todas las
+	Se usó la herramienta **Taiga** para llevar cuenta de todas las
 	funcionalidades a desarrollar y todas las tareas que eso implicaría,
 	usando el formato de Historias de Usuario. Se establecieron dos
 	entregas intermedias antes de la entrega final. De esta forma, se
@@ -100,15 +105,26 @@ División de Tareas
 	de muchas tareas de distinto tema/área.
 	
 	Todas las tareas y su asignación pueden encontrarse en la página de 
-	Taiga correspondiente al proyecto.
+	`Taiga <https://tree.taiga.io/project/agustinsantiago-fdrive/backlog>`_ 
+	correspondiente al proyecto.
 	
-	`Taiga <https://tree.taiga.io/project/agustinsantiago-fdrive/backlog>`_
 
 
 Cronograma
 =================================
 
-
+	+---------------+------------+
+	|  20 Agosto a  |  Primera   |
+	|  8 Octubre    |  iteración |
+	+---------------+------------+
+	|  9 Octubre a  |  Segunda   |
+	|  29 Octubre   |  iteración |
+	+---------------+------------+
+	|  29 Octubre a |  Última    |
+	|  19 Noviembre |  iteración |
+	+---------------+------------+
+	
+	
 
 Control de versiones y workflow
 =================================
