@@ -20,6 +20,7 @@ Gestión del Proyecto
 	* Taiga
 	* Jenkins
 	* Git/Bitbucket
+	* Retrofit
 	* Sphinx
 	
 	Por esto es que al principio del proyecto, se utilizó bastante
