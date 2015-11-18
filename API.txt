@@ -8,17 +8,8 @@ ADD USER:
 	Body:
 	Respuesta: En caso de no existir ya un usuario con ese mail se recibe { "result" : true } .
 
-
-LOGIN:
-	url: <dirección server>/login?email=<email>&password=<password>
-	Método: GET
-	Body:
-	Respuesta: En caso de no existir el email, se recibe un mensaje de error.
-			En caso satisfactorio se recibe un token para que el usuario pueda operar:
-				{ "result" : true , "token" : "<token>" }
-
 GET USERS:
-	url: <dirección server>/login?email=<email>&token=<token>
+	url: <dirección server>/users?email=<email>&token=<token>
 	Método: GET
 	Body:
 	Respuesta: Si no hay problemas con la base de datos, siempre se supone exitoso.
@@ -37,8 +28,46 @@ GET USERS:
 											   ]
 			     }
 
-SAVE FILE: Para NEW files (the user sending it will be the owner)
-	url: <dirección server>/files
+CHANGE USER DATA:
+	url: <dirección server>/users
+	Método: PUT
+	Body: {
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“name”:”<name>”,					(opcional) | Pero uno de ellos
+		“lastLocation:"<lastLocation>"		(opcional) | debe de estar.
+	}
+	Respuesta: Si el usuario existe y está logueado con ese token,
+				{ "result" : true } .
+
+
+
+
+
+
+LOGIN:
+	url: <dirección server>/login?email=<email>&password=<password>
+	Método: GET
+	Body:
+	Respuesta: En caso de no existir el email, se recibe un mensaje de error.
+			En caso satisfactorio se recibe un token para que el usuario pueda operar:
+				{ "result" : true , "token" : "<token>" }
+
+LOGOUT:
+	url: <dirección server>/logout?email=<email>&password=<password>
+	Método: GET
+	Body:
+	Respuesta: En caso de no existir el usuario o no estar logueado con ese token, devuelve error.
+			En caso satisfactorio se recibe un token para que el usuario pueda operar:
+				{ "result" : true }
+
+
+
+
+
+
+SAVE NEW FILE METADATA: (the user sending it will be the owner)
+	url: <dirección server>/files/metadata 
 	Método: POST
 	Body: {
 		“email”:”<email>”,
@@ -46,12 +75,15 @@ SAVE FILE: Para NEW files (the user sending it will be the owner)
 		“name”:”<name>”,
 		“extension”:”<extension>”,
 		"path":"<path>",
-		“tags”:[<tag1>, <tag2>, ...]
+		“tags”:["<tag1>", "<tag2>", ...]
 	}
-	Respuesta: En caso de que todos los campos sean correctos, { "result" : true , "fileID" : <id> }.
+	Respuesta: En caso de que todos los campos sean correctos
+				y path no es ni "trash" ni "shared" devuelve,
+			  { "result" : true , "fileID" : <id> , "version" : 0 } .
 
-SAVE FILE: Para OLD files (the user sending it will be creating a new version)
-	url: <dirección server>/files
+SAVE NEW VERSION OF FILE METADATA: (the user sending it will be creating a new version)
+	url: <dirección server>/files/<oldversion>/metadata 
+		(<oldversion> es la última versión que el usuario que sube esta vio)
 	Método: POST
 	Body: {
 		“email”:”<email>”,
@@ -59,24 +91,117 @@ SAVE FILE: Para OLD files (the user sending it will be creating a new version)
 		“name”:”<name>”,
 		“extension”:”<extension>”,
 		"id":<id>,
-		“tags”:[<tag1>, <tag2>, ...]
+		“tags”:[<tag1>, <tag2>, ...],
+		"version":<oldversion>,
+		"overwrite":<boolean - true to avoid warning>
 	}
-	Respuesta: En caso de que todos los campos sean correctos y el usuario tenga permisos para acceder al archivo, { "result" : true }.
+	Respuesta: Si el usuario existe, está logueado y tiene permisos para modificar el archivo,
+			   si overwrite es false, entonces chequea que <oldversion> sea la última
+				versión existente de ese archivo, sino devuelve un error avisando que no
+				ha revisado la última versión;
+			   sino (overwrite true o <oldversion> es la última),
+					{ "result" : true , "version" : <version> } .
 
-LOAD FILE:
-	url: <dirección server>/files?email=<email>&token=<token>&id=<id>
+CHANGE FILE METADATA: (always changes last version of it)
+	url: <dirección server>/files/<id>/metadata 
+		(<oldversion> es la última versión que el usuario que sube esta vio)
+	Método: PUT
+	Body: {
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“name”:”<name>”,		(opcional) | Pero uno debe estar
+		“tag”:"<tag1>"			(opcional) | presente.
+	}
+	Respuesta: Si todo es correcto, { "result" : true }.
+			   Si ya hay un archivo con ese nombre en el path en
+			   el que está en la cuenta del owner, devuelve error.
+
+ERASE FILE:
+	url: <dirección server>/files/<id>?email=<email>&token=<token>&path=<path>
+	Método: DELETE
+	Body:
+	Respuesta: Si el usuario existe, está logueado y tiene permisos,
+				devuelve { "result" : true } .
+			   Si el usuario era el dueño, se mueve a la carpeta trash 
+			   y se le descomparte a todos aquellos que lo tenían compartido.
+			   Si el usuario tenía el archivo compartido, se le
+			   descomparte y no le aparece ni en el trash.
+
+RECOVER FILE:
+	url: <dirección server>/recoverfile?email=<email>&token=<token>&id=<id>
 	Método: GET
 	Body:
-	Respuesta: En caso de que el token sea correcto,
-	    {
-    		"extension" : "<extension>",
-            "id" : <id>,
-            "lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
-            "lastUser" : "<user>",
-            "name" : "<file1>",
-            "owner" : "<owner>",
-            "tags" : [ "<tag1>", "<tag2>", ... ]
+	Respuesta: Si el usuario existe, está logueado y el archivo existía,
+				se mueve de nuevo al último lugar en el que estuvo
+				(este lugar debe existir) y devuelve
+				{ "result" : true } .
+
+
+GET FILE METADATA:
+	url: <dirección server>/files/<id>/metadata?email=<email>&token=<token>
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto,
+	    { "result" : true ,
+	      "file" : 
+			{
+				"id" : <id>,
+				"owner" : "<owner>",
+				"lastVersion" : <lastVersion>,
+				"users" : [ "<user1>", ... ], 		// Users to whom it was shared.
+				"name" : "<file1>",
+				"extension" : "<extension>",
+				"pathInOwner" : "<path>",
+				"lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
+				"lastUser" : "<user>",
+				"size" : <size>,				
+				"tags" : [ "<tag1>", "<tag2>", ... ]
+			}
     	}
+
+GET VERSION OF FILE METADATA:
+	url: <dirección server>/files/<id>/<version>/metadata?email=<email>&token=<token>
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto,
+	    { "result" : true ,
+	      "file" : 
+			{
+				"name" : "<file1>",
+				"extension" : "<extension>",
+				"pathInOwner" : "<path>",
+				"lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
+				"lastUser" : "<user>",
+				"size" : <size>,				
+				"tags" : [ "<tag1>", "<tag2>", ... ]
+			}
+    	}
+
+UPLOAD VERSION OF FILE:
+	url: <dirección server>/files/<id>/<version>/data?email=<email>&token=<token>
+	Método: POST
+	Multipart
+	Body: {
+			"upload":<data>
+		  }
+	Respuesta: En caso de que todo sea correcto, guarda el archivo y 
+				devuelve { "result" : true } .
+
+DOWNLOAD FILE DATA:
+	url: <dirección server>/files/<id>/data?email=<email>&token=<token>
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto, envía el archivo.
+
+DOWNLOAD VERSION OF FILE DATA:
+	url: <dirección server>/files/<id>/<version>/data?email=<email>&token=<token>
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto, envía el archivo.
+
+
+
+
 
 GET USER'S FILES:
     url: <dirección server>/userfiles?email=<email>&token=<token>&path=<path>
@@ -93,73 +218,73 @@ GET USER'S FILES:
         }
 
 
-ERASE FILE:
-	url: <dirección server>/files?email=<email>&token=<token>&path=<path>&id=<id>
-	Método: DELETE
-	
-	Respuesta: En caso de que el token sea correcto y corresponda al email, se elimina el archivo y se recibe 
-	
-	un mensaje de success con el id del archivo borrado.
-
-
 SHARE FILE:
 	url: <dirección server>/share
 	Método: POST
 	Body:{
 		“email”:”<email>”,
 		“token”:”<token>”,
-		“id”:”<id>”,
+		“id”:<id>,
 		"users" : [ <email1>, <email2>, ...]
 		}
 	Respuesta: Si el que lo pide es el dueño y todos los usuarios a los que se les quiere compartir existen 
 					y no tiene ya compartido el archivo, hay éxito y se devuelve:
 				{ "result" : true }
 
-
-UPLOAD FILE:
-	url: <dirección server>/filesupload?email=<email>&token=<token>
+SHARE FOLDER:
+	url: <dirección server>/share/folder
 	Método: POST
-	Multipart
 	Body:{
-		"upload":<data>
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“path”:”<path>”,
+		"users" : [ <email1>, <email2>, ...]
 	}
-	Respuesta: {"result": true}
+	Respuesta: Si existe la carpeta (o path) se les comparten todos los archivos que tiene adentro
+				a todos aquellos que no lo tengan ya compartido (si es así, 
+				los ignora, no devuelve error), y devuelve:
+					{ "result" : true } .
+					
+UNSHARE FILE:
+	url: <dirección server>/unshare
+	Método: PUT
+	Body:{
+		“email”:”<email>”,
+		“token”:”<token>”,
+		“id”:”<id>”,
+		"users" : [ <email1>, <email2>, ...]	(opcional - si no está se le descomparte a todos)
+	}
+	Respuesta: Si el usuario existe, está logueado y es el dueño del
+				archivo (que también debe existir), devuelve 
+				{ "result" : true } . Si alguno de los usuarios especificados
+				no tenía el archivo compartido, lo ignoró.
+
+
+
+
 
 ADD FOLDER:
 	url: <dirección server>/folders?email=<email>&token=<token>&path=<path>&name=<name>
 	Método: POST
-	Respuesta: {"result": true}
+	Respuesta: Si no existía ya una carpeta con ese nombre en ese path,
+			{ "result" : true } .
 
 RENAME FOLDER:
 	url: <dirección server>/folders?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
 	Método: PUT
-	Respuesta: {"result": true}
+	Respuesta: Si la carpeta existía yel nuevo nombre está disponible 
+				porque no hay otra carpeta en ese path con ese nombre, 
+				{ "result" : true } .
+
+
+
+
 
 GET SEARCHES:
     url: <dirección server>/searches?email=<email>&token=<token>&typeofsearch=<typeofsearch>&element=<element>
     Método: GET
     Body:
-	Respuesta:
+	Respuesta:	Si el usuario existe y está logueado, devuelve
 		{ "result" : true ,
 		  { "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
 		}
-
-
-PROPOSED NEW FILES API
-
-METADATA
-/files/:id/metadata            [GET]    Obtener la metadata de la última versión de un archivo
-/files/:id/:version/metadata   [GET]    Obtener la metadata de una versión de un archivo
-
-/files/:id/metadata            [POST]   Subir la metadata de una versión nueva de un archivo
-/files/metadata                [POST]   Subir la metadata de un archivo nuevo
-
-/files/:id/:version/metadata   [PUT]    Cambiar la metadata de la última versión de un archivo
-
-DATA
-/files/:id/:version/data       [GET]    Obtener una versión de un archivo
-/files/:id/data                [GET]    Obtener la última versión de un archivo
-/files/:id/:version/data       [POST]   Subir una versión de un archivo
-
-GENERICOS
-/files/:id                     [DELETE]
