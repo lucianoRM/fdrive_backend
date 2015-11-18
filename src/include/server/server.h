@@ -11,6 +11,7 @@
 #include <iostream>
 #include "user.h"
 #include "requestHandler.h"
+#include <mutex>
 
 // Class to represent the running server.
 
@@ -29,6 +30,7 @@ class Server {
 	public:
 		static bool testing;
 		static rocksdb::DB* database;
+		static std::mutex autoincrementTransaction;
 		// Creates a new server listening in port: port.
 		Server(std::string port,rocksdb::DB* database, bool testing);
 
