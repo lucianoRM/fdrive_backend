@@ -20,7 +20,7 @@ enum requestCodes : int { USERS_POST = 1, USERS_GET, USERS_PUT,
 						LOADUSERFILES_GET,
 						SHAREFILE_POST, SHAREFOLDER_POST, SHAREFILE_DELETE,
 						ADDFOLDER_POST, RENAMEFOLDER_POST,
-						SEARCHES_GET };
+						SEARCHES_GET, CLEAN_DB };
 
 // Class to manage the requests done by the user.
 
@@ -31,11 +31,12 @@ class RequestHandler {
 		FolderManager* folderManager;
 
 		RouteTree* routeTree;
+		rocksdb::DB* database;
 
 
 
 	public:
-		RequestHandler();
+		RequestHandler(rocksdb::DB* database, bool testing);
 		~RequestHandler();
 
 		// Returns true if was a valid request (no matter its result).

@@ -6,7 +6,22 @@
 #include "googletest/include/gtest/gtest_pred_impl.h"
 
 void USERMANAGER_deleteDatabase() {
-    system("rm -rf testdb");
+    system("rm -rf userTestDB");
+}
+
+rocksdb::DB* USERMANAGER_openDatabase() {
+	rocksdb::DB* db;
+	rocksdb::Options options;
+	options.create_if_missing = true;
+	rocksdb::Status status = rocksdb::DB::Open(options, "userTestDB", &db);
+
+	//La db se abrio correctamente
+	if (!status.ok()){
+		std::cout << "Error DB:" << status.ToString() << std::endl;
+		return NULL;
+	}
+
+	return db;
 }
 
 /*
@@ -24,8 +39,8 @@ TEST(GetFilesTest, GetVariousRootFiles) {
 
 TEST(GetUsersTest, GetUsersWhenNoOther) {
 	USERMANAGER_deleteDatabase();
-	
-	UserManager manager;
+	rocksdb::DB* db = USERMANAGER_openDatabase();
+	UserManager manager = UserManager(db);
 	manager.addUser("email", "password");
 	std::string result = manager.getUsers("email");
 	Json::Reader reader;
@@ -35,14 +50,15 @@ TEST(GetUsersTest, GetUsersWhenNoOther) {
 	EXPECT_TRUE(root.isMember("users"));
 	Json::Value::iterator it = root["users"].begin();
 	EXPECT_TRUE(it == root["users"].end());
-	
+	delete db;
 	USERMANAGER_deleteDatabase();
 }
 
 TEST(GetUsersTest, GetUsersWhenTwoOthers) {
 	USERMANAGER_deleteDatabase();
-	
-	UserManager manager;
+
+	rocksdb::DB* db = USERMANAGER_openDatabase();
+	UserManager manager = UserManager(db);
 	manager.addUser("email", "password");
 	manager.addUser("email2", "password");
 	manager.addUser("email3", "password");
@@ -58,6 +74,6 @@ TEST(GetUsersTest, GetUsersWhenTwoOthers) {
 	EXPECT_TRUE((*it)["email"].asString().compare("email3") == 0);
 	it++;
 	EXPECT_TRUE(it == root["users"].end());
-	
+	delete db;
 	USERMANAGER_deleteDatabase();
 }

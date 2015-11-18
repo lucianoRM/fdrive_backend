@@ -8,7 +8,7 @@ then
     exit 1
 fi
 
-./build/fdrive &
+./build/fdrive test &
 pid=$!
 sleep 1
 python -m unittest discover -s functional_tests -p "*.py"

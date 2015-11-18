@@ -8,7 +8,7 @@
 #include "folderManager.h"
 #include <stdio.h>
 
-FileManager::FileManager() { }
+FileManager::FileManager(rocksdb::DB* database) : Manager(database) { }
 FileManager::~FileManager() { }
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
@@ -23,7 +23,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
         file->setTag(tag);
     }
 
-    UserManager u_manager;
+    UserManager u_manager = UserManager(this->database);
     try {
         u_manager.checkFileAddition(email, size);
     } catch (std::exception& e) {
@@ -42,7 +42,7 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     } catch (std::exception& e) {
         delete file;
         if (folder != NULL) delete folder;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR1 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
@@ -58,13 +58,13 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
     } catch (std::exception& e) {
         delete file;
         delete folder;
-        delete db;
+        ////delete db;
         ///std::cout << "ERROR2 pero cerré la base de datos en SaveFile." << std::endl;
         throw;
     }
     delete file;
     delete folder;
-    delete db;
+    ////delete db;
 
     u_manager.addFile(email, size);
 
@@ -80,19 +80,20 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
     if (!tag.empty()) file->setTag(tag);
 
     rocksdb::DB* db = NULL;
-    FolderManager f_manager;
     try {
+        db = this->openDatabase("En ChangeFileData: ",'w');
+        FolderManager f_manager(db);
         if (!name.empty()) {
             f_manager.renameFile(oldName, name, file->getOwner(), file->getOwnerPath());
             for (std::string user : file->getUsers()) {
                 f_manager.renameFile(oldName, name, user, "shared");
             }
         }
-        db = this->openDatabase("En ChangeFileData: ",'w');
+
         file->save(db);
     } catch(std::exception& e) {
         delete file;
-        if (db != NULL) delete db;
+        //if (db != NULL) ////delete db;
         throw;
     }
 
@@ -101,7 +102,6 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
         file->changeSearchInformation(db,oldFile);
     }
 
-    delete db;
     delete file;
     return "{ \"result\" : true }";
 }
@@ -149,7 +149,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
     }
     int newVersion = file->getLatestVersion();
 
-    UserManager u_manager;
+    UserManager u_manager = UserManager(this->database);
     try {
         u_manager.checkFileSizeChange(owner, oldSize, size);
     } catch (std::exception& e) {
@@ -174,10 +174,10 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
         delete oldFile;
         delete file;
         delete folder;
-        delete db;
+        ////delete db;
         throw; // Needs to be this way. If you throw e, a new instance is created and the exception class is missed,
     }
-    delete db;
+    ////delete db;
     delete file;
     delete oldFile;
     delete folder;
@@ -199,10 +199,10 @@ File* FileManager::openFile(int id) {
         file->load(db);
     } catch(std::exception& e) {
         delete file;
-        if (db != NULL) delete db;
+        if (db != NULL) ////delete db;
         throw;
     }
-    delete db;
+    ////delete db;
     return file;
 }
 
@@ -263,7 +263,7 @@ std::string FileManager::shareFileToUsers(int id, std::vector<std::string> users
 }
 
 void FileManager::checkFileSharedToUser(int id, std::string email) {
-    UserManager u_manager;
+    UserManager u_manager = UserManager(this->database);
     if (!u_manager.checkExistentUser(email)) {
         throw NonExistentUserException();
     }
@@ -290,18 +290,18 @@ void FileManager::shareFileToUser(int id, std::string email) {
         folder->save(db);
         file->saveSearches(email, "shared", db);
     } catch (std::exception& e) {
-        if (db != NULL) delete db;
+        if (db != NULL) ////delete db;
         if (folder != NULL) delete folder;
         delete file;
         throw;
     }
     delete file;
-    delete db;
+    ////delete db;
     delete folder;
 }
 
 std::string FileManager::shareFolder(std::string email, std::string path, std::vector<std::string> users) {
-    FolderManager f_manager;
+    FolderManager f_manager = FolderManager(this->database);
     std::vector<int> files = f_manager.getFilesFromFolder(email, path);
     for (std::string user : users) {
         for (int id : files) {
@@ -324,7 +324,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
         file->eraseFromUser(db, email, path);
         file->save(db);
     } catch (std::exception& e) {
-        if (db != NULL) delete db;
+        if (db != NULL) ////delete db;
         delete file;
         throw;
     }
@@ -342,7 +342,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
     }
 
     delete file;
-    delete db;
+    ////delete db;
     return "{ \"result\" : " + result + " }";
 }
 
@@ -355,13 +355,13 @@ std::string FileManager::getSearches(std::string email, std::string typeOfSearch
         search = SearchInformation::load(db, typeOfSearch, email, element);
     } catch (std::exception& e) {
         if (search != NULL) delete search;
-        delete db;
+        ////delete db;
         throw;
     }
 
     std::string content = search->getContent();
     delete search;
-    delete db;
+    ////delete db;
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
     return "{ \"result\" : true , \"content\" : " + content + " }";
 }
@@ -376,7 +376,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
         file->recoverFromUser(db, email, path);
         file->save(db);
     } catch (std::exception& e) {
-        if (db != NULL) delete db;
+        if (db != NULL) ////delete db;
         delete file;
         throw;
     }
@@ -392,7 +392,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
     file->saveSearches(email,path,db);
 
     delete file;
-    delete db;
+    ////delete db;
     return "{ \"result\" : " + result + " }";
 }
 
@@ -417,7 +417,7 @@ std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string
             continue;
         } catch (std::exception& e) {
             delete file;
-            delete db;
+            ////delete db;
             throw;
         }
     }
@@ -425,11 +425,11 @@ std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string
         file->save(db);
     } catch (std::exception& e) {
         delete file;
-        delete db;
+        ////delete db;
         throw;
     }
 
     delete file;
-    delete db;
+    ////delete db;
     return "{ \"result\" : true }";
 }

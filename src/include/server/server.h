@@ -27,8 +27,10 @@ class Server {
 		static void* infinitePoll(void* server);
 
 	public:
+		static bool testing;
+		static rocksdb::DB* database;
 		// Creates a new server listening in port: port.
-		Server(std::string port);
+		Server(std::string port,rocksdb::DB* database, bool testing);
 
 		// Destroys the server.
 		~Server();

@@ -13,7 +13,7 @@ int main2() {
 	if (!status.ok()){
 		//La db no se abrio correctamente o no existía.
 		std::cout << "No existe la base de datos o no pudo abrirse." << status.ToString() << std::endl;
-		delete db;
+		////delete db;
 		return 1;
 	}
 	rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions());
@@ -24,7 +24,7 @@ int main2() {
 		std::cout << "Error al recorrer la DB: " << it->status().ToString() << std::endl;
 	}
 	delete it;
-	delete db;
+	////delete db;
 	return 0;
 }
 

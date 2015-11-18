@@ -13,7 +13,7 @@ class FolderManager: public Manager {
 private:
 
 public:
-    FolderManager();
+    FolderManager(rocksdb::DB* database);
     ~FolderManager();
 
     std::string addFolder(std::string email, std::string path, std::string nameFolder); // Saves new folder

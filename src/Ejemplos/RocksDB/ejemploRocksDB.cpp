@@ -42,7 +42,7 @@ int main() {
 	if (!status.ok()) std::cout << "Error al leer Saludo2" << std::endl;
 	std::cout << "Pido Adiós: " << value << std::endl;
 
-	delete db;
+	////delete db;
 
 	return 0;
 }

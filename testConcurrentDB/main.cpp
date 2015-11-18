@@ -41,7 +41,7 @@ int main() {
     std::string a;
     db->Get(rocksdb::ReadOptions(),"key",&a);
     std::cout << a << std::endl;
-    delete db;
+    //delete db;
     sleep(1);
 
     return 0;
@@ -69,7 +69,7 @@ int main() {
     }
 
     status = ((rocksdb::DB*)db)->Put(rocksdb::WriteOptions(), "key","value");
-    delete db;
+    //delete db;
 }
 
 int main() {
@@ -109,7 +109,7 @@ void* thread1 (void* punteroDB) {
     }
 
     status = ((rocksdb::DB*)db)->Put(rocksdb::WriteOptions(), "key","value");
-    delete db;
+    //delete db;
 }
 
 int main() {
