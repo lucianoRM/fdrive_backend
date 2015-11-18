@@ -95,3 +95,15 @@ std::string SearchInformation::getContent() {
     Json::StyledWriter writer;
     return writer.write(this->jsonFiles);
 }
+
+std::string SearchInformation::getUserPath(int id) {
+    struct searchFile* foundFile = NULL;
+    for (struct searchFile* file : *files) {
+        if (file->id == id) {
+            foundFile = file;
+            break;
+        }
+    }
+    if (foundFile == NULL) throw FileToEraseNotInSearch();
+    return foundFile->path;
+}

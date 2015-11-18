@@ -73,19 +73,35 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 
 std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
     File* file = this->openFile(id);
+    File* oldFile = this->openFile(id);
+
+    std::string oldName = file->getName();
     if (!name.empty()) file->setName(name);
     if (!tag.empty()) file->setTag(tag);
 
     rocksdb::DB* db = NULL;
     try {
         db = this->openDatabase("En ChangeFileData: ",'w');
+        FolderManager f_manager(db);
+        if (!name.empty()) {
+            f_manager.renameFile(oldName, name, file->getOwner(), file->getOwnerPath());
+            for (std::string user : file->getUsers()) {
+                f_manager.renameFile(oldName, name, user, "shared");
+            }
+        }
+
         file->save(db);
     } catch(std::exception& e) {
         delete file;
-        if (db != NULL) ////delete db;
+        //if (db != NULL) ////delete db;
         throw;
     }
-    ////delete db;
+
+    // Change search info for owner and all shared users
+    if (oldFile->getMetadata()->name.compare(name) != 0 || !tag.empty()) {
+        file->changeSearchInformation(db,oldFile);
+    }
+
     delete file;
     return "{ \"result\" : true }";
 }
@@ -152,7 +168,7 @@ std::string FileManager::saveNewVersionOfFile(std::string email, int id, int old
         folder->save(db);
 
         file->save(db);
-        file->changeSearchInformation(db,email,oldFile);
+        oldFile->removeSearchInformation(db,email);
         file->saveSearches(email,path,db);
     } catch(std::exception& e) {
         delete oldFile;

@@ -12,7 +12,7 @@ FolderManager::FolderManager(rocksdb::DB* database) : Manager(database) { }
 FolderManager::~FolderManager() { }
 
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
-	if (path.compare("shared") == 0 || path.compare("trash")) throw InvalidFolderPath();
+	if (path.compare("shared") == 0 || path.compare("trash") == 0) throw InvalidFolderPath();
     rocksdb::DB* db = this->openDatabase("En AddFolder: ",'w');
 
     Folder* folder = NULL;
@@ -94,4 +94,20 @@ std::vector<int> FolderManager::getFilesFromFolder(std::string email, std::strin
     }
     ////delete db;
     return files;
+}
+
+void FolderManager::renameFile(std::string oldName, std::string newName, std::string email, std::string path) {
+    rocksdb::DB* db = this->openDatabase("En RenameFile: ",'w');
+    Folder* folder = NULL;
+    try {
+        folder = Folder::load(db, email, path);
+        folder->renameFile(oldName,newName);
+        folder->save(db);
+    } catch (std::exception& e) {
+        if (folder != NULL) delete folder;
+        //delete db;
+        throw;
+    }
+    delete folder;
+    //delete db;
 }
