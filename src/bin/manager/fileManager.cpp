@@ -6,6 +6,7 @@
 #include "fileManager.h"
 #include "userManager.h"
 #include "folderManager.h"
+#include "folderExceptions.h"
 #include <stdio.h>
 
 FileManager::FileManager(rocksdb::DB* database) : Manager(database) { }
@@ -331,15 +332,16 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
 
     // If we are in this point the logical remove (metadata) was correct
     std::string result = "true";
-    bool isOwner = (email.compare(file->getOwner()) == 0);
+    /* Physical remove or move isn't required because files are saved by id.
+     * bool isOwner = (email.compare(file->getOwner()) == 0);
     if (isOwner) {
         file->saveSearches(email,"trash",db);
-        int success = rename(("files/" + email + "/" + path + "/" + std::to_string(id)).c_str(),
-                             ("files/" + email + "/trash/" + std::to_string(id)).c_str());
-        if (success != 0) {
-            result = "false";
+        //int success = rename(("files/" + email + "/" + path + "/" + std::to_string(id)).c_str(),
+        //                     ("files/" + email + "/trash/" + std::to_string(id)).c_str());
+        //if (success != 0) {
+        //    result = "false";
         }
-    }
+    }*/
 
     delete file;
     ////delete db;
@@ -369,7 +371,7 @@ std::string FileManager::getSearches(std::string email, std::string typeOfSearch
 std::string FileManager::recoverFile(std::string email, int id) {
     File* file = this->openFile(id);
     // We don't have to check if the user is the owner, because only the owner can recover something from the trash.
-    std::string path = file->getMetadata()->ownerPath;
+    std::string path = file->getOriginalOwnerPath();
     rocksdb::DB *db = NULL;
     try {
         db = this->openDatabase("En recoverFile: ",'w');
@@ -383,14 +385,13 @@ std::string FileManager::recoverFile(std::string email, int id) {
 
     // If we are in this point the logical remove (metadata) was correct
     std::string result = "true";
-
+    /* Physical movement isn't needed.
     int success = rename(("files/" + email + "/trash/" + std::to_string(id)).c_str(),
                          ("files/" + email + "/" + path + "/" + std::to_string(id)).c_str());
     if (success != 0) {
         result = "false";
     }
-    file->saveSearches(email,path,db);
-
+     */
     delete file;
     ////delete db;
     return "{ \"result\" : " + result + " }";

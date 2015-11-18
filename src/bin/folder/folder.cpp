@@ -74,6 +74,8 @@ void Folder::addFile(int fileId, std::string fileName) {
 void Folder::renameFile(std::string oldName, std::string newName) {
     if (this->checkIfExisting(this->filesNames, oldName)) {
         std::replace(this->filesNames->begin(), this->filesNames->end(), oldName, newName);
+    } else {
+        throw FileNotInFolderException();
     }
 }
 
