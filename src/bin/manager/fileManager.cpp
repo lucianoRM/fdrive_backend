@@ -7,12 +7,14 @@
 #include "userManager.h"
 #include "folderManager.h"
 #include "folderExceptions.h"
+#include "fileExceptions.h"
 #include <stdio.h>
 
 FileManager::FileManager(rocksdb::DB* database) : Manager(database) { }
 FileManager::~FileManager() { }
 
 std::string FileManager::saveFile(std::string email, std::string name, std::string extension, std::string path, std::vector<std::string> tags, int size) {
+    if (path.compare("trash") == 0 || path.compare("shared") == 0) throw InvalidFilePathException();
     File* file = new File();
     file->setName(name);
     file->setExtension(extension);

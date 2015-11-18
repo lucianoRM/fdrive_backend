@@ -70,4 +70,12 @@ class UserIsOwnerOfFileException : public FileException {
 
 };
 
+class InvalidFilePathException : public FileException {
+
+    virtual const char* what() const throw() {
+        return "No file can be saved in that path.";
+    }
+
+};
+
 #endif //TALLER_FILEEXCEPTIONS_H
