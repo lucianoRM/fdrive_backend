@@ -6,7 +6,7 @@ import inspect, os
 import datetime
 import filecmp
 
-class TestFile(unittest.TestCase):
+class TestMetadataVersion(unittest.TestCase):
 	
 	def setUp(self):
 		r = requests.post("http://localhost:8000/cleandb")
@@ -19,13 +19,13 @@ class TestFile(unittest.TestCase):
 		r = requests.get("http://localhost:8000/login", params = payload)
 		return r.json()["token"]
 	
-	def _save_new_file(self, token, filename, email = "testemail"):
+	def _save_new_file(self, token, filename, email, path = "root"):
 		payload = {
 			"email":		email,
 			"token":		token,
 			"name":			filename,
 			"extension":	".txt",
-			"path":			"root",
+			"path":			path,
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
@@ -50,20 +50,22 @@ class TestFile(unittest.TestCase):
 		}
 		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
-
-	def _share_file(self, token, fileid, email, users):
+		
+	def _create_folder(self, email, foldername, token, path = "root"):
 		payload = {
 			"email":		email,
 			"token":		token,
-			"id":			fileid,
-			"users":		users
+			"name":			foldername,
+			"path":			path
 		}
-		r = requests.post("http://localhost:8000/share", json = payload)
+		r = requests.post("http://localhost:8000/folders", params = payload)
+		self.assertTrue(r.json()["result"])
 		return r.json()
 
 	def test_save_new_file_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", email)
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -78,14 +80,34 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["lastUser"])
 		self.assertEqual("somefilename", r.json()["file"]["name"])
 		self.assertEqual("testemail", r.json()["file"]["owner"])
+		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
+		self.assertEqual(0, r.json()["file"]["lastVersion"])
+
+	def test_save_new_file_inside_root(self):
+		token = self._signup_and_login("email")
+		self._create_folder("email", "folder", token, "root")
+		fileid = self._save_new_file(token, "somefilename", "email", "root/folder")
+		payload = {
+			"email":		"email",
+			"token":		token
+		}
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual(".txt", r.json()["file"]["extension"])
+		self.assertEqual(fileid, r.json()["file"]["id"])
+		modificationTime = datetime.datetime.strptime(r.json()["file"]["lastModified"], "%a %b %d %H:%M:%S %Y")
+		self.assertGreater(modificationTime + datetime.timedelta(minutes=1), modificationTime)
+		self.assertLess(modificationTime - datetime.timedelta(minutes=1), modificationTime)
+		self.assertEqual("email", r.json()["file"]["lastUser"])
+		self.assertEqual("somefilename", r.json()["file"]["name"])
+		self.assertEqual("email", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
 		self.assertEqual(0, r.json()["file"]["lastVersion"])
 
 	def test_save_two_new_files_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		#print "Voy a guardar el archivo."
-		fileid = self._save_new_file(token, "somefilename")
-		#print "Voy a pedir el archivo."
+		fileid = self._save_new_file(token, "somefilename", email)
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -102,7 +124,7 @@ class TestFile(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
 		self.assertEqual(0, r.json()["file"]["lastVersion"])
-		fileid2 = self._save_new_file(token, "otherfilename")
+		fileid2 = self._save_new_file(token, "otherfilename", email)
 		#print "Voy a pedir el archivo."
 		payload = {
 			"email":		"testemail",
@@ -136,7 +158,7 @@ class TestFile(unittest.TestCase):
 		
 	def test_get_file_wrong_id(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -149,7 +171,7 @@ class TestFile(unittest.TestCase):
 	def test_get_file_not_authorized(self):
 		token = self._signup_and_login()
 		token2 = self._signup_and_login("testemail2")
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		payload = {
 			"email":		"testemail2",
 			"token":		token2
@@ -161,7 +183,7 @@ class TestFile(unittest.TestCase):
 		
 	def test_save_new_version_of_file_then_get(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
 		self.assertTrue(_json["result"])
 		self.assertIn("version", _json)
@@ -185,7 +207,7 @@ class TestFile(unittest.TestCase):
 
 	def test_save_new_version_of_file_then_get_metadata_of_earlier(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
 		payload = {
 			"email":		"testemail",
@@ -196,26 +218,27 @@ class TestFile(unittest.TestCase):
 	
 	def test_save_new_version_wrong_token(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token + "wrong", 0, "somefilename")
 		self.assertFalse(_json["result"])
 		
 	def test_save_new_version_of_inexistent_file(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid + 6, token, 0, "otherFilename")
 		self.assertFalse(_json["result"])
 
 	def test_save_new_version_from_not_last_version_error(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
 		_json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename")
 		self.assertFalse(_json["result"])
 
 	def test_save_new_version_from_not_last_version_with_overwrite_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", email)
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
 		_json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename", True)
 		self.assertTrue(_json["result"])
@@ -236,74 +259,6 @@ class TestFile(unittest.TestCase):
 		self.assertEqual(["palabra1"], r.json()["file"]["tags"])
 		self.assertEqual(2, r.json()["file"]["lastVersion"])
 		
-
-	def test_file_upload(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-		self.assertTrue(r.json()["result"])
-		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)+".0"
-		self.assertTrue(os.path.isfile(server_file_path))
-		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
-
-	def test_save_new_version_of_file_with_upload(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		python_file_path_2 = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_reduced.png'
-		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-
-		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
-		files = {'upload': open(python_file_path_2, 'rb')}
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token, files = files)
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
-		call(["rm", "-rf", downloaded_file_path])
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
-		call(["rm", "-rf", downloaded_file_path])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token)
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
-		call(["rm", "-rf", downloaded_file_path])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token)
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
-		call(["rm", "-rf", downloaded_file_path])
-
-	def test_file_download(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-		self.assertTrue(r.json()["result"])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
-		call(["rm", "-rf", downloaded_file_path])
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
-		call(["rm", "-rf", downloaded_file_path])
-
 
 if __name__ == '__main__':
     unittest.main()

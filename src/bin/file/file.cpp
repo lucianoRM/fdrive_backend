@@ -418,6 +418,10 @@ std::string File::getName() {
     return (*this->versions)[this->lastVersion]->getName();
 }
 
+std::string File::getExtension() {
+    return (*this->versions)[this->lastVersion]->getMetadata()->extension;
+}
+
 void File::startNewVersion() {
     this->lastVersion++;
     (*this->versions)[this->lastVersion] = new Version();

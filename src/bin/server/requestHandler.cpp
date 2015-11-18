@@ -1,6 +1,9 @@
 #include "requestHandler.h"
 #include <cstring>
+#include <sys/stat.h>
 #include <server/server.h>
+#include "fileSystemExceptions.h"
+
 
 RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 	this->database = database;
@@ -41,9 +44,9 @@ RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
 
-	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
+	this->routeTree->add("folders", "POST", requestCodes::ADDFOLDER_POST);
 
-	this->routeTree->add("renamefolder", "POST", requestCodes::RENAMEFOLDER_POST);
+	this->routeTree->add("folders", "PUT", requestCodes::RENAMEFOLDER_PUT);
 
 	this->routeTree->add("searches", "GET", requestCodes::SEARCHES_GET);
 
@@ -83,11 +86,13 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				rocksdb::DB** databasePtrPtr = &(this->database);
 				delete this->database;
 				system("rm -rf testdb");
+				system("rm -rf files");
 
 				rocksdb::Options options;
 				options.create_if_missing = true;
 				rocksdb::Status status;
 
+                mkdir("files", S_IRWXU | S_IRWXG | S_IRWXO);
 				status = rocksdb::DB::Open(options, "testdb", databasePtrPtr);
 				Server::database = *databasePtrPtr;
 
@@ -419,7 +424,6 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				std::string email, token;
 				int id;
 				char cemail[100], ctoken[100], cid[100];
-
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -445,6 +449,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
 				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str(), "w");
+				if (fout == NULL) throw FileSystemException();
 				fwrite(filedata, filedata_len, 1, fout);
 				free(filedata);
 				fclose(fout);
@@ -497,7 +502,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 
-			case requestCodes::RENAMEFOLDER_POST:
+			case requestCodes::RENAMEFOLDER_PUT:
 			{
 				char cemail[100], ctoken[100], cpath[100], cnameold[100], cnamenew[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));

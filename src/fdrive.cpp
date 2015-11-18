@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <sys/stat.h>
 #include "server.h"
 
 #define TOTAL_LISTENERS 5
@@ -12,7 +13,10 @@ int main(int argc, char* argv[]) {
 
 	status = rocksdb::DB::Open(options, "testdb", &db);
 
+	mkdir("files", S_IRWXU | S_IRWXG | S_IRWXO);
+
 	system("chmod -R a+rwx testdb");
+	system("chmod -R a+rwx files");
 
 	if (!status.ok()) {
 		// The database didn't open correctly.

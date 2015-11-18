@@ -57,6 +57,7 @@ class File {
         int getSize();
         int getLatestVersion();
         std::string getName();
+        std::string getExtension();
         std::string getOwner();
         std::string getOwnerPath();
         std::list<std::string> getUsers();

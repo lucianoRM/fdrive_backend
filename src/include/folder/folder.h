@@ -48,6 +48,7 @@ class Folder {
         void renameFolder(std::string oldName, std::string newName);
         void renamePath(std::string newName);
         void eraseFolder(std::string folder, rocksdb::DB* db);
+        void erase(rocksdb::DB* db);   // Erases itself from de database. Probably because of a name change.
 
         std::vector<int> getDirectFiles();
         std::vector<std::string> getDirectFolders();

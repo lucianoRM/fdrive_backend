@@ -79,37 +79,17 @@ LOAD FILE:
     	}
 
 GET USER'S FILES:
-    url: <dirección server>/userfiles?email=<email>&token=<token>
+    url: <dirección server>/userfiles?email=<email>&token=<token>&path=<path>
     Método: GET
     Body:
 	Respuesta:
 		{ "result" : true ,
-		  "files" : [
-				{ "folderPath" : "<path1>" ,
-				  "files" : [
-						{
-						   "extension" : "<extension>",
-						   "id" : <id>,
-						   "lastModified" : "<timestamp>",    // Format: Thu Oct 22 03:24:19 2015
-						   "lastUser" : "<user>",
-						   "name" : "<file1>",
-						   "owner" : "<owner>",
-						   "tags" : [ "<tag1>", "<tag2>", ... ]
-						} ,
-						{
-						   "extension" : "<extension>",
-                           "id" : <id>,
-                           "lastModified" : "<timestamp>",
-                           "lastUser" : "<user>",
-						   "name" : "<file2>",
-						   "owner" : "<owner>",
-                           "tags" : [ "<tag1>", "<tag2>", ... ]
-						} ,
-						...
-				  ]
-				} ,
-				...
-          ]
+		  "content" : 
+				{
+				  "folders" : [ "<folder1>" , ... ],
+				  "files" : [ <id1> , ... ],
+				  "filesNames : [ "<name+extensionFromId1>" , ... ]
+				}
         }
 
 
@@ -146,13 +126,13 @@ UPLOAD FILE:
 	Respuesta: {"result": true}
 
 ADD FOLDER:
-	url: <dirección server>/addfolder?email=<email>&token=<token>&path=<path>&name=<name>
+	url: <dirección server>/folders?email=<email>&token=<token>&path=<path>&name=<name>
 	Método: POST
 	Respuesta: {"result": true}
 
 RENAME FOLDER:
-	url: <dirección server>/renamefolder?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
-	Método: POST
+	url: <dirección server>/folders?email=<email>&token=<token>&path=<path>&oldname=<oldname>&newname=<newname>
+	Método: PUT
 	Respuesta: {"result": true}
 
 GET SEARCHES:
@@ -163,13 +143,6 @@ GET SEARCHES:
 		{ "result" : true ,
 		  { "files" : [ {"id": <id>, "path": "<path>"} , ... ] }
 		}
-
-GET SEARCHES:
-    url: <dirección server>/recoverfile?email=<email>&token=<token>&id=<id>
-    Método: GET
-    Body:
-	Respuesta:
-		{ "result" : true }
 
 
 PROPOSED NEW FILES API
