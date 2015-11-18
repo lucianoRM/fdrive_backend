@@ -64,7 +64,28 @@ class TestFolderRenaming(unittest.TestCase):
 		self.assertTrue(_json["result"])	#Leaves old name valid
 		_json = self._create_folder("email", token, "newName", "root/folder")
 		self.assertFalse(_json["result"])	#Leaves new name invalid
-
+		
+	def test_rename_to_already_used_name(self):
+		token = self._signup_and_login("email")
+		self._create_folder("email", token, "folder", "root")
+		self._create_folder("email", token, "folder2", "root")
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"nameold":		"folder",
+			"namenew":		"folder2",
+			"path":			"root"
+		}
+		r = requests.put("http://localhost:8000/folders", params = payload)
+		self.assertFalse(r.json()["result"])
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"path":			"root"
+		}
+		r = requests.get("http://localhost:8000/userfiles", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual(["folder", "folder2"], r.json()["content"]["folders"])
 
 if __name__ == '__main__':
     unittest.main()

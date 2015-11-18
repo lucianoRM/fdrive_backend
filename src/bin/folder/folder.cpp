@@ -123,15 +123,10 @@ Json::Value Folder::getJson() {
 }
 
 void Folder::renameFolder(std::string oldName, std::string newName) {
-    int position = 0;
-    for (std::string folder: *(this->folders)) {
-        if (folder.compare(oldName) == 0) {
-            break;
-        }
-        position++;
+    if (this->checkIfExisting(this->folders, newName)) {
+        throw AlreadyExistentFolderException();
     }
-    this->folders->erase(this->folders->begin() + position);
-    this->folders->push_back(newName);
+    std::replace(this->folders->begin(), this->folders->end(), oldName, newName);
 }
 
 
