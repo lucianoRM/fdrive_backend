@@ -61,7 +61,7 @@ TEST(FileCreationTest, CreateFileWithBasicInformation) {
     EXPECT_EQ("OtherUser", root["versions"]["0"]["lastUser"].asString());
     EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
 
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -93,7 +93,7 @@ TEST(FileCreationTest, LoadFile) {
     EXPECT_EQ("OtherUser", json["lastUser"].asString());
     EXPECT_TRUE(json.isMember("lastModified"));	//Deberíamos chequear también el valor.
 
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -112,7 +112,7 @@ TEST(IdGenerationTest, GeneratingFromFile) {
     EXPECT_EQ(4, file->getId());
 
     delete file;
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -132,7 +132,7 @@ TEST(IdGenerationTest, TouchingDatabase) {
     EXPECT_EQ(9, file->getId());
 
     delete file;
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -186,7 +186,7 @@ TEST(VersionTest, TwoVersionsThenSave) {
     EXPECT_EQ("OtherUser2", root["versions"]["1"]["lastUser"].asString());
     EXPECT_TRUE(root["versions"]["1"].isMember("lastModified")); //Deberíamos chequear también el valor.
 
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -243,7 +243,7 @@ TEST(VersionTest, OneVersionSaveThenSecondAndSave) {
     EXPECT_EQ("OtherUser2", root["versions"]["1"]["lastUser"].asString());
     EXPECT_TRUE(root["versions"]["1"].isMember("lastModified")); //Deberíamos chequear también el valor.
 
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }
 
@@ -292,6 +292,6 @@ TEST(VersionTest, LoadVersionAndChangeData) {
     EXPECT_TRUE(root["versions"]["0"].isMember("lastModified")); //Deberíamos chequear también el valor.
 
     
-    //delete db;
+    delete db;
     FILE_deleteDatabase();
 }

@@ -68,7 +68,7 @@ TEST(FolderTest, SavedFile) {
 
     EXPECT_EQ(1, file);
 
-    //delete db;
+    delete db;
     delete folder;
     FOLDER_deleteDatabase();
 }
@@ -99,7 +99,7 @@ TEST(FolderTest, SavedFolder) {
 
     EXPECT_EQ("folder1", folderInside);
 
-    //delete db;
+    delete db;
     delete folder;
     FOLDER_deleteDatabase();
 }
@@ -120,7 +120,7 @@ TEST(FolderTest, AlreadyExistentFile) {
 
     EXPECT_THROW(folder->addFile(2,"file1"),FilenameTakenException);
 
-    //delete db;
+    delete db;
     delete folder;
     FOLDER_deleteDatabase();
 }
@@ -140,7 +140,7 @@ TEST(FolderTest, AlreadyExistentFolder) {
 
     EXPECT_THROW(folder->addFolder("folder",db),AlreadyExistentFolderException);
 
-    //delete db;
+    delete db;
     delete folder;
     FOLDER_deleteDatabase();
 }
@@ -182,7 +182,7 @@ TEST(FolderTest, RenameFolder) {
 
     EXPECT_EQ(true,true);
 
-    //delete db;
+    delete db;
     FOLDER_deleteDatabase();
 }
 
@@ -244,7 +244,7 @@ TEST(FolderTest, RemoveFile) {
         //std::cout << "\n TIENE: " << it->asString();
     }
 
-    //delete db;
+    delete db;
     delete file;
     delete folder;
     delete folderTrash;

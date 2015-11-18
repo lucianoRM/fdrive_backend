@@ -47,7 +47,7 @@ TEST(GetFiles, EmptyFolder) {
 	FolderManager manager = FolderManager(db);
 	std::vector<int> files = manager.getFilesFromFolder("owner", "root/folder");
 	EXPECT_TRUE(files.empty());
-
+    delete db;
 	FOLDERMANAGER_deleteDatabase();
 }
 
@@ -62,7 +62,7 @@ TEST(GetFiles, FolderWithFiles) {
     EXPECT_TRUE(std::find(files.begin(), files.end(), 2) != files.end());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 3) != files.end());
     EXPECT_FALSE(std::find(files.begin(), files.end(), 4) != files.end());
-
+    delete db;
     FOLDERMANAGER_deleteDatabase();
 }
 
@@ -80,7 +80,7 @@ TEST(GetFiles, FolderWithFilesAndEmptyFolders) {
     EXPECT_TRUE(std::find(files.begin(), files.end(), 3) != files.end());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 4) != files.end());
     EXPECT_FALSE(std::find(files.begin(), files.end(), 1) != files.end());
-
+    delete db;
     FOLDERMANAGER_deleteDatabase();
 }
 
@@ -99,7 +99,7 @@ TEST(GetFiles, FolderWithFilesAndOtherFoldersWithFiles) {
     EXPECT_TRUE(std::find(files.begin(), files.end(), 6) != files.end());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 8) != files.end());
     EXPECT_FALSE(std::find(files.begin(), files.end(), 4) != files.end());
-
+    delete db;
     FOLDERMANAGER_deleteDatabase();
 }
 
@@ -121,6 +121,6 @@ TEST(GetFiles, FolderWithTwoLevels) {
     EXPECT_TRUE(std::find(files.begin(), files.end(), 7) != files.end());
     EXPECT_TRUE(std::find(files.begin(), files.end(), 8) != files.end());
     EXPECT_FALSE(std::find(files.begin(), files.end(), 4) != files.end());
-
+    delete db;
     FOLDERMANAGER_deleteDatabase();
 }
