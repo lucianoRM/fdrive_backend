@@ -53,6 +53,28 @@ class TestChangeFileData(unittest.TestCase):
 		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertEqual("nuevoNombre", r.json()["file"]["name"])
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"name":			"file",
+			"extension":	".txt",
+			"path":			"root",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertTrue(r.json()["result"])	# Leaves old name available
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"name":			"nuevoNombre",
+			"extension":	".txt",
+			"path":			"root",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])	# Leaves new name unavailable
 		
 	def test_add_tag(self):
 		token = self._signup_and_login("email")
@@ -92,6 +114,28 @@ class TestChangeFileData(unittest.TestCase):
 		self.assertEqual(True, r.json()["result"])
 		self.assertEqual("nuevoNombre", r.json()["file"]["name"])
 		self.assertEqual(["palabra1", "palabra2", "nuevoTag"], r.json()["file"]["tags"])
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"name":			"file",
+			"extension":	".txt",
+			"path":			"root",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertTrue(r.json()["result"])	# Leaves old name available
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"name":			"nuevoNombre",
+			"extension":	".txt",
+			"path":			"root",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])	# Leaves new name unavailable
 	
 
 if __name__ == '__main__':

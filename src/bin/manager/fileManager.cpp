@@ -74,8 +74,8 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
     File* file = this->openFile(id);
     File* oldFile = this->openFile(id);
-
     std::string oldName = file->getName();
+    std::string extension = file->getExtension();
     if (!name.empty()) file->setName(name);
     if (!tag.empty()) file->setTag(tag);
 
@@ -84,7 +84,7 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
         db = this->openDatabase("En ChangeFileData: ",'w');
         FolderManager f_manager(db);
         if (!name.empty()) {
-            f_manager.renameFile(oldName, name, file->getOwner(), file->getOwnerPath());
+            f_manager.renameFile(oldName + extension, name + extension, file->getOwner(), file->getOwnerPath());
             for (std::string user : file->getUsers()) {
                 f_manager.renameFile(oldName, name, user, "shared");
             }

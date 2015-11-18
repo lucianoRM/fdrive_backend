@@ -41,7 +41,6 @@ class TestFolderRenaming(unittest.TestCase):
 			"path":			"root"
 		}
 		r = requests.put("http://localhost:8000/folders", params = payload)
-		print r.json()
 		self.assertTrue(r.json()["result"])
 		_json = self._create_folder("email", token, "folder", "root")
 		self.assertTrue(_json["result"])	#Leaves old name valid

@@ -51,16 +51,6 @@ class TestMetadataVersion(unittest.TestCase):
 		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
 
-	def _share_file(self, token, fileid, email, users):
-		payload = {
-			"email":		email,
-			"token":		token,
-			"id":			fileid,
-			"users":		users
-		}
-		r = requests.post("http://localhost:8000/share", json = payload)
-		return r.json()
-
 	def test_save_new_file_then_get(self):
 		token = self._signup_and_login()
 		fileid = self._save_new_file(token, "somefilename")
