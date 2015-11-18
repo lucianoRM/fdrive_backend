@@ -288,7 +288,7 @@ Extras
 Configurar la ip
 +++++++++++++++++++++++
 
-La configuración de ip del servidor será accesible desde cualquier ventana via |config-icon|.
+La configuración de ip del servidor será accesible desde cualquier ventana via |conf-icon|.
 
 Conocer ubicacion
 +++++++++++++++++++++++
