@@ -2,6 +2,8 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <server/server.h>
+#include "fileSystemExceptions.h"
+
 
 RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 	this->database = database;

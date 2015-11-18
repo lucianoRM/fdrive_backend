@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include "folderManager.h"
 #include "folderExceptions.h"
-//#include <stdio.h>
 #include <cstdio>
 
 FolderManager::FolderManager(rocksdb::DB* database) : Manager(database) { }
