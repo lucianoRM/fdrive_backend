@@ -6,7 +6,7 @@ import inspect, os
 import datetime
 import filecmp
 
-class TestDeleteFile(unittest.TestCase):
+class TestDeleteRecoverFile(unittest.TestCase):
 	
 	def setUp(self):
 		r = requests.post("http://localhost:8000/cleandb")
@@ -71,7 +71,32 @@ class TestDeleteFile(unittest.TestCase):
 		self.assertEqual([fileid], r.json()["content"]["files"])
 		self.assertEqual(["file.txt"], r.json()["content"]["filesNames"])
 
-
+	def recover_file_to_root(self):
+		token = self._signup_and_login("email")
+		fileid = self._save_new_file(token, "file", "email", "root")
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"path":			"root"
+		}
+		requests.delete("http://localhost:8000/files/" + str(fileid), params = payload)
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"id":			fileid
+		}
+		r = requests.get("http://localhost:8000/recoverfile", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual("root", r.json()["path"])
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"path":			"root"
+		}
+		r = requests.get("http://localhost:8000/userfiles", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([fileid], r.json()["content"]["files"])
+		self.assertEqual(["file"], r.json()["content"]["filesNames"])
 
 if __name__ == '__main__':
     unittest.main()

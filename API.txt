@@ -134,7 +134,7 @@ RECOVER FILE:
 	Respuesta: Si el usuario existe, está logueado y el archivo existía,
 				se mueve de nuevo al último lugar en el que estuvo
 				(este lugar debe existir) y devuelve
-				{ "result" : true } .
+				{ "result" : true , "path" : path } .
 
 
 GET FILE METADATA:

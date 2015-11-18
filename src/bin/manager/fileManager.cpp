@@ -386,7 +386,6 @@ std::string FileManager::recoverFile(std::string email, int id) {
     }
 
     // If we are in this point the logical remove (metadata) was correct
-    std::string result = "true";
     /* Physical movement isn't needed.
     int success = rename(("files/" + email + "/trash/" + std::to_string(id)).c_str(),
                          ("files/" + email + "/" + path + "/" + std::to_string(id)).c_str());
@@ -396,7 +395,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
      */
     delete file;
     ////delete db;
-    return "{ \"result\" : " + result + " }";
+    return "{ \"result\" : true , \"path\" : " + path + " }";
 }
 
 std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {
