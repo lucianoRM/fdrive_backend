@@ -1,0 +1,50 @@
+import requests
+import unittest
+import json
+from subprocess import call
+import inspect, os
+import datetime
+import filecmp
+
+class TestFolderRenaming(unittest.TestCase):
+	
+	def setUp(self):
+		r = requests.post("http://localhost:8000/cleandb")
+	
+	def _signup_and_login(self, email="testemail"):	
+		payload = {"email": email, "password": "testpassword"}
+		r = requests.post("http://localhost:8000/users", params = payload)
+
+		payload = {"email": email, "password": "testpassword"}
+		r = requests.get("http://localhost:8000/login", params = payload)
+		return r.json()["token"]
+
+
+	def _create_folder(self, email, token, foldername, path):
+		payload = {
+			"email":		email,
+			"token":		token,
+			"name":			foldername,
+			"path":			path
+		}
+		r = requests.post("http://localhost:8000/folders", params = payload)
+		return r.json()
+		
+	def test_rename_folder_in_root(self):
+		token = self._signup_and_login("email")
+		self._create_folder("email", token, "folder", "root")
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"nameold":		"folder",
+			"namenew":		"newName",
+			"path":			"root"
+		}
+		r = requests.put("http://localhost:8000/folders", params = payload)
+		self.assertTrue(r.json()["result"])
+		_json = self._create_folder("email", token, "folder", "root")
+		self.assertTrue(_json["result"])	#Leaves old name valid
+		
+
+if __name__ == '__main__':
+    unittest.main()

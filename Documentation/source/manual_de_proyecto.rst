@@ -130,7 +130,8 @@ Control de versiones y workflow
 =================================
 
 	Para trabajar en equipo, se utilizó la herramiento Slack para
-	comunicación, pero la herramiento Bitbucket para llevar registro de
+	comunicación, pero la herramiento 
+	`Bitbucket <https://bitbucket.org/fiuba7552/>`_ para llevar registro de
 	todo el código y poder compartirlo, incluyendo todos sus cambios y
 	versiones.
 

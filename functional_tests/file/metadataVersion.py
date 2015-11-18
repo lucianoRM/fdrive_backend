@@ -6,7 +6,7 @@ import inspect, os
 import datetime
 import filecmp
 
-class TestFile(unittest.TestCase):
+class TestMetadataVersion(unittest.TestCase):
 	
 	def setUp(self):
 		r = requests.post("http://localhost:8000/cleandb")
@@ -236,74 +236,6 @@ class TestFile(unittest.TestCase):
 		self.assertEqual(["palabra1"], r.json()["file"]["tags"])
 		self.assertEqual(2, r.json()["file"]["lastVersion"])
 		
-
-	def test_file_upload(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-		self.assertTrue(r.json()["result"])
-		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/'+str(fileid)+".0"
-		self.assertTrue(os.path.isfile(server_file_path))
-		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
-
-	def test_save_new_version_of_file_with_upload(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		python_file_path_2 = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_reduced.png'
-		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-
-		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
-		files = {'upload': open(python_file_path_2, 'rb')}
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token, files = files)
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
-		call(["rm", "-rf", downloaded_file_path])
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
-		call(["rm", "-rf", downloaded_file_path])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token)
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
-		call(["rm", "-rf", downloaded_file_path])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/1/data?email=testemail&token="+token)
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
-		call(["rm", "-rf", downloaded_file_path])
-
-	def test_file_download(self):
-		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
-		downloaded_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture_download.png'
-		files = {'upload': open(python_file_path, 'rb')}
-		token = self._signup_and_login("testemail")
-		fileid = self._save_new_file(token, "somefilename")
-		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
-		self.assertTrue(r.json()["result"])
-
-		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/data?email=testemail&token="+token)
-		call(["rm", "-rf", downloaded_file_path])
-		with open(downloaded_file_path, 'wb') as f:
-			for chunk in r.iter_content(chunk_size=1024):
-				if chunk:
-					f.write(chunk)
-		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path))
-		call(["rm", "-rf", downloaded_file_path])
-
 
 if __name__ == '__main__':
     unittest.main()

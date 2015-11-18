@@ -41,9 +41,9 @@ RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
 	this->routeTree->add("share/folder", "POST", requestCodes::SHAREFOLDER_POST);
 
-	this->routeTree->add("addfolder", "POST", requestCodes::ADDFOLDER_POST);
+	this->routeTree->add("folders", "POST", requestCodes::ADDFOLDER_POST);
 
-	this->routeTree->add("renamefolder", "POST", requestCodes::RENAMEFOLDER_POST);
+	this->routeTree->add("folders", "PUT", requestCodes::RENAMEFOLDER_PUT);
 
 	this->routeTree->add("searches", "GET", requestCodes::SEARCHES_GET);
 
@@ -419,7 +419,6 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				std::string email, token;
 				int id;
 				char cemail[100], ctoken[100], cid[100];
-
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -497,7 +496,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 
-			case requestCodes::RENAMEFOLDER_POST:
+			case requestCodes::RENAMEFOLDER_PUT:
 			{
 				char cemail[100], ctoken[100], cpath[100], cnameold[100], cnamenew[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));

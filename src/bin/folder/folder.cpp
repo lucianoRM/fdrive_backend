@@ -191,6 +191,11 @@ void Folder::save(rocksdb::DB* db) {
     if (!status.ok()) throw DBException();
 }
 
+void Folder::erase(rocksdb::DB* db) {
+    rocksdb::Status status = db->Delete(rocksdb::WriteOptions(), user+"."+fullName);
+    if (!status.ok()) throw DBException();
+}
+
 std::string Folder::getContent() {
     Json::Value json = getJson();
     Json::StyledWriter writer;
