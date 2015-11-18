@@ -7,7 +7,7 @@ import inspect, os
 class TestLogin(unittest.TestCase):
 
     def setUp(self):
-        call(["rm", "-rf", os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+"/../../testdb"])
+        r = requests.post("http://localhost:8000/cleandb")
 
     def test_login_correct(self):
         payload = {"email": "testemail", "password": "testpassword"}

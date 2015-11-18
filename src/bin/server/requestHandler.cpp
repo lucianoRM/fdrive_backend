@@ -1,13 +1,20 @@
 #include "requestHandler.h"
 #include <cstring>
+#include <server/server.h>
 
-RequestHandler::RequestHandler(rocksdb::DB* database) {
+RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
+	this->database = database;
 
 	this->userManager = new UserManager(database);
 	this->fileManager = new FileManager(database);
 	this->folderManager = new FolderManager(database);
 
 	this->routeTree = new RouteTree();
+
+	if (testing) {
+		this->routeTree->add("cleandb", "POST", requestCodes::CLEAN_DB);
+	}
+
 	this->routeTree->add("users", "POST", requestCodes::USERS_POST);
 	this->routeTree->add("users", "GET", requestCodes::USERS_GET);
 	this->routeTree->add("users", "PUT", requestCodes::USERS_PUT);
@@ -72,6 +79,23 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 		std::string result;
 
 		switch (reqCode) {
+			case requestCodes::CLEAN_DB: {
+				rocksdb::DB** databasePtrPtr = &(this->database);
+				delete this->database;
+				system("rm -rf testdb");
+
+				rocksdb::Options options;
+				options.create_if_missing = true;
+				rocksdb::Status status;
+
+				status = rocksdb::DB::Open(options, "testdb", databasePtrPtr);
+				Server::database = *databasePtrPtr;
+
+				system("chmod -R a+rwx testdb");
+
+				result = "{ \"result\" : true }";
+				break;
+			}
 			case requestCodes::USERS_POST: {
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));

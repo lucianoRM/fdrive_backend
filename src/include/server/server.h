@@ -18,7 +18,6 @@ class Server {
 	private:
 		struct mg_server* mongooseServer;
 		int listenerTimeOut;
-		static rocksdb::DB* database;
 
 	private:
 		// Returns mongoose server.
@@ -28,8 +27,10 @@ class Server {
 		static void* infinitePoll(void* server);
 
 	public:
+		static bool testing;
+		static rocksdb::DB* database;
 		// Creates a new server listening in port: port.
-		Server(std::string port,rocksdb::DB* database);
+		Server(std::string port,rocksdb::DB* database, bool testing);
 
 		// Destroys the server.
 		~Server();

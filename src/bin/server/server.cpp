@@ -8,8 +8,9 @@ static const char *s_no_cache_header =
 
 
 rocksdb::DB* Server::database = NULL;
-
-Server::Server(std::string port,rocksdb::DB* database) {
+bool Server::testing;
+Server::Server(std::string port,rocksdb::DB* database,bool testing) {
+	Server::testing = testing;
 	// Creates mongoose's server.
 	mongooseServer = mg_create_server(NULL, this->eventHandler);
 
@@ -58,7 +59,7 @@ void Server::copyListeners(Server* server0) {
 }
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
-    RequestHandler* reqHandler = new RequestHandler(database);
+    RequestHandler* reqHandler = new RequestHandler(database, testing);
 	int result;
     switch (ev) {
 		case MG_AUTH:

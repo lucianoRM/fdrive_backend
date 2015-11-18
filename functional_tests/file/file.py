@@ -9,7 +9,7 @@ import filecmp
 class TestFile(unittest.TestCase):
 	
 	def setUp(self):
-		call(["rm", "-rf", os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+"/../../testdb"])
+		r = requests.post("http://localhost:8000/cleandb")
 	
 	def _signup_and_login(self, email="testemail"):	
 		payload = {"email": email, "password": "testpassword"}
