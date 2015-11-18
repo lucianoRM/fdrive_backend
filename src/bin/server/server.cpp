@@ -8,6 +8,7 @@ static const char *s_no_cache_header =
 
 
 rocksdb::DB* Server::database = NULL;
+std::mutex Server::autoincrementTransaction;
 bool Server::testing;
 Server::Server(std::string port,rocksdb::DB* database,bool testing) {
 	Server::testing = testing;

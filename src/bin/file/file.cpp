@@ -1,3 +1,4 @@
+#include <server/server.h>
 #include "file.h"
 
 File::File() {
@@ -113,18 +114,23 @@ void File::genId(rocksdb::DB* db) {
     // Gets id counter.
     int fileId;
     std::string value;
+    rocksdb::WriteOptions writeOptions;
+    writeOptions.sync = true;
+    Server::autoincrementTransaction.lock();
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "files.maxID", &value);
 
     // if not found has to initialize it.
     if (status.IsNotFound()) {
-        rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", "0");
+        rocksdb::Status status = db->Put(writeOptions, "files.maxID", "0");
+        Server::autoincrementTransaction.unlock();
 
         if (! status.ok()) throw DBException();
         fileId = 0;
     }else {
         // If here is because id counter was initialized.
         int maxID = stoi(value);
-        rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "files.maxID", std::to_string(maxID+1));
+        rocksdb::Status status = db->Put(writeOptions, "files.maxID", std::to_string(maxID+1));
+        Server::autoincrementTransaction.unlock();
 
         if (!status.ok()) throw DBException();
         fileId = maxID + 1;

@@ -13,5 +13,11 @@ pid=$!
 sleep 1
 python -m unittest discover -s functional_tests -p "*.py"
 result=$?
+if [ $result -ne 0 ]
+then
+    exit $result
+fi
+python concurrencyTest.py
+result=$?
 kill $pid
 exit $result
