@@ -68,7 +68,7 @@ std::string FolderManager::renameFolder(std::string email, std::string path, std
     if ( result == 0 )
         return "{ \"result\" : true }";
 
-    return "{ \"result\" : false , \"errors\" : [\"Couldn't rename the folder: " + strerror(errno) + "\"] }";
+    return "{ \"result\" : false , \"errors\" : [\"Couldn't rename the folder: " + std::string(strerror(errno)) + "\"] }";
 }
 
 std::vector<int> FolderManager::getFilesFromFolder(std::string email, std::string path) {

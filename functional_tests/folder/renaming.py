@@ -41,10 +41,31 @@ class TestFolderRenaming(unittest.TestCase):
 			"path":			"root"
 		}
 		r = requests.put("http://localhost:8000/folders", params = payload)
+		print r.json()
 		self.assertTrue(r.json()["result"])
 		_json = self._create_folder("email", token, "folder", "root")
 		self.assertTrue(_json["result"])	#Leaves old name valid
+		_json = self._create_folder("email", token, "newName", "root")
+		self.assertFalse(_json["result"])	#Leaves new name invalid
 		
+	def test_rename_folder_inside_root(self):
+		token = self._signup_and_login("email")
+		self._create_folder("email", token, "folder", "root")
+		self._create_folder("email", token, "folder2", "root/folder")
+		payload = {
+			"email":		"email",
+			"token":		token,
+			"nameold":		"folder2",
+			"namenew":		"newName",
+			"path":			"root/folder"
+		}
+		r = requests.put("http://localhost:8000/folders", params = payload)
+		self.assertTrue(r.json()["result"])
+		_json = self._create_folder("email", token, "folder2", "root/folder")
+		self.assertTrue(_json["result"])	#Leaves old name valid
+		_json = self._create_folder("email", token, "newName", "root/folder")
+		self.assertFalse(_json["result"])	#Leaves new name invalid
+
 
 if __name__ == '__main__':
     unittest.main()

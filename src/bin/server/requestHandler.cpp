@@ -1,5 +1,6 @@
 #include "requestHandler.h"
 #include <cstring>
+#include <sys/stat.h>
 #include <server/server.h>
 
 RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
@@ -83,11 +84,13 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				rocksdb::DB** databasePtrPtr = &(this->database);
 				delete this->database;
 				system("rm -rf testdb");
+				system("rm -rf files");
 
 				rocksdb::Options options;
 				options.create_if_missing = true;
 				rocksdb::Status status;
 
+                mkdir("files", S_IRWXU | S_IRWXG | S_IRWXO);
 				status = rocksdb::DB::Open(options, "testdb", databasePtrPtr);
 				Server::database = *databasePtrPtr;
 
