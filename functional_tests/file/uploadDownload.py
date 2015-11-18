@@ -18,14 +18,14 @@ class TestUploadDownload(unittest.TestCase):
 		payload = {"email": email, "password": "testpassword"}
 		r = requests.get("http://localhost:8000/login", params = payload)
 		return r.json()["token"]
-	
-	def _save_new_file(self, token, filename, email = "testemail"):
+
+	def _save_new_file(self, token, filename, email = "testemail", path = "root"):
 		payload = {
 			"email":		email,
 			"token":		token,
 			"name":			filename,
 			"extension":	".txt",
-			"path":			"root",
+			"path":			path,
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
@@ -51,14 +51,15 @@ class TestUploadDownload(unittest.TestCase):
 		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
 
-	def _share_file(self, token, fileid, email, users):
+	def _create_folder(self, email, foldername, token, path = "root"):
 		payload = {
 			"email":		email,
 			"token":		token,
-			"id":			fileid,
-			"users":		users
+			"name":			foldername,
+			"path":			path
 		}
-		r = requests.post("http://localhost:8000/share", json = payload)
+		r = requests.post("http://localhost:8000/folders", params = payload)
+		self.assertTrue(r.json()["result"])
 		return r.json()
 
 
@@ -110,6 +111,19 @@ class TestUploadDownload(unittest.TestCase):
 					f.write(chunk)
 		self.assertTrue(filecmp.cmp(downloaded_file_path, python_file_path_2))
 		call(["rm", "-rf", downloaded_file_path])
+
+	def test_upload_file_inside_root(self):
+		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
+		files = {'upload': open(python_file_path, 'rb')}
+		token = self._signup_and_login("testemail")
+		self._create_folder("testemail", "folder", token, "root")
+		fileid = self._save_new_file(token, "somefilename", "testemail", "root/folder")
+		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/0/data?email=testemail&token="+token, files = files)
+		self.assertTrue(r.json()["result"])
+		server_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/../../files/testemail/root/folder/'+str(fileid)+".0"
+		self.assertTrue(os.path.isfile(server_file_path))
+		self.assertTrue(filecmp.cmp(python_file_path, server_file_path))
+
 
 	def test_file_download(self):
 		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'

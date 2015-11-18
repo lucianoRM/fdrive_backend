@@ -447,6 +447,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
 				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str(), "w");
+				if (fout == NULL) throw FileSystemException();
 				fwrite(filedata, filedata_len, 1, fout);
 				free(filedata);
 				fclose(fout);

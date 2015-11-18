@@ -19,13 +19,13 @@ class TestMetadataVersion(unittest.TestCase):
 		r = requests.get("http://localhost:8000/login", params = payload)
 		return r.json()["token"]
 	
-	def _save_new_file(self, token, filename, email = "testemail"):
+	def _save_new_file(self, token, filename, email, path = "root"):
 		payload = {
 			"email":		email,
 			"token":		token,
 			"name":			filename,
 			"extension":	".txt",
-			"path":			"root",
+			"path":			path,
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
@@ -50,10 +50,22 @@ class TestMetadataVersion(unittest.TestCase):
 		}
 		r = requests.post("http://localhost:8000/files/"+str(fileid)+"/metadata", json = payload)
 		return r.json()
+		
+	def _create_folder(self, email, foldername, token, path = "root"):
+		payload = {
+			"email":		email,
+			"token":		token,
+			"name":			foldername,
+			"path":			path
+		}
+		r = requests.post("http://localhost:8000/folders", params = payload)
+		self.assertTrue(r.json()["result"])
+		return r.json()
 
 	def test_save_new_file_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", email)
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -68,14 +80,34 @@ class TestMetadataVersion(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["lastUser"])
 		self.assertEqual("somefilename", r.json()["file"]["name"])
 		self.assertEqual("testemail", r.json()["file"]["owner"])
+		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
+		self.assertEqual(0, r.json()["file"]["lastVersion"])
+
+	def test_save_new_file_inside_root(self):
+		token = self._signup_and_login("email")
+		self._create_folder("email", "folder", token, "root")
+		fileid = self._save_new_file(token, "somefilename", "email", "root/folder")
+		payload = {
+			"email":		"email",
+			"token":		token
+		}
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual(".txt", r.json()["file"]["extension"])
+		self.assertEqual(fileid, r.json()["file"]["id"])
+		modificationTime = datetime.datetime.strptime(r.json()["file"]["lastModified"], "%a %b %d %H:%M:%S %Y")
+		self.assertGreater(modificationTime + datetime.timedelta(minutes=1), modificationTime)
+		self.assertLess(modificationTime - datetime.timedelta(minutes=1), modificationTime)
+		self.assertEqual("email", r.json()["file"]["lastUser"])
+		self.assertEqual("somefilename", r.json()["file"]["name"])
+		self.assertEqual("email", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
 		self.assertEqual(0, r.json()["file"]["lastVersion"])
 
 	def test_save_two_new_files_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		#print "Voy a guardar el archivo."
-		fileid = self._save_new_file(token, "somefilename")
-		#print "Voy a pedir el archivo."
+		fileid = self._save_new_file(token, "somefilename", email)
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -92,7 +124,7 @@ class TestMetadataVersion(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
 		self.assertEqual(0, r.json()["file"]["lastVersion"])
-		fileid2 = self._save_new_file(token, "otherfilename")
+		fileid2 = self._save_new_file(token, "otherfilename", email)
 		#print "Voy a pedir el archivo."
 		payload = {
 			"email":		"testemail",
@@ -126,7 +158,7 @@ class TestMetadataVersion(unittest.TestCase):
 		
 	def test_get_file_wrong_id(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		payload = {
 			"email":		"testemail",
 			"token":		token
@@ -139,7 +171,7 @@ class TestMetadataVersion(unittest.TestCase):
 	def test_get_file_not_authorized(self):
 		token = self._signup_and_login()
 		token2 = self._signup_and_login("testemail2")
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		payload = {
 			"email":		"testemail2",
 			"token":		token2
@@ -151,7 +183,7 @@ class TestMetadataVersion(unittest.TestCase):
 		
 	def test_save_new_version_of_file_then_get(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
 		self.assertTrue(_json["result"])
 		self.assertIn("version", _json)
@@ -175,7 +207,7 @@ class TestMetadataVersion(unittest.TestCase):
 
 	def test_save_new_version_of_file_then_get_metadata_of_earlier(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherfilename")
 		payload = {
 			"email":		"testemail",
@@ -186,26 +218,27 @@ class TestMetadataVersion(unittest.TestCase):
 	
 	def test_save_new_version_wrong_token(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token + "wrong", 0, "somefilename")
 		self.assertFalse(_json["result"])
 		
 	def test_save_new_version_of_inexistent_file(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid + 6, token, 0, "otherFilename")
 		self.assertFalse(_json["result"])
 
 	def test_save_new_version_from_not_last_version_error(self):
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", "testemail")
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
 		_json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename")
 		self.assertFalse(_json["result"])
 
 	def test_save_new_version_from_not_last_version_with_overwrite_then_get(self):
+		email = "testemail"
 		token = self._signup_and_login()
-		fileid = self._save_new_file(token, "somefilename")
+		fileid = self._save_new_file(token, "somefilename", email)
 		_json = self._save_new_version_of_file(fileid, token, 0, "otherFilename")	# Correct new version
 		_json = self._save_new_version_of_file(fileid, token, 0, "AnotherFilename", True)
 		self.assertTrue(_json["result"])
