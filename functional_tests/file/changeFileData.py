@@ -29,7 +29,7 @@ class TestChangeFileData(unittest.TestCase):
 			"tags":			["palabra1","palabra2"],
 			"size":			2		# En MB.
 		}
-		r = requests.post("http://localhost:8000/files", json = payload)
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		self.assertIn("fileID", r.json())
 		self.assertIsNotNone(r.json()["fileID"])
@@ -42,10 +42,9 @@ class TestChangeFileData(unittest.TestCase):
 		payload = {
 			"email":		"email",
 			"token":		token,
-			"id":			file_id,
 			"name":			"nuevoNombre"
 		}
-		r = requests.put("http://localhost:8000/files", json = payload)
+		r = requests.put("http://localhost:8000/files/"+str(file_id)+"/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",
@@ -61,10 +60,9 @@ class TestChangeFileData(unittest.TestCase):
 		payload = {
 			"email":		"email",
 			"token":		token,
-			"id":			file_id,
 			"tag":			"nuevoTag"
 		}
-		r = requests.put("http://localhost:8000/files", json = payload)
+		r = requests.put("http://localhost:8000/files/"+str(file_id)+"/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",
@@ -84,7 +82,7 @@ class TestChangeFileData(unittest.TestCase):
 			"tag":			"nuevoTag",
 			"name":			"nuevoNombre"
 		}
-		r = requests.put("http://localhost:8000/files", json = payload)
+		r = requests.put("http://localhost:8000/files/"+str(file_id)+"/metadata", json = payload)
 		self.assertEqual(True, r.json()["result"])
 		payload = {
 			"email":		"email",

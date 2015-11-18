@@ -33,7 +33,7 @@ class TestLogout(unittest.TestCase):
             "tags":			["palabra1","palabra2"],
             "size":			2		# En MB.
         }
-        r = requests.post("http://localhost:8000/files", json = payload)
+        r = requests.post("http://localhost:8000/files/metadata", json = payload)
         self.assertEqual(False, r.json()["result"])
 
     def test_logout_two_times_same_token(self):

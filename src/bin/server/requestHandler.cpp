@@ -16,18 +16,19 @@ RequestHandler::RequestHandler(rocksdb::DB* database) {
 
 	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
 
-	this->routeTree->add("files", "POST", requestCodes::SAVEFILE_POST);
-	this->routeTree->add("files", "GET", requestCodes::LOADFILE_GET);
-	this->routeTree->add("files", "DELETE", requestCodes::ERASEFILE_DELETE);
-	this->routeTree->add("files", "PUT", requestCodes::SAVEFILE_PUT);
+	this->routeTree->add("files/:int", "DELETE", requestCodes::ERASEFILE_DELETE);
 
 	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files/:int/:int/metadata", "GET", requestCodes::LOADFILE_GET);
+	this->routeTree->add("files/:int/metadata", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files/metadata", "POST", requestCodes::SAVEFILE_POST);
+	this->routeTree->add("files/:int/metadata", "PUT", requestCodes::SAVEFILE_PUT);
+
+	this->routeTree->add("files/:int/:int/data", "POST", requestCodes::FILEUPLOAD_POST);
+	this->routeTree->add("files/:int/:int/data", "GET", requestCodes::FILEDOWNLOAD_GET);
+	this->routeTree->add("files/:int/data", "GET", requestCodes::FILEDOWNLOAD_GET);
 
 	this->routeTree->add("userfiles", "GET", requestCodes::LOADUSERFILES_GET);
-
-	this->routeTree->add("filesupload", "POST", requestCodes::FILEUPLOAD_POST);
-
-	this->routeTree->add("filesdownload", "GET", requestCodes::FILEDOWNLOAD_GET);
 
 	this->routeTree->add("share", "POST", requestCodes::SHAREFILE_POST);
 	this->routeTree->add("unshare", "PUT", requestCodes::SHAREFILE_DELETE);
@@ -154,10 +155,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 std::string email, token, name, extension, path;
 				bool overwrite;
 
-                if (!root.isMember("id")) {
-                    id = -1;
+				if (routeParameterVector->size() == 2) {
+					id = -1;
 				} else {
-                    id = root["id"].asInt();
+					id = atoi(routeParameterVector->at(1).c_str());
 				}
 				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
 				if (! root.isMember("name") || ! root.isMember("extension")) throw RequestException();
@@ -201,10 +202,10 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				std::string email, token, name, tag;
                 int id;
-				if (! root.isMember("email") || ! root.isMember("token") || ! root.isMember("id")) throw RequestException();
+				if (! root.isMember("email") || ! root.isMember("token")) throw RequestException();
 				if (! root.isMember("name") && ! root.isMember("tag")) throw RequestException();
 
-                id = root["id"].asInt();
+				id = atoi(routeParameterVector->at(1).c_str());
                 email = root["email"].asString();
                 token = root["token"].asString();
                 if (root.isMember("name")) name = root["name"].asString();
@@ -216,22 +217,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 break;
 			}
 			case requestCodes::LOADFILE_GET: {
-				char cemail[100], ctoken[100], cid[100], cversion[100];
+				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				mg_get_var(conn, "version", cversion, sizeof(cversion));
-                if (strlen(cemail) == 0) throw RequestException();
+				if (strlen(cemail) == 0) throw RequestException();
                 if (strlen(ctoken) == 0) throw RequestException();
-                //if (strlen(cid) == 0) throw RequestException();
 
 				int id = atoi(routeParameterVector->at(1).c_str());
 
                 this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
-                this->fileManager->checkIfUserHasFilePermits(atoi(cid), std::string(cemail));
+                this->fileManager->checkIfUserHasFilePermits(id, std::string(cemail));
 
-                if (strlen(cversion) != 0) {
-                    result = this->fileManager->loadFile(id, atoi(cversion));
+                if (routeParameterVector->size() == 4) {
+					int version = atoi(routeParameterVector->at(2).c_str());
+                    result = this->fileManager->loadFile(id, version);
                 } else {
                     result = this->fileManager->loadFile(id);
                 }
@@ -240,20 +239,20 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			case requestCodes::ERASEFILE_DELETE:
 			{
 
-				char email[100], token[100], id[100],path[300];
+				char email[100], token[100],path[300];
 				mg_get_var(conn, "email", email, sizeof(email));
 				mg_get_var(conn, "token", token, sizeof(token));
-				mg_get_var(conn, "id", id, sizeof(id));
 				mg_get_var(conn, "path", path, sizeof(path));
 				if (strlen(email) == 0) throw RequestException();
 				if (strlen(token) == 0) throw RequestException();
-				if (strlen(id) == 0) throw RequestException();
 				if (strlen(path) == 0) throw RequestException();
+
+				int id = atoi(routeParameterVector->at(1).c_str());
 
 
 				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
-                this->fileManager->checkIfUserHasFilePermits(atoi(id), std::string(email));
-				result = this->fileManager->eraseFileFromUser(atoi(id), std::string(email), std::string(path));
+                this->fileManager->checkIfUserHasFilePermits(id, std::string(email));
+				result = this->fileManager->eraseFileFromUser(id, std::string(email), std::string(path));
 				break;
 			}
 			case requestCodes::LOADUSERFILES_GET:
@@ -401,8 +400,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				token = std::string(ctoken);
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				id = atoi(cid);
+				id = atoi(routeParameterVector->at(1).c_str());
+				int version = atoi(routeParameterVector->at(2).c_str());
 
 				const char *data;
 				char *filedata;
@@ -421,7 +420,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
-				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str(), "w");
+				FILE* fout = fopen(("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str(), "w");
 				fwrite(filedata, filedata_len, 1, fout);
 				free(filedata);
 				fclose(fout);
@@ -441,14 +440,19 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				email = std::string(cemail);
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
 				token = std::string(ctoken);
-				mg_get_var(conn, "id", cid, sizeof(cid));
-				id = atoi(cid);
+				id = atoi(routeParameterVector->at(1).c_str());
+				int version;
+				if (routeParameterVector->size() == 4)
+					version = atoi(routeParameterVector->at(2).c_str());
+				else
+					version = -1;
 				this->userManager->checkIfLoggedIn(email, token);
 				File* file = this->fileManager->openFile(id);
 				this->fileManager->checkIfUserIsOwner(file->getId(), email);
-				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)).c_str();
+				if (version == -1)
+					version = file->getLatestVersion();
+				const char* path = ("files/"+file->getOwner()+"/"+file->getMetadata()->ownerPath+"/"+std::to_string(id)+"."+std::to_string(version)).c_str();
 				const char* extraHeaders = ("Content-Disposition: attachment; filename=\""+file->getMetadata()->name+file->getMetadata()->extension+"\"\r\n").c_str();
-				std::cout << extraHeaders << std::endl;
 				mg_send_file(conn, path, extraHeaders);
 				return MG_MORE;
 

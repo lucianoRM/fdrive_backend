@@ -58,5 +58,13 @@ class FileNotInFolderException: public FolderException {
 
 };
 
+class InvalidFolderPath : public FolderException {
+	 
+	 virtual const char* what() const throw() {
+        return "A folder can't be created in that path.";
+    }
+    
+};
+
 
 #endif //FDRIVE_FOLDEREXCEPTIONS_H
