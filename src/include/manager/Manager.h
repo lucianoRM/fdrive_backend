@@ -13,6 +13,12 @@
 #include <iostream>
 
 class Manager {
+
+public:
+    Manager(rocksdb::DB* database);
+
+    protected:
+    rocksdb::DB* database;
     protected:
         rocksdb::DB* openDatabase(std::string message,char openMode);
 };

@@ -4,8 +4,15 @@
 
 #include "Manager.h"
 
+
+Manager::Manager(rocksdb::DB* database){
+    this->database = database;
+
+
+}
+
 rocksdb::DB* Manager::openDatabase(std::string message,char openMode) {
-    rocksdb::DB* db;
+    /*rocksdb::DB* db;
     rocksdb::Options options;
     options.create_if_missing = true;
     rocksdb::Status status;
@@ -20,9 +27,9 @@ rocksdb::DB* Manager::openDatabase(std::string message,char openMode) {
     if (!status.ok()) {
 		// The database didn't open correctly.
         std::cout << message << status.ToString() << std::endl;
-        delete db;
+        ////delete db;
         throw DBException();
-    }
+    }*/
 
-    return db;
+    return this->database;
 }

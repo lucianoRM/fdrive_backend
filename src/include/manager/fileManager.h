@@ -22,7 +22,7 @@ class FileManager: public Manager {
         void checkFileSharedToUser(int id, std::string email);
 
     public:
-        FileManager();
+        FileManager(rocksdb::DB* database);
         ~FileManager();
 
         File* openFile(int id);

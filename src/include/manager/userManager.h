@@ -18,7 +18,7 @@ class UserManager:public Manager {
         std::string createToken();
 
     public:
-        UserManager();
+        UserManager(rocksdb::DB* database);
         ~UserManager();
 
         bool checkExistentUser(std::string email); // Devuelve true si existe.

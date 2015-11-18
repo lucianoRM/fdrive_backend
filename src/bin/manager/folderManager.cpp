@@ -8,7 +8,7 @@
 #include "folderExceptions.h"
 #include <stdio.h>
 
-FolderManager::FolderManager() { }
+FolderManager::FolderManager(rocksdb::DB* database) : Manager(database) { }
 FolderManager::~FolderManager() { }
 
 std::string FolderManager::addFolder(std::string email, std::string path, std::string nameFolder){
@@ -22,12 +22,12 @@ std::string FolderManager::addFolder(std::string email, std::string path, std::s
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
-        delete db;
+        ////delete db;
         throw;
     }
 
     delete folder;
-    delete db;
+    ////delete db;
 
     mkdir(("files/"+email+"/path/"+nameFolder).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 
@@ -44,7 +44,7 @@ std::string FolderManager::renameFolder(std::string email, std::string path, std
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
-        delete db;
+        ////delete db;
         throw;
     }
 
@@ -54,14 +54,14 @@ std::string FolderManager::renameFolder(std::string email, std::string path, std
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
-        delete db;
+        ////delete db;
         throw;
     }
 
     int result = rename( ("files/"+email+"/path/"+oldName).c_str(),("files/"+email+"/path/"+newName).c_str());
 
     delete folder;
-    delete db;
+    ////delete db;
     if ( result == 0 )
         return "{ \"result\" : true }";
 
@@ -80,7 +80,7 @@ std::vector<int> FolderManager::getFilesFromFolder(std::string email, std::strin
         try {
             folder = Folder::load(db, email, actualPath);
         } catch (std::exception& e) {   // Si el primero existe, todos los otros seguro existen.
-            delete db;
+            ////delete db;
             throw;
         }
         for (int id : folder->getDirectFiles()) {
@@ -92,7 +92,7 @@ std::vector<int> FolderManager::getFilesFromFolder(std::string email, std::strin
         std::cout << std::endl;
         delete folder;
     }
-    delete db;
+    ////delete db;
     return files;
 }
 
@@ -105,9 +105,9 @@ void FolderManager::renameFile(std::string oldName, std::string newName, std::st
         folder->save(db);
     } catch (std::exception& e) {
         if (folder != NULL) delete folder;
-        delete db;
+        //delete db;
         throw;
     }
     delete folder;
-    delete db;
+    //delete db;
 }
