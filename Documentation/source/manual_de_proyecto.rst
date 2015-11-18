@@ -68,8 +68,41 @@ División de Tareas
 	
 	Inicialmente, cada miembro fue asignado una herramienta para 
 	investigar y aprender a usar para comunicar luego al equipo. Más
-	adelante, el equipo se dedicó al servidor, 
+	adelante, el equipo se dedicó al servidor principalmente, dividiéndose
+	cada uno como tarea una de las requests más básicas del servidor.
+	Con esta primer tanda, el equipo logró ponerse de acuerdo en un 
+	diseño de clases o un patrón general de diseño. Además, se pudo
+	estructurar mejor la base de datos. Con esto, los próximos movimientos
+	ya se daban en paralelo tanto en el cliente como en el servidor.
 	
+	Un miembro se encargó del cliente, teniendo a otro miembro de apoyo 
+	cuando necesario. Los demás miembros se avocaron al servidor. Las
+	tareas se dividieron principalmente por requests. Cada miembro elegía
+	a gusto una request para tomar como responsbilidad y le era asignada;
+	esa persona era entonces responsable de llevar a cabo la interpretación
+	de la request estableciendo los parámetros necesarios y desarrollar
+	el código necesario para su resolución, además de hacer las pruebas 
+	correspondientes, unitarias y de integración. Aunque uno podía elegir
+	la request a tomar, se debían elegir por prioridad, las más básicas 
+	y esenciales primero, pero elegir cualquiera de ellas.
+	
+	Sin embargo, muchas veces los miembros podían arreglar para
+	intercambiar tareas o continuar donde otro dejó, sobre todo para 
+	requests que necesitaban relacionar distintos temas, o aquellas que
+	evolucionaron en algo más abarcativo de lo inicialmente planeado.
+	
+	No había necesariamente relación entre una tarea que eligiera un 
+	miembro y las próximas que eligiría ese miembro, eran independientes,
+	ya que la comunicación entre los miembros era tal que cuando había 
+	un cambio en algo ya definido se avisaba al equipo completo, o cuando
+	algo resultaba más complejo de lo esperado se discutía y se llegaba
+	a un solución en conjunto. Por esto cualquier miembro podía encargarse
+	de muchas tareas de distinto tema/área.
+	
+	Todas las tareas y su asignación pueden encontrarse en la página de 
+	Taiga correspondiente al proyecto.
+	
+	`Taiga <https://tree.taiga.io/project/agustinsantiago-fdrive/backlog>`_
 
 
 Cronograma
@@ -80,9 +113,25 @@ Cronograma
 Control de versiones y workflow
 =================================
 
+	Para trabajar en equipo, se utilizó la herramiento Slack para
+	comunicación, pero la herramiento Bitbucket para llevar registro de
+	todo el código y poder compartirlo, incluyendo todos sus cambios y
+	versiones.
+
 
 
 Sistema de Ticketing
 =================================
 
+	Como se presentó más arriba, para definir una tarea a realizar y 
+	asignársela a una persona se utilizó Taiga, en donde se podía llevar 
+	cuenta de la historia de usuario con la que se relacionaba la tarea 
+	y su estado, incluyendo sus pruebas.
+	
+	Luego, para el final del proyecto donde se debía finalmente cerrar 
+	el proyecto asegurando su correcto funcionamiento, al haber varios 
+	miembros probando todas sus funcionalidades, se decidió separar los 
+	errores de las tareas normales generando Issues en Bitbucket. De la 
+	misma forma que con las tareas, un miembro se autoasignaba el issue 
+	que deseaba para arreglar el bug que se indicaba.
 
