@@ -6,11 +6,21 @@ General
 
 REST API
 ----------
+.. literalinclude:: ../../API.txt
+	:language: python
+
+
+Estructura Base de Datos
+-------------------------
+.. literalinclude:: ../../DBStructure.txt
 
 Ambiente de Desarrollo
 ------------------------
-(No sé bien qué es esto, capaz iría adentro de servidor y cliente)
+Para desarrollar el presente proyecto, se decidió utilizar *C-Lion* como IDE para desarrollar el código *C++*, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje *C++*.
 
+Se utilizó la herramienta *CMake* para la compilación del proyecto.
+
+Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás 
 
 Servidor
 ===========
@@ -20,6 +30,35 @@ Librerías y compilación
 
 Arquitectura/Diseño
 ------------------------
+Podemos dividir el diseño del proyecto en varias partes
+
+Manejo de Requests
++++++++++++++++++++
+Se posee un requestHandler que analiza la request recibida por el server, una vez recibida y analizado su contenido envía los datos pertinentes de la request al manejador correspondiente.
+
+Para más datos sobre los distintos tipos de requests permitidas, y la estructura de las mismas vea la sección `REST API`_
+
+Managers
++++++++++
+Para los distintos tipos de request se poseen manejadores que, utilizando los datos recibidos realizan la operación que se deba realizar.
+
+Decidimos dividir los manejadores según los distintos tipos de requests que teníamos: usuarios, archivos, carpetas.
+
+Modelo Base
++++++++++++
+Esta es la parte más baja del diseño, se representaron los modelos de las distintas estructuras necesarias:
+	* Usuario
+	* Archivo
+	* Carpeta
+	* Búsqueda
+
+Base de datos
+++++++++++++++
+Por otro lado tenemos que destacar la utilización de la base de datos.
+
+Todos los datos se mantiene en una base de datos de tipo clave-valor. Se puede observar la estructura de la misma en el tópico `Estructura Base de Datos`_.
+
+Cabe destacar la estructura generada para las búsquedas dentro de la base de datos, la misma la hicimos mediante un índice invertido, el cual se va generando ante agregado de nuevos archivos, o ante operaciones realizadas sobre los mismos (cambio de metadatos, compartida, eliminación, etc.). De este modo, si bien ante cada cambio hay que hacer modificaciones en los índices, las búsquedas se realizan de manera muy rápida.
 
 Clases
 ------------------------
