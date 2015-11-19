@@ -537,8 +537,9 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				if (strlen(id) == 0) throw RequestException();
 
 				this->userManager->checkIfLoggedIn(std::string(email), std::string(token));
+                this->fileManager->checkIfUserIsOwner(atoi(id), std::string(email));
 				result = this->fileManager->recoverFile(std::string(email), atoi(id));
-				break;
+                break;
 			}
 
 			default:

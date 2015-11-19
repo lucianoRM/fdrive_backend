@@ -29,7 +29,7 @@ class File {
         int lastVersion;
         std::string owner;
         bool inTrash;
-        std::list<std::string>* users;
+        std::vector<std::string>* users;
         std::unordered_map<int, Version*>* versions;
 
         bool notExists(rocksdb::DB* db); // Checks if the file is already in the db.
@@ -62,7 +62,7 @@ class File {
         std::string getOwner();
         std::string getOwnerPath();
         std::string getOriginalOwnerPath();
-        std::list<std::string> getUsers();
+        std::vector<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.
         Json::Value getJson(); // Returns Json value made from file metadata and users.
