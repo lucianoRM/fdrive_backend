@@ -261,16 +261,14 @@ void File::saveSearches(std::string user, std::string path, rocksdb::DB* db) {
 
 void File::changeSearchInformation(rocksdb::DB* db, File* oldFile) {
     std::string email = this->getOwner();
-    std::string path = this->getMetadata()->ownerPath;
+    std::string path = this->getOwnerPath();
 
-    oldFile->removeSearchInformation(db,email);
-    this->saveSearches(email,path,db);
+    oldFile->removeSearchInformation(db, email);
+    this->saveSearches(email, path, db);
 
     for (std::string user : *users) {
-        SearchInformation* info = SearchInformation::load(db,"name",user,oldFile->getMetadata()->name);
-        path = info->getUserPath(id); // Gets the path of the sharedUser because it could be shared or trash
-        oldFile->removeSearchInformation(db,user);
-        this->saveSearches(user,path,db);
+        oldFile->removeSearchInformation(db, user);
+        this->saveSearches(user, "shared", db);
     }
 }
 
