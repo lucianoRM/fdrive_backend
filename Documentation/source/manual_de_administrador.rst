@@ -101,3 +101,4 @@ Known Issues
 
 Troubleshooting
 ============================
+Puede verificar los problemas ocurridos luego de ejecutar el servidor dentro del directorio *log*.

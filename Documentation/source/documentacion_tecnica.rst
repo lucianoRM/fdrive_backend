@@ -47,9 +47,18 @@ El servidor de integración está disponible para visitarlo en http://ci.fiuba75
 
 Servidor
 ===========
+.. highlight:: sh
 
 Librerías y compilación
 ------------------------
+	* RocksDB: Librería utilizada para la implementación de la base de datos. Cabe destacar que es una base de datos del tipo clave-valor.
+	* Mongoose Server: Librería utilizada para manejar las conexiones al server. Ya sea para subir o descargar archivos, como también para las conexiones realizadas por todos los clientes.
+	* JSon: Librería utilizada para manejar los bodys de las requests, y la información guardada en la base de datos. Ya que todo esto se realizaba en formato JSon.
+	* GTest: Librería de GoogleTest utilizada para la implementación de pruebas unitarias.
+	* Requests: Librería utilizada para implementar los tests de funcionalidad (tests de Python).
+	* EasyLogging: Librería utilizada para implementar el Logger del servidor.
+
+	* CMake: Herramienta utilizada para la compilación del presente proyecto.
 
 Arquitectura/Diseño
 ------------------------
@@ -161,6 +170,30 @@ Código
 Pruebas
 ------------------------
 
+Pruebas Unitarias
+++++++++++++++++++
+En las pruebas unitarias se realizaron pruebas pertinentes a las clases base descriptas.
+
+Para la implementación de las pruebas se utilizó *G-Test*, una librería implementada por Google para la creación de test unitarios. Para mayor información acerca de la misma, dirigirse al siguinet enlace:
+https://code.google.com/p/googletest/
+
+Para ver las pruebas realizadas debe posicionarse en el directorio *test* dentro del directorio *src*.
+
+Puede correr las pruebas unitarias posicionándose en el directorio *fdrive_backend* y corriendo el script:
+::
+	bash runTestsInDocker.sh
+
+Pruebas de Funcionalidad
++++++++++++++++++++++++++
+Pruebas referidas a las conexiones con el server, pruebas de *workload*, de concurrencia y de sincronización entre los datos cambiados por los distintos clientes.
+
+Para su implemenatción se uitlizaron tests de *Python*.
+
+Para ver las pruebas realizadas debe posicionarse en el directorio *functionalTests*.
+
+Puede correr las pruebas posicionándose en el directorio *fdrive_backend* y corriendo el script:
+::
+	bash runPythonTestsInDocker.sh
 
 Cliente
 ===========
@@ -171,7 +204,7 @@ Como ambiente de desarrollo se utilizó Android Studio
 
 
 Bibliotecas y compilación
-------------------------
+--------------------------
 
 Para la implementación del cliente se hizo uso de las siguiente bibliotecas:
 
