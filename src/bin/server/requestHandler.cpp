@@ -524,7 +524,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->fileManager->getSearches(std::string(cemail),std::string(ctypeOfSearch),std::string(celement));
-				break;
+                break;
 			}
 			case requestCodes::RECOVERFILE_GET:
 			{

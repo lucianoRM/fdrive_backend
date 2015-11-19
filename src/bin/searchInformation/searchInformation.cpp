@@ -73,27 +73,9 @@ void SearchInformation::eraseFile(int id) {
     this->files->remove(foundFile);
 }
 
-Json::Value SearchInformation::getJson() {
-
-    Json::Value root;
-
-    Json::Value filesIds (Json::arrayValue);
-    Json::Value filesPaths (Json::arrayValue);
-
-    for (searchFile* file : *(this->files)) {
-        filesIds.append(file->id);
-        filesPaths.append(file->path);
-    }
-
-    root["filesIds"] = filesIds;
-    root["filesPaths"] = filesPaths;
-
-    return root;
-}
-
 std::string SearchInformation::getContent() {
     Json::StyledWriter writer;
-    return writer.write(this->jsonFiles);
+    return writer.write(this->jsonFiles["files"]);
 }
 
 std::string SearchInformation::getUserPath(int id) {
