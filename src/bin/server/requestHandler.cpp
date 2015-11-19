@@ -15,10 +15,10 @@ RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 
 	this->routeTree = new RouteTree();
 
-	LOG(INFO) << "Adding routes.";
+	//LOG(INFO) << "Adding routes.";
 
 	if (testing) {
-		LOG(INFO) << "Adding route cleandb because server is in testing mode.";
+		//LOG(INFO) << "Adding route cleandb because server is in testing mode.";
 		this->routeTree->add("cleandb", "POST", requestCodes::CLEAN_DB);
 	}
 
@@ -73,6 +73,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 	try {
 		reqCode = this->routeTree->get(s, request_method);
 	} catch (RouteNotFoundException e) {
+		LOG(INFO) << "Couldn't find route " << s << " with method " << request_method;
 		return -1;
 	}
 
@@ -571,7 +572,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 		mg_printf_data(conn, result.c_str());
 
 	} catch (std::exception& e) {
-		LOG(INFO) << "Had a problem with the request, returning errors: " << e.what();
+		LOG(INFO) << "Had a problem with the request: " << uri << " with method " << request_method << ", returning errors: " << e.what();
 		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); // Even if there is an error, it should return true to close the connection.
 	}
 	return -2;

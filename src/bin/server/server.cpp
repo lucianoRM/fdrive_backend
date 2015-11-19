@@ -67,7 +67,6 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 			delete reqHandler;
 			return MG_TRUE;
 		case MG_REQUEST:
-			LOG(INFO) << "Handling Request";
 			result = reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn);
 			if (result == -1) {
 				LOG(WARNING) << "Couldn't find route " << std::string(conn->uri) << " with method " << std::string(conn->request_method);
