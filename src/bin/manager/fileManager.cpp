@@ -367,7 +367,7 @@ std::string FileManager::getSearches(std::string email, std::string typeOfSearch
     delete search;
     ////delete db;
     ///std::cout << "Cerré la base de datos en LoadUserFiles." << std::endl;
-    return "{ \"result\" : true , \"content\" : " + content + " }";
+    return "{ \"result\" : true , \"files\" : " + content + " }";
 }
 
 std::string FileManager::recoverFile(std::string email, int id) {
