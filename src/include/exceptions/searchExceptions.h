@@ -11,10 +11,10 @@ class SearchException: public std::exception {
 
 };
 
-class FileToEraseNotInSearch: public SearchException {
+class FileNotInSearch: public SearchException {
 
     virtual const char* what() const throw() {
-        return "Error with search";
+        return "Error with search, expected file not found in search.";
     }
 
 };

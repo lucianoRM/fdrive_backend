@@ -75,8 +75,15 @@ std::string FileManager::saveFile(std::string email, std::string name, std::stri
 }
 
 std::string FileManager::changeFileData(int id, std::string name, std::string tag) {
-    File* file = this->openFile(id);
     File* oldFile = this->openFile(id);
+    File* file = NULL;
+    try {
+       file = this->openFile(id);
+    } catch (std::exception& e) {
+        delete oldFile;
+        throw;
+    }
+
     std::string oldName = file->getName();
     std::string extension = file->getExtension();
     if (!name.empty()) file->setName(name);
@@ -86,25 +93,32 @@ std::string FileManager::changeFileData(int id, std::string name, std::string ta
     try {
         db = this->openDatabase("En ChangeFileData: ",'w');
         FolderManager f_manager(db);
-        if (!name.empty()) {
+        if (!name.empty() && name.compare(oldName) != 0) {
             f_manager.renameFile(oldName + extension, name + extension, file->getOwner(), file->getOwnerPath());
             for (std::string user : file->getUsers()) {
                 f_manager.renameFile(oldName, name, user, "shared");
             }
         }
-
         file->save(db);
-    } catch(std::exception& e) {
+    } catch (std::exception& e) {
+        delete oldFile;
         delete file;
         //if (db != NULL) ////delete db;
         throw;
     }
 
     // Change search info for owner and all shared users
-    if (oldFile->getMetadata()->name.compare(name) != 0 || !tag.empty()) {
-        file->changeSearchInformation(db,oldFile);
+    try {
+        if ((!name.empty() && oldName.compare(name) != 0) || !tag.empty()) {
+            file->changeSearchInformation(db, oldFile);
+        }
+    } catch (std::exception& e) {
+        delete oldFile;
+        delete file;
+        //if (db != NULL) ////delete db;
+        throw;
     }
-
+    delete oldFile;
     delete file;
     return "{ \"result\" : true }";
 }
