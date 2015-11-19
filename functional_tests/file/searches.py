@@ -93,7 +93,7 @@ class TestSearches(unittest.TestCase):
 	def test_search_tag_from_one_owned(self):
 		email = "email"
 		token = self._signup_and_login(email)
-		fileid = self._save_new_file(token, "files", email, "root")
+		fileid = self._save_new_file(token, "file", email, "root")
 		payload = {
 			"email":		email,
 			"token":		token,
@@ -101,7 +101,6 @@ class TestSearches(unittest.TestCase):
 			"element":		"palabra1"
 		}
 		r = requests.get("http://localhost:8000/searches", params = payload)
-		print r.json()
 		self.assertTrue(r.json()["result"])
 		_file = {
 			"id" : fileid,
@@ -120,6 +119,67 @@ class TestSearches(unittest.TestCase):
 			"id" : fileid,
 			"path" : "root"
 		}
+		self.assertEqual([_file], r.json()["files"])
+		
+	def test_search_from_shared_file(self):
+		token1 = self._signup_and_login("email1")
+		token2 = self._signup_and_login("email2")
+		fileid = self._save_new_file(token1, "file", "email1", "root")
+		payload = {
+			"email":		"email1",
+			"token":		token1,
+			"id":			fileid,
+			"users":		["email2"]
+		}
+		r = requests.post("http://localhost:8000/share", json = payload)
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"typeOfSearch": "name",
+			"element":		"file"
+		}
+		r = requests.get("http://localhost:8000/searches", params = payload)
+		self.assertTrue(r.json()["result"])
+		_file = {
+			"id" : fileid,
+			"path" : "shared"
+		}
+		self.assertEqual([_file], r.json()["files"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"typeOfSearch": "extension",
+			"element":		".txt"
+		}
+		r = requests.get("http://localhost:8000/searches", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([_file], r.json()["files"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"typeOfSearch": "owner",
+			"element":		"email1"
+		}
+		r = requests.get("http://localhost:8000/searches", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([_file], r.json()["files"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"typeOfSearch": "tag",
+			"element":		"palabra1"
+		}
+		r = requests.get("http://localhost:8000/searches", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([_file], r.json()["files"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"typeOfSearch": "tag",
+			"element":		"palabra2"
+		}
+		r = requests.get("http://localhost:8000/searches", params = payload)
+		self.assertTrue(r.json()["result"])
 		self.assertEqual([_file], r.json()["files"])
 		
 
