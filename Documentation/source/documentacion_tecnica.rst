@@ -119,6 +119,8 @@ Para la implementación del cliente se hizo uso de las siguiente bibliotecas:
   Provee un cliente http restful asi como tambien un json adapter para las consultas
 * Getbase FloatingActionButton
   Biblioteca externa para incluir un "Floating action button", boton característico de material design.(Se        permiten crear menus y agregar algunos parametros que no están disponibles en el botón nativo)
+* SLF4j
+    Permite loggear a un archivo
 
 La compilación está configurada por default gracias a Gradle desde Android Studio.
 
