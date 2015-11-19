@@ -1,11 +1,16 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "server.h"
+#include "easylogging/easylogging++.h"
+
+INITIALIZE_EASYLOGGINGPP
 
 #define TOTAL_LISTENERS 5
 #define LISTENING_PORT "8000"
 
 int main(int argc, char* argv[]) {
+	el::Configurations conf("log.conf");
+	el::Loggers::reconfigureAllLoggers(conf);
 	rocksdb::DB* db;
 	rocksdb::Options options;
 	options.create_if_missing = true;
