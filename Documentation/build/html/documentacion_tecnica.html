@@ -157,7 +157,6 @@ SAVE NEW VERSION OF FILE METADATA: (the user sending it will be creating a new v
 
 CHANGE FILE METADATA: (always changes last version of it)
 	url: &lt;dirección server&gt;/files/&lt;id&gt;/metadata 
-		(&lt;oldversion&gt; es la última versión que el usuario que sube esta vio)
 	Método: PUT
 	Body: {
 		“email”:”&lt;email&gt;”,
@@ -413,6 +412,17 @@ GET SEARCHES:
 <h2>Servidor<a class="headerlink" href="#servidor" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="librerias-y-compilacion">
 <h3>Librerías y compilación<a class="headerlink" href="#librerias-y-compilacion" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>RocksDB: Librería utilizada para la implementación de la base de datos. Cabe destacar que es una base de datos del tipo clave-valor.</li>
+<li>Mongoose Server: Librería utilizada para manejar las conexiones al server. Ya sea para subir o descargar archivos, como también para las conexiones realizadas por todos los clientes.</li>
+<li>JSon: Librería utilizada para manejar los bodys de las requests, y la información guardada en la base de datos. Ya que todo esto se realizaba en formato JSon.</li>
+<li>GTest: Librería de GoogleTest utilizada para la implementación de pruebas unitarias.</li>
+<li>Requests: Librería utilizada para implementar los tests de funcionalidad (tests de Python).</li>
+<li>EasyLogging: Librería utilizada para implementar el Logger del servidor.</li>
+<li>CMake: Herramienta utilizada para la compilación del presente proyecto.</li>
+</ul>
+</div></blockquote>
 </div>
 <div class="section" id="arquitectura-diseno">
 <h3>Arquitectura/Diseño<a class="headerlink" href="#arquitectura-diseno" title="Permalink to this headline">¶</a></h3>
@@ -604,6 +614,27 @@ GET SEARCHES:
 </div>
 <div class="section" id="pruebas">
 <h3>Pruebas<a class="headerlink" href="#pruebas" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pruebas-unitarias">
+<h4>Pruebas Unitarias<a class="headerlink" href="#pruebas-unitarias" title="Permalink to this headline">¶</a></h4>
+<p>En las pruebas unitarias se realizaron pruebas pertinentes a las clases base descriptas.</p>
+<p>Para la implementación de las pruebas se utilizó <em>G-Test</em>, una librería implementada por Google para la creación de test unitarios. Para mayor información acerca de la misma, dirigirse al siguinet enlace:
+<a class="reference external" href="https://code.google.com/p/googletest/">https://code.google.com/p/googletest/</a></p>
+<p>Para ver las pruebas realizadas debe posicionarse en el directorio <em>test</em> dentro del directorio <em>src</em>.</p>
+<p>Puede correr las pruebas unitarias posicionándose en el directorio <em>fdrive_backend</em> y corriendo el script:</p>
+<div class="highlight-sh"><div class="highlight"><pre>bash runTestsInDocker.sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="pruebas-de-funcionalidad">
+<h4>Pruebas de Funcionalidad<a class="headerlink" href="#pruebas-de-funcionalidad" title="Permalink to this headline">¶</a></h4>
+<p>Pruebas referidas a las conexiones con el server, pruebas de <em>workload</em>, de concurrencia y de sincronización entre los datos cambiados por los distintos clientes.</p>
+<p>Para su implemenatción se uitlizaron tests de <em>Python</em>.</p>
+<p>Para ver las pruebas realizadas debe posicionarse en el directorio <em>functionalTests</em>.</p>
+<p>Puede correr las pruebas posicionándose en el directorio <em>fdrive_backend</em> y corriendo el script:</p>
+<div class="highlight-sh"><div class="highlight"><pre>bash runPythonTestsInDocker.sh
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="section" id="cliente">
@@ -669,14 +700,14 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 <h4>Cards<a class="headerlink" href="#cards" title="Permalink to this headline">¶</a></h4>
 <p>Tanto <strong>FileCard</strong> como los <strong>FolderCard</strong> cuentan con clases &#8220;Adapters&#8221; que se encargan de transformar información en forma de <em>List</em> a las cards que se muestran en la pantalla.</p>
 <p><strong>FileCard</strong> tiene como atributo <strong>FileMetadata</strong> donde se alamacena la informacion del archivo:</p>
-<div class="highlight-python"><div class="highlight"><pre>public class FileMetadata {
+<div class="highlight-sh"><div class="highlight"><pre>public class FileMetadata <span class="o">{</span>
 
-    public String name,extension,owner,lastUser,lastModified,pathInOwner;
-    public int id,size,lastVersion;
-    public List&lt;String&gt; tags,users;
+    public String name,extension,owner,lastUser,lastModified,pathInOwner<span class="p">;</span>
+    public int id,size,lastVersion<span class="p">;</span>
+    public List&lt;String&gt; tags,users<span class="p">;</span>
 
 
-}
+<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -705,96 +736,96 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 <li>Acceso a una carpeta</li>
 </ul>
 <p>Desde la ventana del drive se presiona una <strong>FolderCard</strong>. El evento es capturado por el listener:</p>
-<div class="highlight-python"><div class="highlight"><pre>private void setCardsListeners(){
+<div class="highlight-sh"><div class="highlight"><pre>private void setCardsListeners<span class="o">(){</span>
         .
         .
         .
         .
-        this.recyclerFoldersView.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
+        this.recyclerFoldersView.addOnItemTouchListener<span class="o">(</span>new RecyclerItemClickListener<span class="o">(</span>getApplicationContext<span class="o">()</span>, new RecyclerItemClickListener.OnItemClickListener<span class="o">()</span> <span class="o">{</span>
 
 
             @Override
-            public void onItemClick(View view, int position) {
-                TextView clickedFolder = (TextView) view.findViewById(R.id.folder_name);
-                RequestMaker.getInstance().getUserFiles(activityCallback, email, token, path.goTo(clickedFolder.getText().toString()));
-                toggleUi(false);
+            public void onItemClick<span class="o">(</span>View view, int position<span class="o">)</span> <span class="o">{</span>
+                TextView <span class="nv">clickedFolder</span> <span class="o">=</span> <span class="o">(</span>TextView<span class="o">)</span> view.findViewById<span class="o">(</span>R.id.folder_name<span class="o">)</span><span class="p">;</span>
+                RequestMaker.getInstance<span class="o">()</span>.getUserFiles<span class="o">(</span>activityCallback, email, token, path.goTo<span class="o">(</span>clickedFolder.getText<span class="o">()</span>.toString<span class="o">()))</span><span class="p">;</span>
+                toggleUi<span class="o">(</span><span class="nb">false</span><span class="o">)</span><span class="p">;</span>
 
-            }
-
-
-        }));
+            <span class="o">}</span>
 
 
-    }
+        <span class="o">}))</span><span class="p">;</span>
+
+
+    <span class="o">}</span>
 </pre></div>
 </div>
 <p>Se realiza una llamada a <strong>RequestMaker</strong> para que realice la request al servidor</p>
 <p>RequestMaker:</p>
-<div class="highlight-python"><div class="highlight"><pre>public void getUserFiles(final NetworkCallbackClass activityCallback,String email,String token,String path){
+<div class="highlight-sh"><div class="highlight"><pre>public void getUserFiles<span class="o">(</span>final NetworkCallbackClass activityCallback,String email,String token,String path<span class="o">){</span>
 
-        GetUserFilesService client = ServiceGenerator.createService(GetUserFilesService.class,baseUrl);
+        GetUserFilesService <span class="nv">client</span> <span class="o">=</span> ServiceGenerator.createService<span class="o">(</span>GetUserFilesService.class,baseUrl<span class="o">)</span><span class="p">;</span>
 
-        client.getUserFiles(email, token, path, new Callback&lt;GetUserFilesAnswer&gt;() {
+        client.getUserFiles<span class="o">(</span>email, token, path, new Callback&lt;GetUserFilesAnswer&gt;<span class="o">()</span> <span class="o">{</span>
             @Override
-            public void success(GetUserFilesAnswer getUserFilesAnswer, Response response) {
-                if (getUserFilesAnswer.result)
-                    activityCallback.onGetUserFilesSuccess(getUserFilesAnswer);
-                else {
-                    activityCallback.onRequestFailure(getUserFilesAnswer.errors);
-                }
-            }
+            public void success<span class="o">(</span>GetUserFilesAnswer getUserFilesAnswer, Response response<span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span>getUserFilesAnswer.result<span class="o">)</span>
+                    activityCallback.onGetUserFilesSuccess<span class="o">(</span>getUserFilesAnswer<span class="o">)</span><span class="p">;</span>
+                <span class="k">else</span> <span class="o">{</span>
+                    activityCallback.onRequestFailure<span class="o">(</span>getUserFilesAnswer.errors<span class="o">)</span><span class="p">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
 
             @Override
-            public void failure(RetrofitError error) {
-                activityCallback.onConnectionError();
-            }
-        });
+            public void failure<span class="o">(</span>RetrofitError error<span class="o">)</span> <span class="o">{</span>
+                activityCallback.onConnectionError<span class="o">()</span><span class="p">;</span>
+            <span class="o">}</span>
+        <span class="o">})</span><span class="p">;</span>
 
-    }
+    <span class="o">}</span>
 </pre></div>
 </div>
 <p>Una vez que se llama a client.getUserFiles(... ya se creara un nuevo thread. El que le sigue define los callbacks que se ejecutarán una vez que el server responda.</p>
 <p>En este caso, la adaptación de la request la hace <strong>GetUserFilesService</strong>:</p>
-<div class="highlight-python"><div class="highlight"><pre>public interface GetUserFilesService {
-    @GET(&quot;/userfiles&quot;)
-    void getUserFiles(@Query(&quot;email&quot;) String email,@Query(&quot;token&quot;) String token,@Query(&quot;path&quot;) String path,Callback&lt;GetUserFilesAnswer&gt; callback);
-}
+<div class="highlight-sh"><div class="highlight"><pre>public interface GetUserFilesService <span class="o">{</span>
+    @GET<span class="o">(</span><span class="s2">&quot;/userfiles&quot;</span><span class="o">)</span>
+    void getUserFiles<span class="o">(</span>@Query<span class="o">(</span><span class="s2">&quot;email&quot;</span><span class="o">)</span> String email,@Query<span class="o">(</span><span class="s2">&quot;token&quot;</span><span class="o">)</span> String token,@Query<span class="o">(</span><span class="s2">&quot;path&quot;</span><span class="o">)</span> String path,Callback&lt;GetUserFilesAnswer&gt; callback<span class="o">)</span><span class="p">;</span>
+<span class="o">}</span>
 </pre></div>
 </div>
 <p>Dentro del los callbacks de la request se llama a activityCallback, una instancia de <strong>NetworkCallbackClass</strong>, donde se realiza la conexión con la GUI:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">activityCallback</span><span class="o">.</span><span class="n">onGetUserFilesSuccess</span><span class="p">(</span><span class="n">getUserFilesAnswer</span><span class="p">);</span>
+<div class="highlight-sh"><div class="highlight"><pre>activityCallback.onGetUserFilesSuccess<span class="o">(</span>getUserFilesAnswer<span class="o">)</span><span class="p">;</span>
 </pre></div>
 </div>
 <p><strong>NetworkCallbackClass</strong>:</p>
-<div class="highlight-python"><div class="highlight"><pre>public void onGetUserFilesSuccess(GetUserFilesAnswer answer){
-        callback.onGetUserFilesSuccess(answer);
-    }
+<div class="highlight-sh"><div class="highlight"><pre>public void onGetUserFilesSuccess<span class="o">(</span>GetUserFilesAnswer answer<span class="o">){</span>
+        callback.onGetUserFilesSuccess<span class="o">(</span>answer<span class="o">)</span><span class="p">;</span>
+    <span class="o">}</span>
 </pre></div>
 </div>
 <p>El método de la interfaz está implementado en <strong>DriveActivity</strong></p>
 <p><strong>GetUserFilesAnswer</strong> es la clase a la cual se adaptan las respuestas de esta request:</p>
-<div class="highlight-python"><div class="highlight"><pre>public class GetUserFilesAnswer {
+<div class="highlight-sh"><div class="highlight"><pre>public class GetUserFilesAnswer <span class="o">{</span>
 
-    public static class Content {
-        public List&lt;Integer&gt; files;
-        public List&lt;String&gt; folders;
-    }
-    public List&lt;String&gt; errors;
-    public boolean result;
-    public Content content;
+    public static class Content <span class="o">{</span>
+        public List&lt;Integer&gt; files<span class="p">;</span>
+        public List&lt;String&gt; folders<span class="p">;</span>
+    <span class="o">}</span>
+    public List&lt;String&gt; errors<span class="p">;</span>
+    public boolean result<span class="p">;</span>
+    public Content content<span class="p">;</span>
 
-}
+<span class="o">}</span>
 </pre></div>
 </div>
 <p>En caso de un error en la conexión, se llama a:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">activityCallback</span><span class="o">.</span><span class="n">onConnectionError</span><span class="p">();</span>
+<div class="highlight-sh"><div class="highlight"><pre>activityCallback.onConnectionError<span class="o">()</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>Con su callback también implementado en <strong>DriveActivity</strong> donde se llama a <strong>ErrorDisplay</strong> para mostrar el error recibido:</p>
-<div class="highlight-python"><div class="highlight"><pre>public void onConnectionError(){
-        ErrorDisplay.getInstance().showMessage(context, view, &quot;Connection error,check configured ip or try again later&quot;);
-        toggleUi(true);
-    }
+<div class="highlight-sh"><div class="highlight"><pre>public void onConnectionError<span class="o">(){</span>
+        ErrorDisplay.getInstance<span class="o">()</span>.showMessage<span class="o">(</span>context, view, <span class="s2">&quot;Connection error,check configured ip or try again later&quot;</span><span class="o">)</span><span class="p">;</span>
+        toggleUi<span class="o">(</span><span class="nb">true</span><span class="o">)</span><span class="p">;</span>
+    <span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -832,7 +863,11 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 </ul>
 </li>
 <li><a class="reference internal" href="#codigo">Código</a></li>
-<li><a class="reference internal" href="#pruebas">Pruebas</a></li>
+<li><a class="reference internal" href="#pruebas">Pruebas</a><ul>
+<li><a class="reference internal" href="#pruebas-unitarias">Pruebas Unitarias</a></li>
+<li><a class="reference internal" href="#pruebas-de-funcionalidad">Pruebas de Funcionalidad</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#cliente">Cliente</a><ul>
