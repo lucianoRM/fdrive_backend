@@ -137,9 +137,13 @@ Cuenta de usuario
 --------------------
 
 
-
+<<<<<<< HEAD
 Creación de cuenta
 +++++++++++++++++++
+=======
+Creacion de cuenta
++++++++++++++++++++++++
+>>>>>>> 8ace44591729134ca5fb87643999dd8f51f56e66
 
 
 Desde la ventana principal se debe presionar el botón de sign up en la parte inferior
@@ -172,18 +176,23 @@ Desde la ventana central se debe presionar el simbolo de "Menu" |menu-icon| ubic
 Carpetas
 --------------------
 
+<<<<<<< HEAD
 Creacion
 +++++++++++++++++++
+=======
+Navegacion
++++++++++++++++++++++++
+>>>>>>> 8ace44591729134ca5fb87643999dd8f51f56e66
 
 Para la creación de una carpeta se debe presionar el botón circular ubicado en esquina inferior derecha de la pantalla con un simbolo de |plus-icon|.
 
+<<<<<<< HEAD
 Una vez presionado apareceran 2 botones más.Para crear una carpeta se debe presionar |folder-icon| y aparecerá una ventana en donde completar el nombre de la carpeta a crear
 
 |drive-screen| |action-button-pressed| |create-folder-dialog|
 
 Acceso
 +++++++++++++++++++
-
 El acceso a la carpeta se logra presionando el rectángulo que representa la misma.
 
 Para volver a la carpeta anterior, se deberá presionar la carpeta de retorno, nombrada: ".."
@@ -191,7 +200,13 @@ Para volver a la carpeta anterior, se deberá presionar la carpeta de retorno, n
 Si se quiere acceder a las carpetas de archivos compartidos(Shared) |shared-folder-icon| ,archivos eliminados(Trash) |delete-icon| o volver a la carpeta central del usuario(My Drive) |folder-icon| se deberá presionar el icono correspondiente en el menú deslizante izquierdo
 
 |left-drawer-open|
+=======
+Creacion
++++++++++++++++++++++++
 
+Acceso
++++++++++++++++++++++++
+>>>>>>> 8ace44591729134ca5fb87643999dd8f51f56e66
 
 Renombrado
 +++++++++++++++++++++++
@@ -288,7 +303,7 @@ Extras
 Configurar la ip
 +++++++++++++++++++++++
 
-La configuración de ip del servidor será accesible desde cualquier ventana via |conf-icon|.
+La configuración de ip del servidor será accesible desde cualquier ventana via |config-icon|.
 
 Conocer ubicacion
 +++++++++++++++++++++++
@@ -298,10 +313,14 @@ Una vez presionado se abrirá una ventana de navegador con un mapa donde estara 
 
 Cambiar foto de perfil
 +++++++++++++++++++++++
+<<<<<<< HEAD
 
 Si se desea cambiar la foto de perfil se debe presionar sobre la foto default(o la ya cargada) en la imagen circular del menú izquierdo.
 
 Se llevará a una ventana de selección de imágenes donde se podrá elegir la imagen a subir como foto de perfil.
+
+=======
+>>>>>>> 8ace44591729134ca5fb87643999dd8f51f56e66
 
 Known Issues
 ============================

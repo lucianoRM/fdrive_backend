@@ -409,7 +409,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
      */
     delete file;
     ////delete db;
-    return "{ \"result\" : true , \"path\" : " + path + " }";
+    return "{ \"result\" : true , \"path\" : \"" + path + "\" }";
 }
 
 std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {
