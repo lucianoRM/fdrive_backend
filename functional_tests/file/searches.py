@@ -353,7 +353,7 @@ class TestSearches(unittest.TestCase):
 		r = requests.get("http://localhost:8000/searches", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual([_file], r.json()["files"])
-			
+		
 	def test_searches_shared_and_deleted(self):
 		token1 = self._signup_and_login("email1")
 		token2 = self._signup_and_login("email2")
@@ -365,14 +365,12 @@ class TestSearches(unittest.TestCase):
 			"users":		["email2"]
 		}
 		r = requests.post("http://localhost:8000/share", json = payload)
-		print r.json()
 		payload = {
 			"email":		"email1",
 			"token":		token1,
 			"path":			"root"
 		}
 		r = requests.delete("http://localhost:8000/files/" + str(fileid), params = payload)
-		print r.json()
 		self.assertTrue(r.json()["result"])
 		payload = {
 			"email":		"email1",
@@ -468,7 +466,7 @@ class TestSearches(unittest.TestCase):
 		r = requests.get("http://localhost:8000/searches", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual([], r.json()["files"])
-	
+
 
 if __name__ == '__main__':
     unittest.main()

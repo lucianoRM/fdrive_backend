@@ -89,6 +89,7 @@ class TestDeleteRecoverFile(unittest.TestCase):
 			"users":		["email2"]
 		}
 		r = requests.post("http://localhost:8000/share", json = payload)
+		
 		payload = {
 			"email":		"email1",
 			"token":		token1

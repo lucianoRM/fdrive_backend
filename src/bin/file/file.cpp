@@ -1,5 +1,6 @@
 #include <server/server.h>
 #include "file.h"
+#include <algorithm>
 
 File::File() {
     this->id = -1;
@@ -7,7 +8,7 @@ File::File() {
     Version* version = new Version();
     this->versions = new std::unordered_map<int, Version*>();
     (*this->versions)[0] = version;
-    this->users = new std::list<std::string>();
+    this->users = new std::vector<std::string>();
     this->inTrash = false;
 }
 
@@ -288,12 +289,12 @@ void File::checkIfUserIsOwner(std::string email) {
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
     Folder *folder = NULL;
-    // Si no es owner y tuene permisos se le descomparte.
+    // Si no es owner y tiene permisos se le descomparte.
     if (user.compare(this->owner) != 0) {
         if (std::find(this->users->begin(), this->users->end(), user) == this->users->end()) {
             throw HasNoPermits();
         }
-        this->users->remove(user);
+        this->users->erase(std::remove(this->users->begin(), this->users->end(), user), this->users->end());
     }
     // En cualquier caso, se borra del path en el que estaba y la información asociada.
     try {
@@ -308,8 +309,7 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     this->removeSearchInformation(db, user);
     // Si es owner, se le descomparte a todos y se agrega al trash del owner.
     if (user.compare(this->owner) == 0) {
-        std::vector<std::string> _users = std::vector<std::string>( std::make_move_iterator(std::begin(*this->users)),
-                                          std::make_move_iterator(std::end(*this->users)) );
+        std::vector<std::string> _users (*this->users);
         for (std::string sharedUser : _users) {
             this->eraseFromUser(db, sharedUser, "shared");
         }
@@ -414,7 +414,7 @@ void File::addSharedUser(std::string user) {
     }
 }
 
-std::list<std::string> File::getUsers() {
+std::vector<std::string> File::getUsers() {
 	return *this->users;
 }
 

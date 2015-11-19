@@ -413,7 +413,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
 std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {
     File* file = this->openFile(id);
     if (users.empty()) {
-        std::list<std::string> l = file->getUsers();
+        std::vector<std::string> l = file->getUsers();
         users = std::vector<std::string>( std::make_move_iterator(std::begin(l)),
                                           std::make_move_iterator(std::end(l)) );
     }
