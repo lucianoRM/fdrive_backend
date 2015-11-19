@@ -314,12 +314,14 @@ Por el momento, la foto de perfil del usuario es local por lo que si se accede a
 Troubleshooting
 ============================
 
+
+Para ayudar a solucionar problemas, la aplicación cuenta con un Logger. El archivo generado se encuentra en la carpeta: **/Fdrive** dentro del almacenamiento interno del equipo.
+
+
 Errores de connexion
 --------------------
 
 Probablemente el servidor está caído o la ip no este bien configurada.
-
-
 
 
 

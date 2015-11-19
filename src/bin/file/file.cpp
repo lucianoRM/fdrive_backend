@@ -8,6 +8,7 @@ File::File() {
     this->versions = new std::unordered_map<int, Version*>();
     (*this->versions)[0] = version;
     this->users = new std::list<std::string>();
+    this->inTrash = false;
 }
 
 File::~File() {
@@ -72,6 +73,11 @@ std::string File::getOwner() {
 }
 
 std::string File::getOwnerPath() {
+    if (inTrash) return "trash";
+    return (*this->versions)[this->lastVersion]->getMetadata()->ownerPath;
+}
+
+std::string File::getOriginalOwnerPath() {
     return (*this->versions)[this->lastVersion]->getMetadata()->ownerPath;
 }
 
@@ -81,6 +87,7 @@ int File::getLatestVersion() {
 
 Json::Value File::getJson() {
     Json::Value root = this->getJson(this->lastVersion);
+    if (inTrash) root["pathInOwner"] = "trash";
     root["id"] = this->id;
     root = this->addFileData(root);
     return root;
@@ -163,6 +170,7 @@ void File::load(rocksdb::DB* db) {
     // Load metadata into file.
     this->owner = root["owner"].asString();
     this->lastVersion = root["lastVersion"].asInt();
+    this->inTrash = root["inTrash"].asBool();
 
     Json::Value users = root["users"];
     for (Json::Value::iterator it = users.begin(); it != users.end(); it++) {
@@ -192,6 +200,7 @@ void File::save(rocksdb::DB* db) {
         versions[std::to_string(version.first)] = version.second->getJson();
     }
     root["versions"] = versions;
+    root["inTrash"] = this->inTrash;
 
     // Saves file,
     Json::StyledWriter writer;
@@ -281,6 +290,25 @@ void File::checkIfUserIsOwner(std::string email) {
 void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     struct metadata *metadata = (*this->versions)[this->lastVersion]->getMetadata();
     Folder *folder = NULL;
+    // Si no es owner y tuene permisos se le descomparte.
+    if (user.compare(this->owner) != 0) {
+        if (std::find(this->users->begin(), this->users->end(), user) == this->users->end()) {
+            throw HasNoPermits();
+        }
+        this->users->remove(user);
+    }
+    // En cualquier caso, se borra del path en el que estaba y la información asociada.
+    try {
+        folder = Folder::load(db, user, path);
+        folder->removeFile(this->getId());
+        folder->save(db);
+    } catch (std::exception &e) {
+        if (folder != NULL) delete folder;
+        throw;
+    }
+    delete folder;
+    this->removeSearchInformation(db, user);
+    // Si es owner, se le descomparte a todos y se agrega al trash del owner.
     if (user.compare(this->owner) == 0) {
         for (std::string sharedUser : *this->users) {
             this->eraseFromUser(db, sharedUser, "shared");
@@ -292,30 +320,14 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
             folder = Folder::load(db, user, "trash");
             folder->addFile(this->id, metadata->name + metadata->extension);
             folder->save(db);
-            delete folder;
+            this->saveSearches(user,"trash",db);
         } catch (std::exception &e) {
             if (folder != NULL) delete folder;
             throw;
         }
+        delete folder;
     }
-    if (user.compare(this->owner) != 0) {
-        if (std::find(this->users->begin(), this->users->end(), user) == this->users->end()) {
-            throw HasNoPermits();
-        }
-        this->users->remove(user);
-    }
-
-    try {
-        folder = Folder::load(db, user, path);
-        folder->removeFile(this->getId());
-        folder->save(db);
-    } catch (std::exception &e) {
-        if (folder != NULL) delete folder;
-        throw;
-    }
-    delete folder;
-    // Remove searches.
-    this->removeSearchInformation(db, user);
+    this->inTrash = true;
 }
 
 void File::removeSearchInformation(rocksdb::DB* db, std::string user) {
@@ -389,6 +401,8 @@ void File::recoverFromUser(rocksdb::DB* db, std::string user, std::string path) 
     delete folder;
     // Remove searches.
     this->removeSearchInformation(db, user);
+    this->saveSearches(user, path, db);
+    this->inTrash = false;
 }
 
 void File::addSharedUser(std::string user) {

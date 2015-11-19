@@ -64,7 +64,7 @@ class TestMetadataVersion(unittest.TestCase):
 
 	def test_save_new_file_then_get(self):
 		email = "testemail"
-		token = self._signup_and_login()
+		token = self._signup_and_login(email)
 		fileid = self._save_new_file(token, "somefilename", email)
 		payload = {
 			"email":		"testemail",
@@ -82,6 +82,51 @@ class TestMetadataVersion(unittest.TestCase):
 		self.assertEqual("testemail", r.json()["file"]["owner"])
 		self.assertEqual(["palabra1","palabra2"], r.json()["file"]["tags"])
 		self.assertEqual(0, r.json()["file"]["lastVersion"])
+
+	def test_save_new_file_in_trash(self):
+		email = "testemail"
+		token = self._signup_and_login(email)
+		payload = {
+			"email":		email,
+			"token":		token,
+			"name":			"name",
+			"extension":	".txt",
+			"path":			"trash",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])
+
+	def test_save_new_file_in_shared(self):
+		email = "testemail"
+		token = self._signup_and_login(email)
+		payload = {
+			"email":		email,
+			"token":		token,
+			"name":			"name",
+			"extension":	".txt",
+			"path":			"shared",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])
+
+	def test_save_new_file_in_inexistent_path(self):
+		email = "testemail"
+		token = self._signup_and_login(email)
+		payload = {
+			"email":		email,
+			"token":		token,
+			"name":			"name",
+			"extension":	".txt",
+			"path":			"root/folder",
+			"tags":			["palabra1","palabra2"],
+			"size":			2		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])
 
 	def test_save_new_file_inside_root(self):
 		token = self._signup_and_login("email")

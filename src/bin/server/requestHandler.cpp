@@ -27,7 +27,6 @@ RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 	this->routeTree->add("logout", "GET", requestCodes::LOGOUT_GET);
 
 	this->routeTree->add("files/:int", "DELETE", requestCodes::ERASEFILE_DELETE);
-
 	this->routeTree->add("files/:int/metadata", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files/:int/:int/metadata", "GET", requestCodes::LOADFILE_GET);
 	this->routeTree->add("files/:int/metadata", "POST", requestCodes::SAVEFILE_POST);
@@ -73,8 +72,6 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 		std::cout << uriPlusMethod << " NOT FOUND" << std::endl;
 		return -1;
 	}
-	//std::cout << reqCode << " METADATA " << requestCodes::LOADFILE_GET << std::endl;
-
 
 	std::vector<std::string>* routeParameterVector = routeTree->getRouteParameterVector(s);
 
@@ -527,7 +524,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 				this->userManager->checkIfLoggedIn(std::string(cemail), std::string(ctoken));
 				result = this->fileManager->getSearches(std::string(cemail),std::string(ctypeOfSearch),std::string(celement));
-				break;
+                break;
 			}
 			case requestCodes::RECOVERFILE_GET:
 			{

@@ -28,6 +28,7 @@ class File {
         int id;
         int lastVersion;
         std::string owner;
+        bool inTrash;
         std::list<std::string>* users;
         std::unordered_map<int, Version*>* versions;
 
@@ -60,6 +61,7 @@ class File {
         std::string getExtension();
         std::string getOwner();
         std::string getOwnerPath();
+        std::string getOriginalOwnerPath();
         std::list<std::string> getUsers();
 
         struct metadata* getMetadata(); // Returns the metadata from the file.

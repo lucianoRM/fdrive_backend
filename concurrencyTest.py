@@ -6,7 +6,6 @@ from subprocess import call
 import inspect, os
 import datetime
 import filecmp
-from functional_tests.file.file import TestFile
 
 def crawl(id, email, token, result_queue):
 	for i in range(5):
