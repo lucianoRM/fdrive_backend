@@ -9,15 +9,16 @@ REST API
 .. literalinclude:: ../../API.txt
 	:language: python
 
+
 Estructura Base de Datos
 -------------------------
 .. literalinclude:: ../../DBStructure.txt
 
 Ambiente de Desarrollo
 ------------------------
-Para desarrollar el presente proyecto, se decidió utilizar C-Lion como IDE para desarrollar el código C++, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje C++.
+Para desarrollar el presente proyecto, se decidió utilizar *C-Lion* como IDE para desarrollar el código *C++*, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje *C++*.
 
-Se utilizó la herramienta CMake para la compilación del proyecto.
+Se utilizó la herramienta *CMake* para la compilación del proyecto.
 
 Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás 
 
@@ -34,6 +35,8 @@ Podemos dividir el diseño del proyecto en varias partes
 Manejo de Requests
 +++++++++++++++++++
 Se posee un requestHandler que analiza la request recibida por el server, una vez recibida y analizado su contenido envía los datos pertinentes de la request al manejador correspondiente.
+
+Para más datos sobre los distintos tipos de requests permitidas, y la estructura de las mismas vea la sección `REST API`_
 
 Managers
 +++++++++
@@ -53,7 +56,7 @@ Base de datos
 ++++++++++++++
 Por otro lado tenemos que destacar la utilización de la base de datos.
 
-Todos los datos se mantiene en una base de datos de tipo clave-valor. Se puede observar la estructura de la misma en el tópico "Estructura Base de Datos".
+Todos los datos se mantiene en una base de datos de tipo clave-valor. Se puede observar la estructura de la misma en el tópico `Estructura Base de Datos`_.
 
 Cabe destacar la estructura generada para las búsquedas dentro de la base de datos, la misma la hicimos mediante un índice invertido, el cual se va generando ante agregado de nuevos archivos, o ante operaciones realizadas sobre los mismos (cambio de metadatos, compartida, eliminación, etc.). De este modo, si bien ante cada cambio hay que hacer modificaciones en los índices, las búsquedas se realizan de manera muy rápida.
 
