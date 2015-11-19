@@ -14,19 +14,51 @@ Estructura Base de Datos
 -------------------------
 .. literalinclude:: ../../DBStructure.txt
 
-Ambiente de Desarrollo
+Ambiente de Desarrollo e Integración Continua
 ------------------------
 Para desarrollar el presente proyecto, se decidió utilizar *C-Lion* como IDE para desarrollar el código *C++*, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje *C++*.
 
 Se utilizó la herramienta *CMake* para la compilación del proyecto.
 
-Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás 
+Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás
+
+Además, se configuró un servidor de integración continua utilizando Jenkins, en un servidor virtual alojado en DigitalOcean. De esta manera,
+no era necesario tener una computadora prendida continuamente para que se corriera la integración. Nuestra intención
+inicial era usar Travis, pero está limitado a repositorios de GitHub (el nuestro está alojado en BitBucket), y las
+diferentes soluciones posibles nos parecieron complicadas, e implementarlas no tenía sentido.
+
+Dentro del servidor virtual, Jenkins fue instalado como una instancia de Docker. Luego, se crearon usuarios para cada
+integrante del proyecto, y se configuró un hook en BitBucket para que enviara un http request a Jenkins cada vez que
+entraba un push al repositorio del servidor. Luego, Jenkins se encarga automáticamente de clonar el repositorio con el
+estado actual, y correr los dos comandos necesarios para correr todos los test del sistema: runPythonTestsInDocker.sh y runTestsInDocker.sh
+
+El problema grave que tuvimos es que como Jenkins estaba corriendo en Docker y nuestra aplicación también, lo que se daba
+era un caso de Docker-In-Docker, lo cual no está soportado por Docker. La solución que aplicamos fue configurar el
+Jenkins de Docker para que su archivo /var/run/docker.sock, archivo donde escribe para crear nuevas instancias, fuera
+el homólogo del servidor virtual. De esta manera, es el servidor virtual (el host) quien corre la nueva instancia de
+Docker con FDrive, a pedido de Jenkins (el guest).
+
+Esto lo logramos aplicando el siguiente comando para crear el jenkins::
+
+   docker run -d -p 50000:8080 --name fiuba7552_jenkins -v /var/jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins
+
+El servidor de integración está disponible para visitarlo en http://ci.fiuba7552.tk
+
 
 Servidor
 ===========
+.. highlight:: sh
 
 Librerías y compilación
 ------------------------
+	* RocksDB: Librería utilizada para la implementación de la base de datos. Cabe destacar que es una base de datos del tipo clave-valor.
+	* Mongoose Server: Librería utilizada para manejar las conexiones al server. Ya sea para subir o descargar archivos, como también para las conexiones realizadas por todos los clientes.
+	* JSon: Librería utilizada para manejar los bodys de las requests, y la información guardada en la base de datos. Ya que todo esto se realizaba en formato JSon.
+	* GTest: Librería de GoogleTest utilizada para la implementación de pruebas unitarias.
+	* Requests: Librería utilizada para implementar los tests de funcionalidad (tests de Python).
+	* EasyLogging: Librería utilizada para implementar el Logger del servidor.
+
+	* CMake: Herramienta utilizada para la compilación del presente proyecto.
 
 Arquitectura/Diseño
 ------------------------
@@ -138,6 +170,30 @@ Código
 Pruebas
 ------------------------
 
+Pruebas Unitarias
+++++++++++++++++++
+En las pruebas unitarias se realizaron pruebas pertinentes a las clases base descriptas.
+
+Para la implementación de las pruebas se utilizó *G-Test*, una librería implementada por Google para la creación de test unitarios. Para mayor información acerca de la misma, dirigirse al siguinet enlace:
+https://code.google.com/p/googletest/
+
+Para ver las pruebas realizadas debe posicionarse en el directorio *test* dentro del directorio *src*.
+
+Puede correr las pruebas unitarias posicionándose en el directorio *fdrive_backend* y corriendo el script:
+::
+	bash runTestsInDocker.sh
+
+Pruebas de Funcionalidad
++++++++++++++++++++++++++
+Pruebas referidas a las conexiones con el server, pruebas de *workload*, de concurrencia y de sincronización entre los datos cambiados por los distintos clientes.
+
+Para su implemenatción se uitlizaron tests de *Python*.
+
+Para ver las pruebas realizadas debe posicionarse en el directorio *functionalTests*.
+
+Puede correr las pruebas posicionándose en el directorio *fdrive_backend* y corriendo el script:
+::
+	bash runPythonTestsInDocker.sh
 
 Cliente
 ===========
@@ -148,7 +204,7 @@ Como ambiente de desarrollo se utilizó Android Studio
 
 
 Bibliotecas y compilación
-------------------------
+--------------------------
 
 Para la implementación del cliente se hizo uso de las siguiente bibliotecas:
 

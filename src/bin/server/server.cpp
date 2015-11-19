@@ -1,3 +1,4 @@
+#include <easylogging/easylogging++.h>
 #include "server.h"
 
 
@@ -22,8 +23,6 @@ Server::Server(std::string port,rocksdb::DB* database,bool testing) {
 
     this->listenerTimeOut = 1000;
 
-    printf("Running on port %s\n", port.c_str());
-    fflush(stdout);
 }
 
 Server::~Server() {
@@ -60,6 +59,7 @@ void Server::copyListeners(Server* server0) {
 }
 
 int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
+	while (Server::database == NULL) {}
     RequestHandler* reqHandler = new RequestHandler(database, testing);
 	int result;
     switch (ev) {
@@ -69,6 +69,7 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 		case MG_REQUEST:
 			result = reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn);
 			if (result == -1) {
+				LOG(WARNING) << "Couldn't find route " << std::string(conn->uri) << " with method " << std::string(conn->request_method);
 				mg_send_file(conn, "index.html", s_no_cache_header);
 				delete reqHandler;
 				return MG_MORE;
