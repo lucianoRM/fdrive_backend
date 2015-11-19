@@ -71,7 +71,68 @@ class TestDeleteRecoverFile(unittest.TestCase):
 		self.assertEqual([fileid], r.json()["content"]["files"])
 		self.assertEqual(["file.txt"], r.json()["content"]["filesNames"])
 
-	def recover_file_to_root(self):
+	def test_owner_delete_root_file_shared(self):
+		token1 = self._signup_and_login("email1")
+		token2 = self._signup_and_login("email2")
+		fileid = self._save_new_file(token1, "file", "email1", "root")
+		payload = {
+			"email":		"email1",
+			"token":		token1
+		}
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual("email1", r.json()["file"]["owner"])
+		payload = {
+			"email":		"email1",
+			"token":		token1,
+			"id":			fileid,
+			"users":		["email2"]
+		}
+		r = requests.post("http://localhost:8000/share", json = payload)
+		payload = {
+			"email":		"email1",
+			"token":		token1
+		}
+		r = requests.get("http://localhost:8000/files/"+str(fileid)+"/metadata", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual("email1", r.json()["file"]["owner"])
+		payload = {
+			"email":		"email1",
+			"token":		token1,
+			"path":			"root"
+		}
+		r = requests.delete("http://localhost:8000/files/" + str(fileid), params = payload)
+		self.assertTrue(r.json()["result"])
+		r = requests.get("http://localhost:8000/userfiles", params = payload)	# El owner no lo tiene donde estaba, si en trash
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([], r.json()["content"]["files"])
+		payload = {
+			"email":		"email1",
+			"token":		token1,
+			"path":			"trash"
+		}
+		r = requests.get("http://localhost:8000/userfiles", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([fileid], r.json()["content"]["files"])
+		self.assertEqual(["file.txt"], r.json()["content"]["filesNames"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"path":			"shared"
+		}
+		r = requests.get("http://localhost:8000/userfiles", params = payload)	# El shared no lo tiene donde estaba, ni en trash
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([], r.json()["content"]["files"])
+		payload = {
+			"email":		"email2",
+			"token":		token2,
+			"path":			"trash"
+		}
+		r = requests.get("http://localhost:8000/userfiles", params = payload)
+		self.assertTrue(r.json()["result"])
+		self.assertEqual([], r.json()["content"]["files"])
+
+	def test_recover_file_to_root(self):
 		token = self._signup_and_login("email")
 		fileid = self._save_new_file(token, "file", "email", "root")
 		payload = {
@@ -96,7 +157,7 @@ class TestDeleteRecoverFile(unittest.TestCase):
 		r = requests.get("http://localhost:8000/userfiles", params = payload)
 		self.assertTrue(r.json()["result"])
 		self.assertEqual([fileid], r.json()["content"]["files"])
-		self.assertEqual(["file"], r.json()["content"]["filesNames"])
+		self.assertEqual(["file.txt"], r.json()["content"]["filesNames"])
 
 if __name__ == '__main__':
     unittest.main()

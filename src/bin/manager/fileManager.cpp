@@ -346,8 +346,6 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
         throw;
     }
 
-    // If we are in this point the logical remove (metadata) was correct
-    std::string result = "true";
     /* Physical remove or move isn't required because files are saved by id.
      * bool isOwner = (email.compare(file->getOwner()) == 0);
     if (isOwner) {
@@ -361,7 +359,7 @@ std::string FileManager::eraseFileFromUser(int id, std::string email, std::strin
 
     delete file;
     ////delete db;
-    return "{ \"result\" : " + result + " }";
+    return "{ \"result\" : true }";
 }
 
 std::string FileManager::getSearches(std::string email, std::string typeOfSearch, std::string element) {
@@ -409,7 +407,7 @@ std::string FileManager::recoverFile(std::string email, int id) {
      */
     delete file;
     ////delete db;
-    return "{ \"result\" : true , \"path\" : " + path + " }";
+    return "{ \"result\" : true , \"path\" : \"" + path + "\" }";
 }
 
 std::string FileManager::deleteFileSharedPermits(int id, std::vector<std::string> users) {

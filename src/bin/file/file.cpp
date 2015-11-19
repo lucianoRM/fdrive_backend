@@ -308,12 +308,12 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
     this->removeSearchInformation(db, user);
     // Si es owner, se le descomparte a todos y se agrega al trash del owner.
     if (user.compare(this->owner) == 0) {
-        for (std::string sharedUser : *this->users) {
+        std::vector<std::string> _users = std::vector<std::string>( std::make_move_iterator(std::begin(*this->users)),
+                                          std::make_move_iterator(std::end(*this->users)) );
+        for (std::string sharedUser : _users) {
             this->eraseFromUser(db, sharedUser, "shared");
-            this->users->remove(sharedUser);
         }
 
-        // If is the owner it moves the file from the path to trash
         try {
             folder = Folder::load(db, user, "trash");
             folder->addFile(this->id, metadata->name + metadata->extension);
@@ -324,8 +324,8 @@ void File::eraseFromUser(rocksdb::DB* db, std::string user, std::string path) {
             throw;
         }
         delete folder;
+        this->inTrash = true;
     }
-    this->inTrash = true;
 }
 
 void File::removeSearchInformation(rocksdb::DB* db, std::string user) {
