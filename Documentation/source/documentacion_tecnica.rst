@@ -9,8 +9,11 @@ REST API
 
 Ambiente de Desarrollo
 ------------------------
-(No sé bien qué es esto, capaz iría adentro de servidor y cliente)
+Para desarrollar el presente proyecto, se decidió utilizar C-Lion como IDE para desarrollar el código C++, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje C++.
 
+Se utilizó la herramienta CMake para la compilación del proyecto.
+
+Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás 
 
 Servidor
 ===========
