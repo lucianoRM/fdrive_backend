@@ -449,6 +449,155 @@ GET SEARCHES:
 </div>
 <div class="section" id="clases">
 <h3>Clases<a class="headerlink" href="#clases" title="Permalink to this headline">¶</a></h3>
+<p>Generamos la misma subdivisión que en la sección previa, y explicamos las clases más importantes de cada sección</p>
+<div class="section" id="id1">
+<h4>Manejo de Requests<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>Clase RequestHandler: clase que analiza las distintas requests recibidas por el server. Las decodifica y, de ser una request válida, envía los datos al manejador correspondiente.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h4>Managers<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>Clase FileManager: maneja todas las requests referentes a archivos, podemos citar algunas:</dt>
+<dd><ul class="first last simple">
+<li>Subir/Descargar archivos.</li>
+<li>Compartir/Descompartir archivos.</li>
+<li>Eliminar archivos.</li>
+<li>Cambiar la metadata referente a un archivo.</li>
+<li>Compartir una carpeta (equivale a compartir todos los archivos dentro de dicha carpeta).</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Clase FolderManager: maneja las requests referentes a carpetas:</dt>
+<dd><ul class="first last simple">
+<li>Agregar carpetas nuevas en un determinado path.</li>
+<li>Renombrar una carpeta.</li>
+<li>Obtener todos los archivos de una carpeta.</li>
+<li>Renombrar archivos dentro de una dada carpeta.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Clase UserManager: maneja las requests referents a usuarios:</dt>
+<dd><ul class="first last simple">
+<li>Agregar nuevos usuarios (Sign Up).</li>
+<li>Loguear usuarios existentes (Log In).</li>
+<li>Desloguear usuarios existentes (Log In).</li>
+<li>Cargar los archivos pertenecientes a un usuario.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id3">
+<h4>Modelo Base<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>Clase User: Representa a un usuario.</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>Atributos: contiene sus datos personales.</dt>
+<dd><ul class="first last simple">
+<li>Email</li>
+<li>Nombre</li>
+<li>Ubicación</li>
+<li>Foto</li>
+<li>Cuota para subir archivos.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Métodos</dt>
+<dd><ul class="first last simple">
+<li>Setters/Getters</li>
+<li>save/load</li>
+<li>signup</li>
+<li>login</li>
+<li>logout</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Clase File: Representa un archivo.</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>Atributos</dt>
+<dd><ul class="first last simple">
+<li>ID</li>
+<li>Última versión</li>
+<li>Owner</li>
+<li>Metadata</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Métodos</dt>
+<dd><ul class="first last simple">
+<li>Setters/Getters</li>
+<li>save/load</li>
+<li>saveSearches: para generar el índice de las búsquedas.</li>
+<li>addSharedUser: para compartir el archivo a un usuario.</li>
+<li>eraseFromUser: para borrar un archivo.</li>
+<li>recoverFromUser: para recuperar un archivo borrado.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Clase Folder: Representa una carpeta.</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>Atributos</dt>
+<dd><ul class="first last simple">
+<li>user: usuario de esa carpeta.</li>
+<li>fullName: nombre completo, incluido todo el path desde root.</li>
+<li>folders: carpetas dentro de esa carpeta.</li>
+<li>filesIds: IDs de los archivos dentro de esa carpeta.</li>
+<li>filesNames: nombres de los archivos dentro de esa carpeta (se usa para chequear de manera rápida que no se agreguen archivos con el mismo nombre en dicha carpeta).</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Métodos</dt>
+<dd><ul class="first last simple">
+<li>Setters/Getters</li>
+<li>addFolder</li>
+<li>addFile</li>
+<li>renameFolder</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
 </div>
 <div class="section" id="codigo">
 <h3>Código<a class="headerlink" href="#codigo" title="Permalink to this headline">¶</a></h3>
@@ -464,22 +613,33 @@ GET SEARCHES:
 <div class="section" id="bibliotecas-y-compilacion">
 <h3>Bibliotecas y compilación<a class="headerlink" href="#bibliotecas-y-compilacion" title="Permalink to this headline">¶</a></h3>
 <p>Para la implementación del cliente se hizo uso de las siguiente bibliotecas:</p>
-<ul class="simple">
-<li>Android SDK
-Provee todas las funcionalidades nativas de Android.</li>
-<li>Android Support Library
-Permite realizar aplicaciones con características de Android 5.0+ orientadas a versiones anteriores.</li>
-<li>Hdodenhof CircleImageView
-Biblioteca externa que adapta imagenes a imagenes circulares.</li>
-<li>Retrofit
-Provee un cliente http restful asi como tambien un json adapter para las consultas</li>
-<li>Getbase FloatingActionButton
-Biblioteca externa para incluir un &#8220;Floating action button&#8221;, boton característico de material design.(Se        permiten crear menus y agregar algunos parametros que no están disponibles en el botón nativo)</li>
+<ul>
+<li><p class="first">Android SDK
+Provee todas las funcionalidades nativas de Android.</p>
+</li>
+<li><p class="first">Android Support Library
+Permite realizar aplicaciones con características de Android 5.0+ orientadas a versiones anteriores.</p>
+</li>
+<li><p class="first">Hdodenhof CircleImageView
+Biblioteca externa que adapta imagenes a imagenes circulares.</p>
+</li>
+<li><p class="first">Retrofit
+Provee un cliente http restful asi como tambien un json adapter para las consultas</p>
+</li>
+<li><p class="first">Getbase FloatingActionButton
+Biblioteca externa para incluir un &#8220;Floating action button&#8221;, boton característico de material design.(Se        permiten crear menus y agregar algunos parametros que no están disponibles en el botón nativo)</p>
+</li>
+<li><dl class="first docutils">
+<dt>SLF4j</dt>
+<dd><p class="first last">Permite loggear a un archivo</p>
+</dd>
+</dl>
+</li>
 </ul>
 <p>La compilación está configurada por default gracias a Gradle desde Android Studio.</p>
 </div>
-<div class="section" id="id1">
-<h3>Arquitectura/Diseño<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Arquitectura/Diseño<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p>La aplicación se desarrolló en torno al patrón MVC aunque también se utilizaron otros patrones de diseño como Singleton y Proxy.</p>
 <p>Activities controlan la interacción con el usuario mientras que Retrofit se encarga de la interacción con el servidor. Además se cuenta con clases intermediarias que transforman y manipulan la información.</p>
 <p>La comunicación con el servidor se hace mediante request http restful y con bodies en formato json de ser necesarios.</p>
@@ -538,8 +698,8 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 <p>Está implementado con un patrón singleton y se accede desde varios puntos de la aplicación, abstrayendo y encapsulando todas las request que realiza el programa.</p>
 </div>
 </div>
-<div class="section" id="id2">
-<h3>Código<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Código<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>A continuación un ejemplo que muestra el flujo de información de la app.</p>
 <ul class="simple">
 <li>Acceso a una carpeta</li>
@@ -665,14 +825,19 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 <li><a class="reference internal" href="#base-de-datos">Base de datos</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#clases">Clases</a></li>
+<li><a class="reference internal" href="#clases">Clases</a><ul>
+<li><a class="reference internal" href="#id1">Manejo de Requests</a></li>
+<li><a class="reference internal" href="#id2">Managers</a></li>
+<li><a class="reference internal" href="#id3">Modelo Base</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#codigo">Código</a></li>
 <li><a class="reference internal" href="#pruebas">Pruebas</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#cliente">Cliente</a><ul>
 <li><a class="reference internal" href="#bibliotecas-y-compilacion">Bibliotecas y compilación</a></li>
-<li><a class="reference internal" href="#id1">Arquitectura/Diseño</a></li>
+<li><a class="reference internal" href="#id4">Arquitectura/Diseño</a></li>
 <li><a class="reference internal" href="#clases-principales">Clases Principales</a><ul>
 <li><a class="reference internal" href="#activities">Activities</a></li>
 <li><a class="reference internal" href="#cards">Cards</a></li>
@@ -682,7 +847,7 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 <li><a class="reference internal" href="#requestmaker">RequestMaker</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id2">Código</a></li>
+<li><a class="reference internal" href="#id5">Código</a></li>
 </ul>
 </li>
 </ul>

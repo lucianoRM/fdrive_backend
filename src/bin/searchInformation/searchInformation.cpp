@@ -21,14 +21,13 @@ SearchInformation* SearchInformation::load(rocksdb::DB* db, std::string typeOfSe
     rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "search" + typeOfSearch + "." + user + "." + element, &value);
     if (!status.IsNotFound()) {
         Json::Reader reader;
-        Json::Value jsonFiles;
-        if (!reader.parse(value, jsonFiles, false)) {
-            std::cout << "JsonCPP no pudo parsear en SearchInformation::load. Value: " << value << ". root: " << jsonFiles << std::endl;
+        Json::Value _jsonFiles;
+        if (!reader.parse(value, _jsonFiles, false)) {
+            std::cout << "JsonCPP no pudo parsear en SearchInformation::load. Value: " << value << ". root: " << _jsonFiles << std::endl;
             delete info;
             throw std::exception();
         } else {
-            info->jsonFiles = jsonFiles;
-            for (Json::Value::iterator it = jsonFiles["files"].begin(); it != jsonFiles["files"].end(); it++) {
+            for (Json::Value::iterator it = _jsonFiles["files"].begin(); it != _jsonFiles["files"].end(); it++) {
                 struct searchFile* file = new searchFile;
                 file->id = (*it)["id"].asInt();
                 file->path = (*it)["path"].asString();
@@ -41,16 +40,16 @@ SearchInformation* SearchInformation::load(rocksdb::DB* db, std::string typeOfSe
 
 /* TODO Debería fijarse que si no tiene nada, no se guarde; y si existía, se borre.*/
 void SearchInformation::save(rocksdb::DB* db) {
-    Json::Value json;
-    for (struct searchFile* file : *files) {
-        Json::Value newFile;
-        newFile["id"] = file->id;
-        newFile["path"] = file->path;
-        json.append(newFile);
+    if (!this->files->empty()) {
+        Json::StyledWriter writer;
+        rocksdb::Status status = db->Put(rocksdb::WriteOptions(),
+                                         "search" + this->typeOfSearch + "." + this->user + "." + this->element,
+                                         "{ \"files\" : " + writer.write(this->getJson()) + " }");
+        if (!status.ok()) throw DBException();
+    } else {
+        rocksdb::Status status = db->Delete(rocksdb::WriteOptions(),
+                                         "search" + this->typeOfSearch + "." + this->user + "." + this->element);
     }
-    Json::StyledWriter writer;
-    rocksdb::Status status = db->Put(rocksdb::WriteOptions(), "search" + this->typeOfSearch + "." + this->user + "." + this->element, "{ \"files\" : " + writer.write(json) + " }" );
-    if (!status.ok()) throw DBException();
 }
 
 void SearchInformation::addFile(int id, std::string path) {
@@ -63,29 +62,40 @@ void SearchInformation::addFile(int id, std::string path) {
 /* Supone que no hay copias de un mismo archivo en distintos paths.*/
 void SearchInformation::eraseFile(int id) {
     struct searchFile* foundFile = NULL;
-    for (struct searchFile* file : *files) {
+    for (struct searchFile* file : *(this->files)) {
         if (file->id == id) {
             foundFile = file;
             break;
         }
     }
-    if (foundFile == NULL) throw FileToEraseNotInSearch();
+    if (foundFile == NULL) throw FileNotInSearch();
     this->files->remove(foundFile);
+}
+
+Json::Value SearchInformation::getJson() {
+    Json::Value json(Json::arrayValue);
+    for (struct searchFile* file : *(this->files)) {
+        Json::Value newFile;
+        newFile["id"] = file->id;
+        newFile["path"] = file->path;
+        json.append(newFile);
+    }
+    return json;
 }
 
 std::string SearchInformation::getContent() {
     Json::StyledWriter writer;
-    return writer.write(this->jsonFiles["files"]);
+    return writer.write(this->getJson());
 }
 
 std::string SearchInformation::getUserPath(int id) {
     struct searchFile* foundFile = NULL;
-    for (struct searchFile* file : *files) {
+    for (struct searchFile* file : *(this->files)) {
         if (file->id == id) {
             foundFile = file;
             break;
         }
     }
-    if (foundFile == NULL) throw FileToEraseNotInSearch();
+    if (foundFile == NULL) throw FileNotInSearch();
     return foundFile->path;
 }

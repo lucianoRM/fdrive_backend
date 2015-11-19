@@ -28,7 +28,6 @@ class SearchInformation {
         std::string typeOfSearch;
         std::string user;
         std::string element;
-        Json::Value jsonFiles;
         Json::Value getJson();
 
     public:

@@ -104,7 +104,6 @@ SAVE NEW VERSION OF FILE METADATA: (the user sending it will be creating a new v
 
 CHANGE FILE METADATA: (always changes last version of it)
 	url: <dirección server>/files/<id>/metadata 
-		(<oldversion> es la última versión que el usuario que sube esta vio)
 	Método: PUT
 	Body: {
 		“email”:”<email>”,
