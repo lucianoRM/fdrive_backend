@@ -39,7 +39,7 @@ class Folder {
         void addFolder(std::string folder, rocksdb::DB* db);
         void addFile(int fileId, std::string fileName);
         void renameFile(std::string oldName, std::string newName);
-        void removeFile(int fileId);    
+        void removeFile(int fileId);
 
         static Folder* load(rocksdb::DB* db, std::string email, std::string path);
         void save(rocksdb::DB* db);
