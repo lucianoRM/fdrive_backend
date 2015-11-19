@@ -62,7 +62,33 @@ Cabe destacar la estructura generada para las búsquedas dentro de la base de da
 
 Clases
 ------------------------
+Generamos la misma subdivisión que en la sección previa, y explicamos las clases más importantes de cada sección
 
+Manejo de Requests
++++++++++++++++++++
+	* Clase RequestHandler: clase que analiza las distintas requests recibidas por el server. Las decodifica y, de ser una request válida, envía los datos al manejador correspondiente.
+
+Managers
++++++++++
+	* Clase FileManager: maneja todas las requests referentes a archivos, podemos citar algunas:
+		* Subir/Descargar archivos.
+		* Compartir/Descompartir archivos.
+		* Eliminar archivos.
+		* Cambiar la metadata referente a un archivo.
+		* Compartir una carpeta (equivale a compartir todos los archivos dentro de dicha carpeta).
+		
+	* Clase FolderManager: maneja las requests referentes a carpetas:
+		* Agregar carpetas nuevas en un determinado path.
+		* Renombrar una carpeta.
+		* Obtener todos los archivos de una carpeta.
+		* Renombrar archivos dentro de una dada carpeta.		
+
+	* Clase UserManager
+		* Agregar nuevos usuarios (Sign Up).
+		* Loguear usuarios existentes (Log In).
+		* Desloguear usuarios existentes (Log In).
+		* Cargar los archivos pertenecientes a un usuario.
+	
 Código
 ------------------------
 
