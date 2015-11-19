@@ -51,10 +51,362 @@
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="rest-api">
 <h3>REST API<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>Corriendo localmente al host, la dirección del server es: localhost:8000.
+
+En caso de error, la respuesta siempre es { &quot;result&quot; : false , &quot;errors&quot; : [&quot;&lt;Error Message&gt;&quot;] }
+
+ADD USER:
+	url: &lt;dirección server&gt;/users?email=&lt;email&gt;&amp;password=&lt;password&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de no existir ya un usuario con ese mail se recibe { &quot;result&quot; : true } .
+
+GET USERS:
+	url: &lt;dirección server&gt;/users?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: GET
+	Body:
+	Respuesta: Si no hay problemas con la base de datos, siempre se supone exitoso.
+			   Devuelve todos los users que hay sin contar a quien hizo la request:
+			     { &quot;result&quot; : true , &quot;users&quot; : [
+													{ &quot;email&quot; : &lt;email&gt;,
+													  &quot;password&quot; : &lt;password&gt;,
+													  &quot;totalQuota&quot; : &lt;totalQuota&gt;,
+													  &quot;freeQuota&quot; : &lt;freeQuota&gt;,
+													  &quot;tokens&quot; : [ {&quot;token&quot; : &lt;token&gt;, &quot;expiration&quot; : &lt;expiration&gt;} , ... ],
+				(opcional - sólo si lo tiene)		  &quot;name&quot; : &lt;name&gt;,
+				(opcional - sólo si lo tiene)		  &quot;lastLocation&quot; : &lt;location&gt;,
+				(opcional - sólo si lo tiene)		  &quot;pathToProfilePicture&quot; : &lt;path&gt;
+													} ,
+													...
+											   ]
+			     }
+
+CHANGE USER DATA:
+	url: &lt;dirección server&gt;/users
+	Método: PUT
+	Body: {
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“name”:”&lt;name&gt;”,					(opcional) | Pero uno de ellos
+		“lastLocation:&quot;&lt;lastLocation&gt;&quot;		(opcional) | debe de estar.
+	}
+	Respuesta: Si el usuario existe y está logueado con ese token,
+				{ &quot;result&quot; : true } .
+
+
+
+
+
+
+LOGIN:
+	url: &lt;dirección server&gt;/login?email=&lt;email&gt;&amp;password=&lt;password&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de no existir el email, se recibe un mensaje de error.
+			En caso satisfactorio se recibe un token para que el usuario pueda operar:
+				{ &quot;result&quot; : true , &quot;token&quot; : &quot;&lt;token&gt;&quot; }
+
+LOGOUT:
+	url: &lt;dirección server&gt;/logout?email=&lt;email&gt;&amp;password=&lt;password&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de no existir el usuario o no estar logueado con ese token, devuelve error.
+			En caso satisfactorio se recibe un token para que el usuario pueda operar:
+				{ &quot;result&quot; : true }
+
+
+
+
+
+
+SAVE NEW FILE METADATA: (the user sending it will be the owner)
+	url: &lt;dirección server&gt;/files/metadata 
+	Método: POST
+	Body: {
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“name”:”&lt;name&gt;”,
+		“extension”:”&lt;extension&gt;”,
+		&quot;path&quot;:&quot;&lt;path&gt;&quot;,
+		“tags”:[&quot;&lt;tag1&gt;&quot;, &quot;&lt;tag2&gt;&quot;, ...]
+	}
+	Respuesta: En caso de que todos los campos sean correctos
+				y path no es ni &quot;trash&quot; ni &quot;shared&quot; devuelve,
+			  { &quot;result&quot; : true , &quot;fileID&quot; : &lt;id&gt; , &quot;version&quot; : 0 } .
+
+SAVE NEW VERSION OF FILE METADATA: (the user sending it will be creating a new version)
+	url: &lt;dirección server&gt;/files/&lt;oldversion&gt;/metadata 
+		(&lt;oldversion&gt; es la última versión que el usuario que sube esta vio)
+	Método: POST
+	Body: {
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“name”:”&lt;name&gt;”,
+		“extension”:”&lt;extension&gt;”,
+		&quot;id&quot;:&lt;id&gt;,
+		“tags”:[&lt;tag1&gt;, &lt;tag2&gt;, ...],
+		&quot;version&quot;:&lt;oldversion&gt;,
+		&quot;overwrite&quot;:&lt;boolean - true to avoid warning&gt;
+	}
+	Respuesta: Si el usuario existe, está logueado y tiene permisos para modificar el archivo,
+			   si overwrite es false, entonces chequea que &lt;oldversion&gt; sea la última
+				versión existente de ese archivo, sino devuelve un error avisando que no
+				ha revisado la última versión;
+			   sino (overwrite true o &lt;oldversion&gt; es la última),
+					{ &quot;result&quot; : true , &quot;version&quot; : &lt;version&gt; } .
+
+CHANGE FILE METADATA: (always changes last version of it)
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/metadata 
+		(&lt;oldversion&gt; es la última versión que el usuario que sube esta vio)
+	Método: PUT
+	Body: {
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“name”:”&lt;name&gt;”,		(opcional) | Pero uno debe estar
+		“tag”:&quot;&lt;tag1&gt;&quot;			(opcional) | presente.
+	}
+	Respuesta: Si todo es correcto, { &quot;result&quot; : true }.
+			   Si ya hay un archivo con ese nombre en el path en
+			   el que está en la cuenta del owner, devuelve error.
+
+ERASE FILE:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;path=&lt;path&gt;
+	Método: DELETE
+	Body:
+	Respuesta: Si el usuario existe, está logueado y tiene permisos,
+				devuelve { &quot;result&quot; : true } .
+			   Si el usuario era el dueño, se mueve a la carpeta trash 
+			   y se le descomparte a todos aquellos que lo tenían compartido.
+			   Si el usuario tenía el archivo compartido, se le
+			   descomparte y no le aparece ni en el trash.
+
+RECOVER FILE:
+	url: &lt;dirección server&gt;/recoverfile?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;id=&lt;id&gt;
+	Método: GET
+	Body:
+	Respuesta: Si el usuario existe, está logueado y el archivo existía,
+				se mueve de nuevo al último lugar en el que estuvo
+				(este lugar debe existir) y devuelve
+				{ &quot;result&quot; : true , &quot;path&quot; : path } .
+
+
+GET FILE METADATA:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/metadata?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto,
+	    { &quot;result&quot; : true ,
+	      &quot;file&quot; : 
+			{
+				&quot;id&quot; : &lt;id&gt;,
+				&quot;owner&quot; : &quot;&lt;owner&gt;&quot;,
+				&quot;lastVersion&quot; : &lt;lastVersion&gt;,
+				&quot;users&quot; : [ &quot;&lt;user1&gt;&quot;, ... ], 		// Users to whom it was shared.
+				&quot;name&quot; : &quot;&lt;file1&gt;&quot;,
+				&quot;extension&quot; : &quot;&lt;extension&gt;&quot;,
+				&quot;pathInOwner&quot; : &quot;&lt;path&gt;&quot;,
+				&quot;lastModified&quot; : &quot;&lt;timestamp&gt;&quot;,    // Format: Thu Oct 22 03:24:19 2015
+				&quot;lastUser&quot; : &quot;&lt;user&gt;&quot;,
+				&quot;size&quot; : &lt;size&gt;,				
+				&quot;tags&quot; : [ &quot;&lt;tag1&gt;&quot;, &quot;&lt;tag2&gt;&quot;, ... ]
+			}
+    	}
+
+GET VERSION OF FILE METADATA:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/&lt;version&gt;/metadata?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto,
+	    { &quot;result&quot; : true ,
+	      &quot;file&quot; : 
+			{
+				&quot;name&quot; : &quot;&lt;file1&gt;&quot;,
+				&quot;extension&quot; : &quot;&lt;extension&gt;&quot;,
+				&quot;pathInOwner&quot; : &quot;&lt;path&gt;&quot;,
+				&quot;lastModified&quot; : &quot;&lt;timestamp&gt;&quot;,    // Format: Thu Oct 22 03:24:19 2015
+				&quot;lastUser&quot; : &quot;&lt;user&gt;&quot;,
+				&quot;size&quot; : &lt;size&gt;,				
+				&quot;tags&quot; : [ &quot;&lt;tag1&gt;&quot;, &quot;&lt;tag2&gt;&quot;, ... ]
+			}
+    	}
+
+UPLOAD VERSION OF FILE:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/&lt;version&gt;/data?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: POST
+	Multipart
+	Body: {
+			&quot;upload&quot;:&lt;data&gt;
+		  }
+	Respuesta: En caso de que todo sea correcto, guarda el archivo y 
+				devuelve { &quot;result&quot; : true } .
+
+DOWNLOAD FILE DATA:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/data?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto, envía el archivo.
+
+DOWNLOAD VERSION OF FILE DATA:
+	url: &lt;dirección server&gt;/files/&lt;id&gt;/&lt;version&gt;/data?email=&lt;email&gt;&amp;token=&lt;token&gt;
+	Método: GET
+	Body:
+	Respuesta: En caso de que todo sea correcto, envía el archivo.
+
+
+
+
+
+GET USER&#39;S FILES:
+    url: &lt;dirección server&gt;/userfiles?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;path=&lt;path&gt;
+    Método: GET
+    Body:
+	Respuesta:
+		{ &quot;result&quot; : true ,
+		  &quot;content&quot; : 
+				{
+				  &quot;folders&quot; : [ &quot;&lt;folder1&gt;&quot; , ... ],
+				  &quot;files&quot; : [ &lt;id1&gt; , ... ],
+				  &quot;filesNames : [ &quot;&lt;name+extensionFromId1&gt;&quot; , ... ]
+				}
+        }
+
+
+SHARE FILE:
+	url: &lt;dirección server&gt;/share
+	Método: POST
+	Body:{
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“id”:&lt;id&gt;,
+		&quot;users&quot; : [ &lt;email1&gt;, &lt;email2&gt;, ...]
+		}
+	Respuesta: Si el que lo pide es el dueño y todos los usuarios a los que se les quiere compartir existen 
+					y no tiene ya compartido el archivo, hay éxito y se devuelve:
+				{ &quot;result&quot; : true }
+
+SHARE FOLDER:
+	url: &lt;dirección server&gt;/share/folder
+	Método: POST
+	Body:{
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“path”:”&lt;path&gt;”,
+		&quot;users&quot; : [ &lt;email1&gt;, &lt;email2&gt;, ...]
+	}
+	Respuesta: Si existe la carpeta (o path) se les comparten todos los archivos que tiene adentro
+				a todos aquellos que no lo tengan ya compartido (si es así, 
+				los ignora, no devuelve error), y devuelve:
+					{ &quot;result&quot; : true } .
+					
+UNSHARE FILE:
+	url: &lt;dirección server&gt;/unshare
+	Método: PUT
+	Body:{
+		“email”:”&lt;email&gt;”,
+		“token”:”&lt;token&gt;”,
+		“id”:”&lt;id&gt;”,
+		&quot;users&quot; : [ &lt;email1&gt;, &lt;email2&gt;, ...]	(opcional - si no está se le descomparte a todos)
+	}
+	Respuesta: Si el usuario existe, está logueado y es el dueño del
+				archivo (que también debe existir), devuelve 
+				{ &quot;result&quot; : true } . Si alguno de los usuarios especificados
+				no tenía el archivo compartido, lo ignoró.
+
+
+
+
+
+ADD FOLDER:
+	url: &lt;dirección server&gt;/folders?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;path=&lt;path&gt;&amp;name=&lt;name&gt;
+	Método: POST
+	Respuesta: Si no existía ya una carpeta con ese nombre en ese path,
+			{ &quot;result&quot; : true } .
+
+RENAME FOLDER:
+	url: &lt;dirección server&gt;/folders?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;path=&lt;path&gt;&amp;oldname=&lt;oldname&gt;&amp;newname=&lt;newname&gt;
+	Método: PUT
+	Respuesta: Si la carpeta existía yel nuevo nombre está disponible 
+				porque no hay otra carpeta en ese path con ese nombre, 
+				{ &quot;result&quot; : true } .
+
+
+
+
+
+GET SEARCHES:
+    url: &lt;dirección server&gt;/searches?email=&lt;email&gt;&amp;token=&lt;token&gt;&amp;typeofsearch=&lt;typeofsearch&gt;&amp;element=&lt;element&gt;
+    Método: GET
+    Body:
+	Respuesta:	Si el usuario existe y está logueado, devuelve
+		{ &quot;result&quot; : true ,
+		  { &quot;files&quot; : [ {&quot;id&quot;: &lt;id&gt;, &quot;path&quot;: &quot;&lt;path&gt;&quot;} , ... ] }
+		}
+</pre></div>
+</div>
+</div>
+<div class="section" id="estructura-base-de-datos">
+<h3>Estructura Base de Datos<a class="headerlink" href="#estructura-base-de-datos" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>Here we specify the structure of the DB. How are things stored and why.
+
+@files
+    files.maxID -&gt; id (int) //Stores maxid taken by a file in the db. Whenever a new file is added, this values should be incremented by one and give the new id to the new file.
+
+    files.&lt;id&gt; -&gt; Json with metadata: //Stores the metadata that belongs to the file with that id
+				lastVersion (int)
+				owner
+				versions : { &quot;0&quot; : {	name,
+										extension,
+										pathInOwnersAccount,
+										size,
+										tags : [&quot;tag1&quot;, &quot;tag2&quot;, ...],
+										lastModified (last modification time),
+										lastUser (last modifying user)	},
+							 &quot;1&quot; : ... 
+							}
+				usersSharedTo : [ &quot;emailUser1&quot;, ... ]
+
+@users
+
+	users -&gt; Json with and array of users (emails).
+
+    users.&lt;email&gt; -&gt; Json with:
+				email
+				hashed password
+				name 					(optional)
+				pathToProfilePicture	(optional)
+				lastLocation			(optional - as it won&#39;t have any until it doesn&#39;t specify one - this updates anytime the user operates with files)
+				totalQuota (int that represent the number MB)
+				freeQuota (idem)
+				tokens (an array of: {&quot;token&quot;: &lt;token&gt;, &quot;expirationTime&quot; : &lt;expTime&gt;} )
+
+@fileStructure
+	&lt;email&gt;.&lt;pathOfFolder&gt; - &gt; Json with internal folders (depth = 1) and files:
+								folders : [&quot;folder1&quot;, ...]
+								files : [id1, ...]
+								filesNames : [&quot;name.txt&quot;, ...]  // For checking repetition of complete name: name + extension.
+								//Not lastModified and lastUser because of complexity moving up between folders.
+	(For any user there will always be &quot;&lt;email&gt;.root&quot;, &quot;&lt;email&gt;.shared&quot; and &quot;&lt;email&gt;.trash&quot;.)
+		Example:
+			&lt;email&gt;.root -&gt; { &quot;folders&quot; : [&quot;folder1&quot;] , &quot;files&quot; : [id7, id2], &quot;filesNames&quot; : [&quot;fileName7&quot;, &quot;fileName2&quot;]}
+			&lt;email&gt;.root/folder1 -&gt; { &quot;folders&quot; : [&quot;folder2&quot;] , &quot;files&quot; : [id1], &quot;filesNames&quot; : [&quot;fileName1&quot;] }
+			&lt;email&gt;.root/folder1/folder2 -&gt; { &quot;folders&quot; : [] , &quot;files&quot; : [id10, id3, id67] &quot;filesNames&quot; : [&quot;fileName10&quot;, &quot;fileName3&quot;, &quot;fileName67&quot;]}
+			&lt;email&gt;.shared -&gt; {&quot;folders&quot; : [] , &quot;files&quot;: [] }
+			&lt;email&gt;.trash -&gt; {&quot;folders&quot; : [] , &quot;files&quot;: [] }
+		
+
+@searches
+	searchtag.&lt;email&gt;.&lt;tag&gt; 			-&gt; 
+	searchowner.&lt;email&gt;.&lt;owner&gt; 		-&gt; 		Json with:
+	searchname.&lt;email&gt;.&lt;name&gt; 			-&gt; 			{ &quot;files&quot; : [ {&quot;id&quot;: &lt;id&gt;, &quot;path&quot;: &quot;&lt;path&gt;&quot;} , ... ] }
+	searchextension.&lt;email&gt;.&lt;extension&gt; -&gt; 
+</pre></div>
+</div>
 </div>
 <div class="section" id="ambiente-de-desarrollo">
 <h3>Ambiente de Desarrollo<a class="headerlink" href="#ambiente-de-desarrollo" title="Permalink to this headline">¶</a></h3>
-<p>(No sé bien qué es esto, capaz iría adentro de servidor y cliente)</p>
+<p>Para desarrollar el presente proyecto, se decidió utilizar <em>C-Lion</em> como IDE para desarrollar el código <em>C++</em>, ya que aparte de los beneficios generales de usar un IDE, este permite integrar el repositorio y es, a nuestro entender, de los mejores para escribir en lenguaje <em>C++</em>.</p>
+<p>Se utilizó la herramienta <em>CMake</em> para la compilación del proyecto.</p>
+<p>Todas las pruebas y la compilación/ejecución del servidor fueron ejecutadas en Docker, de manera que todos los integrantes del equipo estuvieran trabajando sobre un ambiente con las mismas características. Ya que el uso de Docker nos permitió poseer a todos una máquina virtual de las mismas características, de modo que si la funcionalidad era exitosa para uno de los miembros, también lo debía ser para los demás</p>
 </div>
 </div>
 <div class="section" id="servidor">
@@ -64,6 +416,36 @@
 </div>
 <div class="section" id="arquitectura-diseno">
 <h3>Arquitectura/Diseño<a class="headerlink" href="#arquitectura-diseno" title="Permalink to this headline">¶</a></h3>
+<p>Podemos dividir el diseño del proyecto en varias partes</p>
+<div class="section" id="manejo-de-requests">
+<h4>Manejo de Requests<a class="headerlink" href="#manejo-de-requests" title="Permalink to this headline">¶</a></h4>
+<p>Se posee un requestHandler que analiza la request recibida por el server, una vez recibida y analizado su contenido envía los datos pertinentes de la request al manejador correspondiente.</p>
+<p>Para más datos sobre los distintos tipos de requests permitidas, y la estructura de las mismas vea la sección <a class="reference internal" href="#rest-api">REST API</a></p>
+</div>
+<div class="section" id="managers">
+<h4>Managers<a class="headerlink" href="#managers" title="Permalink to this headline">¶</a></h4>
+<p>Para los distintos tipos de request se poseen manejadores que, utilizando los datos recibidos realizan la operación que se deba realizar.</p>
+<p>Decidimos dividir los manejadores según los distintos tipos de requests que teníamos: usuarios, archivos, carpetas.</p>
+</div>
+<div class="section" id="modelo-base">
+<h4>Modelo Base<a class="headerlink" href="#modelo-base" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt>Esta es la parte más baja del diseño, se representaron los modelos de las distintas estructuras necesarias:</dt>
+<dd><ul class="first last simple">
+<li>Usuario</li>
+<li>Archivo</li>
+<li>Carpeta</li>
+<li>Búsqueda</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="base-de-datos">
+<h4>Base de datos<a class="headerlink" href="#base-de-datos" title="Permalink to this headline">¶</a></h4>
+<p>Por otro lado tenemos que destacar la utilización de la base de datos.</p>
+<p>Todos los datos se mantiene en una base de datos de tipo clave-valor. Se puede observar la estructura de la misma en el tópico <a class="reference internal" href="#estructura-base-de-datos">Estructura Base de Datos</a>.</p>
+<p>Cabe destacar la estructura generada para las búsquedas dentro de la base de datos, la misma la hicimos mediante un índice invertido, el cual se va generando ante agregado de nuevos archivos, o ante operaciones realizadas sobre los mismos (cambio de metadatos, compartida, eliminación, etc.). De este modo, si bien ante cada cambio hay que hacer modificaciones en los índices, las búsquedas se realizan de manera muy rápida.</p>
+</div>
 </div>
 <div class="section" id="clases">
 <h3>Clases<a class="headerlink" href="#clases" title="Permalink to this headline">¶</a></h3>
@@ -75,23 +457,186 @@
 <h3>Pruebas<a class="headerlink" href="#pruebas" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
-<div class="section" id="clente">
-<h2>Clente<a class="headerlink" href="#clente" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="cliente">
+<h2>Cliente<a class="headerlink" href="#cliente" title="Permalink to this headline">¶</a></h2>
+<p>El cliente consta de una aplicación para Android(4.3+).</p>
+<p>Como ambiente de desarrollo se utilizó Android Studio</p>
+<div class="section" id="bibliotecas-y-compilacion">
+<h3>Bibliotecas y compilación<a class="headerlink" href="#bibliotecas-y-compilacion" title="Permalink to this headline">¶</a></h3>
+<p>Para la implementación del cliente se hizo uso de las siguiente bibliotecas:</p>
+<ul class="simple">
+<li>Android SDK
+Provee todas las funcionalidades nativas de Android.</li>
+<li>Android Support Library
+Permite realizar aplicaciones con características de Android 5.0+ orientadas a versiones anteriores.</li>
+<li>Hdodenhof CircleImageView
+Biblioteca externa que adapta imagenes a imagenes circulares.</li>
+<li>Retrofit
+Provee un cliente http restful asi como tambien un json adapter para las consultas</li>
+<li>Getbase FloatingActionButton
+Biblioteca externa para incluir un &#8220;Floating action button&#8221;, boton característico de material design.(Se        permiten crear menus y agregar algunos parametros que no están disponibles en el botón nativo)</li>
+</ul>
+<p>La compilación está configurada por default gracias a Gradle desde Android Studio.</p>
+</div>
 <div class="section" id="id1">
-<h3>Librerías y compilación<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>Arquitectura/Diseño<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>La aplicación se desarrolló en torno al patrón MVC aunque también se utilizaron otros patrones de diseño como Singleton y Proxy.</p>
+<p>Activities controlan la interacción con el usuario mientras que Retrofit se encarga de la interacción con el servidor. Además se cuenta con clases intermediarias que transforman y manipulan la información.</p>
+<p>La comunicación con el servidor se hace mediante request http restful y con bodies en formato json de ser necesarios.</p>
+<p>Si bien existen activities de tanto de registro, como de logeo y configuración, la mayor parte de la interacción ocurre en la activity principal, la que representa el almacenamiento de los archivos de usuario.</p>
+<p>El flujo de la aplicación es el siguiente:</p>
+<p><img alt="interaction" src="_images/interaction.png" /></p>
+<p>Para cada interacción del usuario con la UI que genere una request, hay una llamada a una RequestMaker que se encarga de crear un nuevo thread con la request a realizar el server.
+Mientras que en background Retrofit se encarga de adaptar la request, según su tipo, al retornar de la llamada a RequestMaker puede que el cliente se bloquee esperando la respuesta del servidor(ej: Esperando a recibir los archivos de la carpeta seleccionada) o que habilite la interacción con el usuario(Ej: Descargando un archivo).</p>
+<p>Retrofit permite adaptar clases internas a requests http restful y json, por lo que hay una capa de abstracción para el intercambio de la información. Todas las request se pueden modelar con clases privadas. El mismo caso se da para las respuestas del servidor, donde un Adapter transforma las Server responses a clases propias para tener un fácil acceso a la información recibida.</p>
+<p>Cuando el thread de connexion recibe la server response, se ejecutan sus callbacks. success() o failure() si la connexion fue exitosa o fallida.
+En este paso entra en juego NetworkCallbackClass. Dado que las cada respuesta del server significa una actualizacion de la iterfaz de usuario, NetworkCallbackClass permite realizar esa conexion de callback-GUI. Es una interfaz con sus métodos implementados por la Vista, pero llamados por los callbacks de conexión. Por este medio se intercambia la información para adaptar la interfaz gráfica.</p>
+</div>
+<div class="section" id="clases-principales">
+<h3>Clases Principales<a class="headerlink" href="#clases-principales" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="activities">
+<h4>Activities<a class="headerlink" href="#activities" title="Permalink to this headline">¶</a></h4>
+<p>La aplicación cuenta de 5 activities:
+* MainActivity para la pantalla principal.
+* LoginActivity para la pantalla de logueo.
+* RegisterActivity para la pantalla de registro.
+* DriveActivity para la pantalla de drive(visualización de archivos y carpetas, administración de los mismos, etc).
+* ConfigurationActivity para la pantalla de configuración.</p>
+<p><strong>DriveActivity</strong>
+Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus archivos <strong>FileCard</strong>. La información de los archivos se almacenan en <strong>FileMetadata</strong> mientras que la ruta de las carpetas se mantiene por <strong>Path</strong>.</p>
+</div>
+<div class="section" id="cards">
+<h4>Cards<a class="headerlink" href="#cards" title="Permalink to this headline">¶</a></h4>
+<p>Tanto <strong>FileCard</strong> como los <strong>FolderCard</strong> cuentan con clases &#8220;Adapters&#8221; que se encargan de transformar información en forma de <em>List</em> a las cards que se muestran en la pantalla.</p>
+<p><strong>FileCard</strong> tiene como atributo <strong>FileMetadata</strong> donde se alamacena la informacion del archivo:</p>
+<div class="highlight-python"><div class="highlight"><pre>public class FileMetadata {
+
+    public String name,extension,owner,lastUser,lastModified,pathInOwner;
+    public int id,size,lastVersion;
+    public List&lt;String&gt; tags,users;
+
+
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="database">
+<h4>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h4>
+<p>Para la persistencia de información (ej: no tener que registrarse cada vez que se abre la aplicación) se usa <strong>Database</strong> , un singleton que guarda y recupera datos básicos del usuario en forma de clave-valor.</p>
+</div>
+<div class="section" id="typedinputstream">
+<h4>TypedInputStream<a class="headerlink" href="#typedinputstream" title="Permalink to this headline">¶</a></h4>
+<p>Se encarga de transformar un archivo de la memoria interna a un tipo de datos compatible con retrofit para poder enviar al servidor. Además provee feedback de la cantidad de datos que fueron enviados para poder actualizar una barra de progreso a medida se suban los archivos.</p>
+</div>
+<div class="section" id="errordisplay">
+<h4>ErrorDisplay<a class="headerlink" href="#errordisplay" title="Permalink to this headline">¶</a></h4>
+<p>Singleton que muestra en pantalla mensajes de error o warnings.</p>
+</div>
+<div class="section" id="requestmaker">
+<h4>RequestMaker<a class="headerlink" href="#requestmaker" title="Permalink to this headline">¶</a></h4>
+<p>RequestMaker se encarga de transfromar la informacion capturada de la GUI a request http gracias a <strong>ServiceGenerator</strong> y a definir los callbacks que se ejecutan cuando se recibe la respuesta del servidor.</p>
+<p>Está implementado con un patrón singleton y se accede desde varios puntos de la aplicación, abstrayendo y encapsulando todas las request que realiza el programa.</p>
+</div>
 </div>
 <div class="section" id="id2">
-<h3>Arquitectura/Diseño<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>Código<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>A continuación un ejemplo que muestra el flujo de información de la app.</p>
+<ul class="simple">
+<li>Acceso a una carpeta</li>
+</ul>
+<p>Desde la ventana del drive se presiona una <strong>FolderCard</strong>. El evento es capturado por el listener:</p>
+<div class="highlight-python"><div class="highlight"><pre>private void setCardsListeners(){
+        .
+        .
+        .
+        .
+        this.recyclerFoldersView.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), new RecyclerItemClickListener.OnItemClickListener() {
+
+
+            @Override
+            public void onItemClick(View view, int position) {
+                TextView clickedFolder = (TextView) view.findViewById(R.id.folder_name);
+                RequestMaker.getInstance().getUserFiles(activityCallback, email, token, path.goTo(clickedFolder.getText().toString()));
+                toggleUi(false);
+
+            }
+
+
+        }));
+
+
+    }
+</pre></div>
 </div>
-<div class="section" id="id3">
-<h3>Clases<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Se realiza una llamada a <strong>RequestMaker</strong> para que realice la request al servidor</p>
+<p>RequestMaker:</p>
+<div class="highlight-python"><div class="highlight"><pre>public void getUserFiles(final NetworkCallbackClass activityCallback,String email,String token,String path){
+
+        GetUserFilesService client = ServiceGenerator.createService(GetUserFilesService.class,baseUrl);
+
+        client.getUserFiles(email, token, path, new Callback&lt;GetUserFilesAnswer&gt;() {
+            @Override
+            public void success(GetUserFilesAnswer getUserFilesAnswer, Response response) {
+                if (getUserFilesAnswer.result)
+                    activityCallback.onGetUserFilesSuccess(getUserFilesAnswer);
+                else {
+                    activityCallback.onRequestFailure(getUserFilesAnswer.errors);
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                activityCallback.onConnectionError();
+            }
+        });
+
+    }
+</pre></div>
 </div>
-<div class="section" id="id4">
-<h3>Código<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Una vez que se llama a client.getUserFiles(... ya se creara un nuevo thread. El que le sigue define los callbacks que se ejecutarán una vez que el server responda.</p>
+<p>En este caso, la adaptación de la request la hace <strong>GetUserFilesService</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>public interface GetUserFilesService {
+    @GET(&quot;/userfiles&quot;)
+    void getUserFiles(@Query(&quot;email&quot;) String email,@Query(&quot;token&quot;) String token,@Query(&quot;path&quot;) String path,Callback&lt;GetUserFilesAnswer&gt; callback);
+}
+</pre></div>
 </div>
-<div class="section" id="id5">
-<h3>Pruebas<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<p>(si las hay)</p>
+<p>Dentro del los callbacks de la request se llama a activityCallback, una instancia de <strong>NetworkCallbackClass</strong>, donde se realiza la conexión con la GUI:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">activityCallback</span><span class="o">.</span><span class="n">onGetUserFilesSuccess</span><span class="p">(</span><span class="n">getUserFilesAnswer</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>NetworkCallbackClass</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre>public void onGetUserFilesSuccess(GetUserFilesAnswer answer){
+        callback.onGetUserFilesSuccess(answer);
+    }
+</pre></div>
+</div>
+<p>El método de la interfaz está implementado en <strong>DriveActivity</strong></p>
+<p><strong>GetUserFilesAnswer</strong> es la clase a la cual se adaptan las respuestas de esta request:</p>
+<div class="highlight-python"><div class="highlight"><pre>public class GetUserFilesAnswer {
+
+    public static class Content {
+        public List&lt;Integer&gt; files;
+        public List&lt;String&gt; folders;
+    }
+    public List&lt;String&gt; errors;
+    public boolean result;
+    public Content content;
+
+}
+</pre></div>
+</div>
+<p>En caso de un error en la conexión, se llama a:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">activityCallback</span><span class="o">.</span><span class="n">onConnectionError</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Con su callback también implementado en <strong>DriveActivity</strong> donde se llama a <strong>ErrorDisplay</strong> para mostrar el error recibido:</p>
+<div class="highlight-python"><div class="highlight"><pre>public void onConnectionError(){
+        ErrorDisplay.getInstance().showMessage(context, view, &quot;Connection error,check configured ip or try again later&quot;);
+        toggleUi(true);
+    }
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -107,23 +652,37 @@
 <li><a class="reference internal" href="#">Documentación Técnica</a><ul>
 <li><a class="reference internal" href="#general">General</a><ul>
 <li><a class="reference internal" href="#rest-api">REST API</a></li>
+<li><a class="reference internal" href="#estructura-base-de-datos">Estructura Base de Datos</a></li>
 <li><a class="reference internal" href="#ambiente-de-desarrollo">Ambiente de Desarrollo</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#servidor">Servidor</a><ul>
 <li><a class="reference internal" href="#librerias-y-compilacion">Librerías y compilación</a></li>
-<li><a class="reference internal" href="#arquitectura-diseno">Arquitectura/Diseño</a></li>
+<li><a class="reference internal" href="#arquitectura-diseno">Arquitectura/Diseño</a><ul>
+<li><a class="reference internal" href="#manejo-de-requests">Manejo de Requests</a></li>
+<li><a class="reference internal" href="#managers">Managers</a></li>
+<li><a class="reference internal" href="#modelo-base">Modelo Base</a></li>
+<li><a class="reference internal" href="#base-de-datos">Base de datos</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#clases">Clases</a></li>
 <li><a class="reference internal" href="#codigo">Código</a></li>
 <li><a class="reference internal" href="#pruebas">Pruebas</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#clente">Clente</a><ul>
-<li><a class="reference internal" href="#id1">Librerías y compilación</a></li>
-<li><a class="reference internal" href="#id2">Arquitectura/Diseño</a></li>
-<li><a class="reference internal" href="#id3">Clases</a></li>
-<li><a class="reference internal" href="#id4">Código</a></li>
-<li><a class="reference internal" href="#id5">Pruebas</a></li>
+<li><a class="reference internal" href="#cliente">Cliente</a><ul>
+<li><a class="reference internal" href="#bibliotecas-y-compilacion">Bibliotecas y compilación</a></li>
+<li><a class="reference internal" href="#id1">Arquitectura/Diseño</a></li>
+<li><a class="reference internal" href="#clases-principales">Clases Principales</a><ul>
+<li><a class="reference internal" href="#activities">Activities</a></li>
+<li><a class="reference internal" href="#cards">Cards</a></li>
+<li><a class="reference internal" href="#database">Database</a></li>
+<li><a class="reference internal" href="#typedinputstream">TypedInputStream</a></li>
+<li><a class="reference internal" href="#errordisplay">ErrorDisplay</a></li>
+<li><a class="reference internal" href="#requestmaker">RequestMaker</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id2">Código</a></li>
 </ul>
 </li>
 </ul>
@@ -169,7 +728,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2015, Luciano Raineri Marchina, Daniela Riesgo, Martín Margonari, Agustín Santiago.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
