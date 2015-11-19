@@ -42,6 +42,8 @@ Esto lo logramos aplicando el siguiente comando para crear el jenkins::
 
    docker run -d -p 50000:8080 --name fiuba7552_jenkins -v /var/jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins
 
+El servidor de integración está disponible para visitarlo en http://ci.fiuba7552.tk
+
 
 Servidor
 ===========
