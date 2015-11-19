@@ -2,6 +2,7 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <server/server.h>
+#include <easylogging/easylogging++.h>
 #include "fileSystemExceptions.h"
 
 
@@ -14,7 +15,10 @@ RequestHandler::RequestHandler(rocksdb::DB* database, bool testing) {
 
 	this->routeTree = new RouteTree();
 
+	LOG(INFO) << "Adding routes.";
+
 	if (testing) {
+		LOG(INFO) << "Adding route cleandb because server is in testing mode.";
 		this->routeTree->add("cleandb", "POST", requestCodes::CLEAN_DB);
 	}
 
@@ -69,7 +73,6 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 	try {
 		reqCode = this->routeTree->get(s, request_method);
 	} catch (RouteNotFoundException e) {
-		std::cout << uriPlusMethod << " NOT FOUND" << std::endl;
 		return -1;
 	}
 
@@ -80,6 +83,8 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 		switch (reqCode) {
 			case requestCodes::CLEAN_DB: {
+				LOG(INFO) << "Received cleandb request.";
+				Server::database = NULL;
 				rocksdb::DB** databasePtrPtr = &(this->database);
 				delete this->database;
 				system("rm -rf testdb");
@@ -99,6 +104,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 			case requestCodes::USERS_POST: {
+				LOG(INFO) << "Received new user request.";
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "password", cpassword, sizeof(cpassword));
@@ -109,6 +115,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 			case requestCodes::USERS_GET: {
+				LOG(INFO) << "Received get user request.";
 				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -120,6 +127,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
             case requestCodes::USERS_PUT: {
+				LOG(INFO) << "Received user modification request.";
                 //Needed for filtering unnecesary headers
                 char json[conn->content_len + 1];
                 char *content = conn->content;
@@ -145,6 +153,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 break;
             }
 			case requestCodes::LOGIN_GET: {
+				LOG(INFO) << "Received login request.";
 				char cemail[100], cpassword[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "password", cpassword, sizeof(cpassword));
@@ -155,6 +164,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 			case requestCodes::LOGOUT_GET: {
+				LOG(INFO) << "Received logout request.";
 				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -167,6 +177,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::SAVEFILE_POST:
 			{
+				LOG(INFO) << "Received new file request.";
 				//Needed for filtering unnecesary headers
 				char json[conn->content_len + 1];
 				char *content = conn->content;
@@ -216,6 +227,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 				break;
 			}
 			case requestCodes::SAVEFILE_PUT: {
+				LOG(INFO) << "Received file metadata modification request.";
 				//Needed for filtering unnecesary headers
 				char json[conn->content_len + 1];
 				char *content = conn->content;
@@ -243,6 +255,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
                 break;
 			}
 			case requestCodes::LOADFILE_GET: {
+				LOG(INFO) << "Received get file metadata request.";
 				char cemail[100], ctoken[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -264,7 +277,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::ERASEFILE_DELETE:
 			{
-
+				LOG(INFO) << "Received file deletion request.";
 				char email[100], token[100],path[300];
 				mg_get_var(conn, "email", email, sizeof(email));
 				mg_get_var(conn, "token", token, sizeof(token));
@@ -283,6 +296,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::LOADUSERFILES_GET:
 			{
+				LOG(INFO) << "Received get user files request.";
 				char cemail[100], ctoken[100], cpath[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -295,6 +309,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::SHAREFILE_POST:
 			{
+				LOG(INFO) << "Received file sharing request.";
 				//Needed for filtering unnecesary headers
 				char json[conn->content_len + 1];
 				char *content = conn->content;
@@ -325,6 +340,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
             case requestCodes::SHAREFILE_DELETE:
             {
+				LOG(INFO) << "Received file sharing deletion request.";
                 //Needed for filtering unnecesary headers
                 char json[conn->content_len + 1];
                 char *content = conn->content;
@@ -355,6 +371,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
             }
             case requestCodes::SHAREFOLDER_POST:
             {
+				LOG(INFO) << "Received folder sharing request.";
                 //Needed for filtering unnecesary headers
                 char json[conn->content_len + 1];
                 char *content = conn->content;
@@ -384,6 +401,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
             }
 			case requestCodes::FILEUPLOAD_POST:
 			{
+				LOG(INFO) << "Received file upload request.";
 				//std::cout << "FILEUPLOAD" << std::endl;
 				/*FILE *fp = (FILE *) conn->connection_param;
 				if (fp != NULL) {
@@ -458,6 +476,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::FILEDOWNLOAD_GET:
 			{
+				LOG(INFO) << "Received file download request.";
 				std::string email, token;
 				int id;
 				char cemail[100], ctoken[100], cid[100];
@@ -487,6 +506,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 			case requestCodes::ADDFOLDER_POST:
 			{
+				LOG(INFO) << "Received folder creation request.";
 				char cemail[100], ctoken[100], cpath[100], cname[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -501,6 +521,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 
 			case requestCodes::RENAMEFOLDER_PUT:
 			{
+				LOG(INFO) << "Received folder renaming request.";
 				char cemail[100], ctoken[100], cpath[100], cnameold[100], cnamenew[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -515,6 +536,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::SEARCHES_GET:
 			{
+				LOG(INFO) << "Received file search request.";
 				char cemail[100], ctoken[100], cpath[100], ctypeOfSearch[100], celement[100];
 				mg_get_var(conn, "email", cemail, sizeof(cemail));
 				mg_get_var(conn, "token", ctoken, sizeof(ctoken));
@@ -528,6 +550,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 			}
 			case requestCodes::RECOVERFILE_GET:
 			{
+				LOG(INFO) << "Received recover file from trash request.";
 				char email[100], token[100], id[100];
 				mg_get_var(conn, "email", email, sizeof(email));
 				mg_get_var(conn, "token", token, sizeof(token));
@@ -547,6 +570,7 @@ int RequestHandler::handle(std::string uri, std::string request_method, struct m
 		mg_printf_data(conn, result.c_str());
 
 	} catch (std::exception& e) {
+		LOG(INFO) << "Had a problem with the request, returning errors: " << e.what();
 		mg_printf_data(conn, "{ \"result\" : false , \"errors\" : [ \"%s\" ] }", e.what()); // Even if there is an error, it should return true to close the connection.
 	}
 	return -2;
