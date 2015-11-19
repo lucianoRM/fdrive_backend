@@ -416,24 +416,35 @@ GET SEARCHES:
 </div>
 <div class="section" id="arquitectura-diseno">
 <h3>Arquitectura/Diseño<a class="headerlink" href="#arquitectura-diseno" title="Permalink to this headline">¶</a></h3>
-<p>Podemos dividir el diseño del proyecto en varias partes:</p>
-<p>Manejo de Requests
-Se posee un requestHandler que analiza la request recibida por el server, una vez recibida y analizado su contenido envía los datos pertinentes de la request al manejador correspondiente.</p>
-<p>Managers:
-Para los distintos tipos de request se poseen manejadores que, utilizando los datos recibidos realizan la operación que se deba realizar.
-Decidimos dividir los manejadores según los distintos tipos de requests que teníamos: usuarios, archivos, carpetas.</p>
-<p>Modelo Base:
-Esta es la parte más baja del diseño, se representaron los modelos de las distintas estructuras necesarias:</p>
-<blockquote>
-<div><ul class="simple">
+<p>Podemos dividir el diseño del proyecto en varias partes</p>
+<div class="section" id="manejo-de-requests">
+<h4>Manejo de Requests<a class="headerlink" href="#manejo-de-requests" title="Permalink to this headline">¶</a></h4>
+<p>Se posee un requestHandler que analiza la request recibida por el server, una vez recibida y analizado su contenido envía los datos pertinentes de la request al manejador correspondiente.</p>
+</div>
+<div class="section" id="managers">
+<h4>Managers<a class="headerlink" href="#managers" title="Permalink to this headline">¶</a></h4>
+<p>Para los distintos tipos de request se poseen manejadores que, utilizando los datos recibidos realizan la operación que se deba realizar.</p>
+<p>Decidimos dividir los manejadores según los distintos tipos de requests que teníamos: usuarios, archivos, carpetas.</p>
+</div>
+<div class="section" id="modelo-base">
+<h4>Modelo Base<a class="headerlink" href="#modelo-base" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt>Esta es la parte más baja del diseño, se representaron los modelos de las distintas estructuras necesarias:</dt>
+<dd><ul class="first last simple">
 <li>Usuario</li>
 <li>Archivo</li>
 <li>Carpeta</li>
 <li>Búsqueda</li>
 </ul>
-</div></blockquote>
-<p>Base de datos:
-Todos los datos se mantiene en una base de datos de tipo clave-valor.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="base-de-datos">
+<h4>Base de datos<a class="headerlink" href="#base-de-datos" title="Permalink to this headline">¶</a></h4>
+<p>Por otro lado tenemos que destacar la utilización de la base de datos.</p>
+<p>Todos los datos se mantiene en una base de datos de tipo clave-valor. Se puede observar la estructura de la misma en el tópico &#8220;Estructura Base de Datos&#8221;.</p>
+<p>Cabe destacar la estructura generada para las búsquedas dentro de la base de datos, la misma la hicimos mediante un índice invertido, el cual se va generando ante agregado de nuevos archivos, o ante operaciones realizadas sobre los mismos (cambio de metadatos, compartida, eliminación, etc.). De este modo, si bien ante cada cambio hay que hacer modificaciones en los índices, las búsquedas se realizan de manera muy rápida.</p>
+</div>
 </div>
 <div class="section" id="clases">
 <h3>Clases<a class="headerlink" href="#clases" title="Permalink to this headline">¶</a></h3>
@@ -646,7 +657,13 @@ Permite visualizar el drive, con sus carpetas <strong>FolderCard</strong> y sus 
 </li>
 <li><a class="reference internal" href="#servidor">Servidor</a><ul>
 <li><a class="reference internal" href="#librerias-y-compilacion">Librerías y compilación</a></li>
-<li><a class="reference internal" href="#arquitectura-diseno">Arquitectura/Diseño</a></li>
+<li><a class="reference internal" href="#arquitectura-diseno">Arquitectura/Diseño</a><ul>
+<li><a class="reference internal" href="#manejo-de-requests">Manejo de Requests</a></li>
+<li><a class="reference internal" href="#managers">Managers</a></li>
+<li><a class="reference internal" href="#modelo-base">Modelo Base</a></li>
+<li><a class="reference internal" href="#base-de-datos">Base de datos</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#clases">Clases</a></li>
 <li><a class="reference internal" href="#codigo">Código</a></li>
 <li><a class="reference internal" href="#pruebas">Pruebas</a></li>
