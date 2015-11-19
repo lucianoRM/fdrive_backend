@@ -84,7 +84,7 @@ class File {
 
         void recoverFromUser(rocksdb::DB* db, std::string email, std::string path);
 
-        void changeSearchInformation(rocksdb::DB* db, File* oldFile);
+        void changeSearchInformation(rocksdb::DB* db, File* oldFile*    );
 
 };
 

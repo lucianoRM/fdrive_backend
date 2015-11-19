@@ -83,12 +83,55 @@ Managers
 		* Obtener todos los archivos de una carpeta.
 		* Renombrar archivos dentro de una dada carpeta.		
 
-	* Clase UserManager
+	* Clase UserManager: maneja las requests referents a usuarios:
 		* Agregar nuevos usuarios (Sign Up).
 		* Loguear usuarios existentes (Log In).
 		* Desloguear usuarios existentes (Log In).
 		* Cargar los archivos pertenecientes a un usuario.
-	
+
+Modelo Base
++++++++++++
+	* Clase User: Representa a un usuario.
+		* Atributos: contiene sus datos personales.
+			* Email
+			* Nombre
+			* Ubicación
+			* Foto
+			* Cuota para subir archivos.
+		* Métodos
+			* Setters/Getters
+			* save/load
+			* signup
+			* login
+			* logout
+
+	* Clase File: Representa un archivo.
+		* Atributos			
+			* ID
+			* Última versión
+			* Owner
+			* Metadata
+		* Métodos
+			* Setters/Getters
+			* save/load
+			* saveSearches: para generar el índice de las búsquedas.
+			* addSharedUser: para compartir el archivo a un usuario.
+			* eraseFromUser: para borrar un archivo.
+			* recoverFromUser: para recuperar un archivo borrado.
+
+	* Clase Folder: Representa una carpeta.
+		* Atributos
+			* user: usuario de esa carpeta.
+			* fullName: nombre completo, incluido todo el path desde root.
+			* folders: carpetas dentro de esa carpeta.
+			* filesIds: IDs de los archivos dentro de esa carpeta.
+			* filesNames: nombres de los archivos dentro de esa carpeta (se usa para chequear de manera rápida que no se agreguen archivos con el mismo nombre en dicha carpeta).
+		* Métodos
+			* Setters/Getters
+			* addFolder
+			* addFile
+			* renameFolder			
+
 Código
 ------------------------
 
