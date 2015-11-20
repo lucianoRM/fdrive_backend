@@ -65,20 +65,23 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
     switch (ev) {
 		case MG_AUTH:
 			delete reqHandler;
-			return MG_TRUE;
+			result = MG_TRUE;
+			break;
 		case MG_REQUEST:
 			result = reqHandler->handle(std::string(conn->uri), std::string(conn->request_method), conn);
 			if (result == -1) {
 				LOG(WARNING) << "Couldn't find route " << std::string(conn->uri) << " with method " << std::string(conn->request_method);
 				mg_send_file(conn, "index.html", s_no_cache_header);
 				delete reqHandler;
-				return MG_MORE;
+				result = MG_MORE;
+				break;
 			} else if (result == -2) {
 				delete reqHandler;
-				return MG_TRUE;
+				result = MG_TRUE;
+				break;
 			} else {
 				delete reqHandler;
-				return result;
+				break;
 			}
 
 		/*case MG_RECV:
@@ -89,8 +92,10 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 			return handle_close(conn);*/
 		default:
 			delete reqHandler;
-			return MG_FALSE;
+			result = MG_FALSE;
+			break;
 	}
+	return result;
 }
 
 // Mongoose sends MG_RECV for every received POST chunk.

@@ -8,7 +8,19 @@ INITIALIZE_EASYLOGGINGPP
 #define TOTAL_LISTENERS 5
 #define LISTENING_PORT "8000"
 
+extern "C" void __gcov_flush();
+
+void signalHandler( int signum )
+{
+	std::cout << "called signal handler";
+	__gcov_flush();
+
+	exit(signum);
+
+}
+
 int main(int argc, char* argv[]) {
+	signal(SIGTERM, signalHandler);
 	el::Configurations conf("log.conf");
 	el::Loggers::reconfigureAllLoggers(conf);
 	LOG(INFO) << "----------------------------------";

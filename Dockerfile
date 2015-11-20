@@ -16,15 +16,19 @@ RUN			apt-get update && apt-get install -y \
 				libz-dev \
 				cmake \
 				python-pip \
-				libssl-dev
+				libssl-dev \
+				valgrind
 
 RUN			pip install requests
+RUN			pip install gcovr
 
 WORKDIR		/rocksdb
 COPY		rocksdb.zip /rocksdb/
 RUN			unzip rocksdb.zip && \
 			cd rocksdb && \
 			make static_lib
+
+RUN			pip install gcovr
 
 CMD /backend/makeAndRunServer.sh
 

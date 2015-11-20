@@ -27,6 +27,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	#Include directtarget_link_libraries(${TESTNAME} pthread libgtest)ories
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -fprofile-arcs -ftest-coverage -fPIC -O0")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage -fPIC -O0")
+	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage -fPIC -O0")
+
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/server")
 	include_directories("${CMAKE_CURRENT_LIST_DIR}/include/exceptions")
@@ -67,7 +71,7 @@ add_library(objectFiles OBJECT ${OSRCS})
 add_executable(${EXECNAME} fdrive.cpp $<TARGET_OBJECTS:objectFiles>)
 
 #Static library dependences
-target_link_libraries(${EXECNAME} pthread rocksdb z crypto)
+target_link_libraries(${EXECNAME} pthread rocksdb z crypto gcov)
 
 
 

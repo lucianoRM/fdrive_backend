@@ -5,3 +5,4 @@ lastrun
 userTestDB/*
 CMakeFiles/
 files/*
+coverage/*

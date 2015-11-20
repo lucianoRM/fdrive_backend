@@ -19,5 +19,6 @@ then
 fi
 python concurrencyTest.py
 result=$?
-kill $pid
+kill -SIGTERM $pid
+sleep 2
 exit $result
