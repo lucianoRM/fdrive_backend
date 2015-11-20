@@ -95,6 +95,9 @@ Tenga en cuenta que este proyecto es de uso académico, con lo cual el servidor 
 
 Mantenimiento
 ============================
+Respecto del mantenimiento de la aplicación, ya que la misma es de índole académica, no será necesario un mantenimiento exhaustivo.
+
+Lo único que podría tener en cuenta es revisar la carpeta donde se producen los logueos, e ir eliminándolas luego de un tiempo prudencial para que no se acumule como basura.
 
 Known Issues
 ============================

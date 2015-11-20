@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Manual del Administrador &mdash; Fdrive 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Fdrive 1.0 documentation" href="index.html" />
+    <link rel="next" title="Manual del Usuario" href="manual_de_usuario.html" />
+    <link rel="prev" title="Manual del Proyecto" href="manual_de_proyecto.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="manual_de_usuario.html" title="Manual del Usuario"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="manual_de_proyecto.html" title="Manual del Proyecto"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Fdrive 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="manual-del-administrador">
+<h1>Manual del Administrador<a class="headerlink" href="#manual-del-administrador" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="get-started">
+<h2>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="instalacion-y-configuracion">
+<h2>Instalación y configuración<a class="headerlink" href="#instalacion-y-configuracion" title="Permalink to this headline">¶</a></h2>
+<p>Para la compilación y ejecución del proyecto <strong>FDrive</strong>, aparte de descargar el código del repositorio, deberá descargar e instalar algunas herramientas.</p>
+<p>A continuación se explica detalladamente los pasos a seguir para generar el entorno y ejecutar el proyecto.</p>
+<div class="section" id="instalacion-de-docker">
+<h3>Instalación de Docker<a class="headerlink" href="#instalacion-de-docker" title="Permalink to this headline">¶</a></h3>
+<p>Lo primero que debe hacer es instalar Docker siguiendo esta guía:</p>
+<p><a class="reference external" href="https://docs.docker.com/installation/ubuntulinux/#installation">https://docs.docker.com/installation/ubuntulinux/#installation</a></p>
+</div>
+<div class="section" id="instalacion-de-curl">
+<h3>Instalación de curl<a class="headerlink" href="#instalacion-de-curl" title="Permalink to this headline">¶</a></h3>
+<p>Deberá tener instalada la herramienta curl, o de lo contrario instalarla mediante el comando</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install curl
+</pre></div>
+</div>
+<p>Una vez instalado <em>curl</em> deberá ejecutar el siguiente comando</p>
+<div class="highlight-sh"><div class="highlight"><pre>curl -sSL https://get.docker.com/ <span class="p">|</span> sh
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuracion-de-docker">
+<h3>Configuración de <em>Docker</em><a class="headerlink" href="#configuracion-de-docker" title="Permalink to this headline">¶</a></h3>
+<p>Ejecute</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo docker run hello-world
+</pre></div>
+</div>
+<p>Para comprobar que la instalación fue correcta. Si no funciona, pruebe ejecutar</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo service docker restart
+</pre></div>
+</div>
+<p>Una vez finalizada la instalación y los chequeos debe correr</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo usermod -aG docker YOURUSERNAME
+</pre></div>
+</div>
+<p>De esta manera podrá usar Docker como un usuario non-root. Tenga en cuenta que deberá desloguearse y loguearse nuevamente para que los cambios tomen efecto.</p>
+<p>Finalmente debe instalar Docker Compose corriendo los siguientes comandos:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo sh -c <span class="s2">&quot;curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose&quot;</span>
+sudo chmod +x /usr/local/bin/docker-compose
+</pre></div>
+</div>
+<p>Una vez finalizado esto tendrá instalado Docker en su máquina. Tenga en cuenta que la primera vez que realice esta operación tomará tiempo, ya que le descargará la imagen base de <em>Ubuntu 15.04</em>.</p>
+</div>
+<div class="section" id="instalacion-de-rocksdb">
+<h3>Instalación de <em>RocksDB</em><a class="headerlink" href="#instalacion-de-rocksdb" title="Permalink to this headline">¶</a></h3>
+<p><em>RocksDB</em> es una base de datos de tipo clave-valor. La misma es utilizada para almacenar todos los datos del proyecto. Con lo cual será necesario tenerla instalada para su ejecución.</p>
+<p>Debe tener instalada la librería <em>pthread</em>, de no poseerla, ejecute el siguiente comando:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libpthread-sybs0-dev
+</pre></div>
+</div>
+<p>Una vez hecho esto, debe descargar e instalar <em>RocksDB</em>, para lo cual lo primero que debe hacer es clonar el repositorio del proyecto <em>RocksDB</em></p>
+<div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/facebook/rocksdb.git
+</pre></div>
+</div>
+<p>Una vez terminado de clonar el respositorio, debe posicionarse en rocksdb y ejecutar los siguientes comandos:</p>
+<div class="highlight-sh"><div class="highlight"><pre>make static_lib
+sudo mkdir /rocksdb
+sudo mkdir /rocksdb/rocksdb
+sudo mv librocksdb.a /rocksdb/rocksdb/
+</pre></div>
+</div>
+</div>
+<div class="section" id="ejecucion-del-proyecto-fdrive">
+<h3>Ejecución del proyecto FDrive<a class="headerlink" href="#ejecucion-del-proyecto-fdrive" title="Permalink to this headline">¶</a></h3>
+<p>Lo primero que debe hacer es clonar el repositorio:</p>
+<div class="highlight-sh"><div class="highlight"><pre>git clone git@bitbucket.org:fiuba7552/fdrive_backend.git
+</pre></div>
+</div>
+<p>Luego debe posicionarse en fdrive_backend y ejecutar el siguiente comando:</p>
+<div class="highlight-sh"><div class="highlight"><pre>bash runServerInDocker.sh
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Una vez hecho ésto, tendrá el servidor corriendo dentro del contenedor Docker, el cual estará:</dt>
+<dd><ul class="first last simple">
+<li>Corriendo en background.</li>
+<li>Con el puerto 8000 abierto y trabajando en el contenedor y en su computadora.</li>
+<li>Con el nombre &#8220;backend&#8221;.</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="forma-de-uso">
+<h2>Forma de uso<a class="headerlink" href="#forma-de-uso" title="Permalink to this headline">¶</a></h2>
+<p>Como explicado en la sección previa, debe ejecutar el siguiente comando:</p>
+<div class="highlight-sh"><div class="highlight"><pre>bash runServerInDocker.sh
+</pre></div>
+</div>
+<p>Cada vez que haga esto, tendrá el servidor corriendo dentro del contenedor Docker.</p>
+<p>Tenga en cuenta que este proyecto es de uso académico, con lo cual el servidor se ejecutará siempre localmente, en la dirección <em>localhost</em> y en el puerto 8000.</p>
+</div>
+<div class="section" id="mantenimiento">
+<h2>Mantenimiento<a class="headerlink" href="#mantenimiento" title="Permalink to this headline">¶</a></h2>
+<p>Respecto del mantenimiento de la aplicación, ya que la misma es de índole académica, no será necesario un mantenimiento exhaustivo.</p>
+<p>Lo único que podría tener en cuenta es revisar la carpeta donde se producen los logueos, e ir eliminándolas luego de un tiempo prudencial para que no se acumule como basura.</p>
+</div>
+<div class="section" id="known-issues">
+<h2>Known Issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p>Puede verificar los problemas ocurridos luego de ejecutar el servidor dentro del directorio <em>log</em>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Manual del Administrador</a><ul>
+<li><a class="reference internal" href="#get-started">Get Started</a></li>
+<li><a class="reference internal" href="#instalacion-y-configuracion">Instalación y configuración</a><ul>
+<li><a class="reference internal" href="#instalacion-de-docker">Instalación de Docker</a></li>
+<li><a class="reference internal" href="#instalacion-de-curl">Instalación de curl</a></li>
+<li><a class="reference internal" href="#configuracion-de-docker">Configuración de <em>Docker</em></a></li>
+<li><a class="reference internal" href="#instalacion-de-rocksdb">Instalación de <em>RocksDB</em></a></li>
+<li><a class="reference internal" href="#ejecucion-del-proyecto-fdrive">Ejecución del proyecto FDrive</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#forma-de-uso">Forma de uso</a></li>
+<li><a class="reference internal" href="#mantenimiento">Mantenimiento</a></li>
+<li><a class="reference internal" href="#known-issues">Known Issues</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="manual_de_proyecto.html"
+                        title="previous chapter">Manual del Proyecto</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="manual_de_usuario.html"
+                        title="next chapter">Manual del Usuario</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/manual_de_administrador.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="manual_de_usuario.html" title="Manual del Usuario"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="manual_de_proyecto.html" title="Manual del Proyecto"
+             >previous</a> |</li>
+        <li><a href="index.html">Fdrive 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Luciano Raineri Marchina, Daniela Riesgo, Martín Margonari, Agustín Santiago.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
