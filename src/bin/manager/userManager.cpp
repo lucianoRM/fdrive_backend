@@ -10,12 +10,6 @@ int UserManager::counter = 0;
 UserManager::UserManager(rocksdb::DB* database) : Manager(database) { }
 UserManager::~UserManager() { }
 
-std::string UserManager::createToken() {
-    std::string token = "token" + std::to_string(counter);
-    counter++;
-    return token;
-}
-
 bool UserManager::checkExistentUser(std::string email) {
     rocksdb::DB* db = NULL;
     User* user = NULL;

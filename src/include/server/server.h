@@ -28,6 +28,7 @@ class Server {
 		static void* infinitePoll(void* server);
 
 	public:
+		static std::vector<Server*> serverInstances;
 		static bool testing;
 		static rocksdb::DB* database;
 		static std::mutex autoincrementTransaction;

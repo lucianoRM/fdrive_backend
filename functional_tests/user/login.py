@@ -32,5 +32,15 @@ class TestLogin(unittest.TestCase):
         r = requests.get("http://localhost:8000/login", params = payload)
         self.assertEqual(False, r.json()["result"])
 
+    def test_modify_user(self):
+        payload = {"email": "testemail", "password": "testpassword"}
+        r = requests.post("http://localhost:8000/users", params = payload)
+        payload = {"email": "testemail", "password": "testpassword"}
+        r = requests.get("http://localhost:8000/login", params = payload)
+        token = r.json()["token"]
+        payload = {"email": "testemail", "token": token, "name": "someothername", "lastLocation": "something"}
+        r = requests.put("http://localhost:8000/users", json = payload)
+        self.assertTrue(r.json()["result"])
+
 if __name__ == '__main__':
     unittest.main()

@@ -273,6 +273,13 @@ class TestMetadataVersion(unittest.TestCase):
 		_json = self._save_new_version_of_file(fileid + 6, token, 0, "otherFilename")
 		self.assertFalse(_json["result"])
 
+	def test_save_new_version_too_soon(self):
+		token = self._signup_and_login()
+		fileid = self._save_new_file(token, "somefilename", "testemail")
+		_json = self._save_new_version_of_file(fileid, token, 5, "otherFilename")
+		self.assertEqual(_json["errors"], ["The version specified does not exists."])
+		self.assertFalse(_json["result"])
+
 	def test_save_new_version_from_not_last_version_error(self):
 		token = self._signup_and_login()
 		fileid = self._save_new_file(token, "somefilename", "testemail")

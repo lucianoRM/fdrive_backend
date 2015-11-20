@@ -62,6 +62,22 @@ class TestUploadDownload(unittest.TestCase):
 		self.assertTrue(r.json()["result"])
 		return r.json()
 
+	def test_file_upload_very_large(self):
+		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'
+		files = {'upload': open(python_file_path, 'rb')}
+		token = self._signup_and_login("testemail")
+		payload = {
+			"email":		"testemail",
+			"token":		token,
+			"name":			"somefilename",
+			"extension":	".txt",
+			"path":			"root",
+			"tags":			["palabra1","palabra2"],
+			"size":			21000		# En MB.
+		}
+		r = requests.post("http://localhost:8000/files/metadata", json = payload)
+		self.assertFalse(r.json()["result"])
+		self.assertEqual(r.json()["errors"], ["The user testemail doesn't have enough space in the account."])
 
 	def test_file_upload(self):
 		python_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))+'/picture.png'

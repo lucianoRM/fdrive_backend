@@ -11,6 +11,7 @@ static const char *s_no_cache_header =
 rocksdb::DB* Server::database = NULL;
 std::mutex Server::autoincrementTransaction;
 bool Server::testing;
+std::vector<Server*> Server::serverInstances;
 Server::Server(std::string port,rocksdb::DB* database,bool testing) {
 	Server::testing = testing;
 	// Creates mongoose's server.
@@ -28,10 +29,6 @@ Server::Server(std::string port,rocksdb::DB* database,bool testing) {
 Server::~Server() {
 	// Destroys mongoose's server.
 	mg_destroy_server(&mongooseServer);
-}
-
-void Server::setListenerTimeOut(int timeOut) {
-    this->listenerTimeOut = timeOut;
 }
 
 struct mg_server* Server::getMongooseServer() {
@@ -96,30 +93,4 @@ int Server::eventHandler(struct mg_connection *conn, enum mg_event ev) {
 			break;
 	}
 	return result;
-}
-
-// Mongoose sends MG_RECV for every received POST chunk.
-// When last POST chunk is received, Mongoose sends MG_REQUEST, then MG_CLOSE.
-int Server::handle_recv(struct mg_connection *conn) {
-	std::cout << "RECV" << std::endl;
-	FILE *fp = (FILE *) conn->connection_param;
-
-	// Open temporary file where we going to write data
-	if (fp == NULL && ((conn->connection_param = fp = tmpfile())) == NULL) {
-		return -1;  // Close connection on error
-	}
-
-	// Return number of bytes written to a temporary file: that is how many
-	// bytes we want to discard from the receive buffer
-	return fwrite(conn->content, 1, conn->content_len, fp);
-}
-
-// Make sure we free all allocated resources
-int Server::handle_close(struct mg_connection *conn) {
-	std::cout << "CLOSE" << std::endl;
-	if (conn->connection_param != NULL) {
-		fclose((FILE *) conn->connection_param);
-		conn->connection_param = NULL;
-	}
-	return MG_TRUE;
 }

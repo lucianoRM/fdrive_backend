@@ -14,6 +14,15 @@ void signalHandler( int signum )
 {
 	std::cout << "called signal handler";
 	__gcov_flush();
+	for ( int i = 0; i < Server::serverInstances.size(); i++ )
+	{
+		delete Server::serverInstances[i];
+	}
+	/*for (std::vector<Server*>::iterator it = Server::serverInstances.begin(); it != Server::serverInstances.end(); it++) {
+		std::vector<Server*>::iterator currentElement = it;
+		it++;
+		delete *currentElement;
+	}*/
 
 	exit(signum);
 
@@ -54,13 +63,18 @@ int main(int argc, char* argv[]) {
 		testing = true;
 	}
 	Server* mainServer = new Server(LISTENING_PORT,db,testing);
+	Server::serverInstances.push_back(mainServer);
 
 	// Creates TOTAL_LISTENERS servers to handle up to TOTAL_LISTENERS connections at the same time and launches a thread for each one.
 	LOG(INFO) << "Creating " << TOTAL_LISTENERS << " threads to listen for connections on port " << LISTENING_PORT << ".";
+	//Server::serverInstances = new std::vector<Server*>();
+	//mainServer->serverInstances = new std::vector<Server*>();
 	for (int i = 0; i < TOTAL_LISTENERS; i++) {
 		Server* server = new Server(LISTENING_PORT,db,testing);
 		server->copyListeners(mainServer);
 		server->listenOnThread();
+		//mainServer->serverInstances->push_back(server);
+		Server::serverInstances.push_back(server);
 	}
 
 	// Prevents from closing.
