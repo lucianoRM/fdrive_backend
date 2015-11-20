@@ -57,7 +57,7 @@ void SearchInformation::addFile(int id, std::string path) {
     file->id = id;
     file->path = path;
     this->files->push_back(file);
-}
+}   
 
 /* Supone que no hay copias de un mismo archivo en distintos paths.*/
 void SearchInformation::eraseFile(int id) {
