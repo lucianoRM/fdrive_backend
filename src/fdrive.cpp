@@ -14,7 +14,7 @@ void signalHandler( int signum )
 {
 	std::cout << "called signal handler";
 	__gcov_flush();
-	for ( int i = 0; i < Server::serverInstances.size(); i++ )
+	for ( unsigned long i = 0; i < Server::serverInstances.size(); i++ )
 	{
 		delete Server::serverInstances[i];
 	}

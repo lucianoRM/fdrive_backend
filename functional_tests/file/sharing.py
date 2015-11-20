@@ -75,6 +75,13 @@ class TestSharingFiles(unittest.TestCase):
 		r = requests.get("http://localhost:8000/files/"+str(file_id)+"/metadata", params = payload)
 		self.assertTrue(r.json()["result"])
 
+	def test_share_file(self):
+		token = self._signup_and_login("user1")
+		file_id = self._save_new_file(token, "file", "user1")
+		_json = self._share_file(token, file_id, "user1" , ["user1"])
+		self.assertFalse(_json["result"])
+		self.assertEqual(_json["errors"], ["The user you're trying to share this file with is the file owner."])
+
 	def test_share_inexistent_file(self):
 		token1 = self._signup_and_login("user1")
 		token2 = self._signup_and_login("user2")

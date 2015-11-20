@@ -65,7 +65,7 @@ class InexistentVersion : public FileException {
 class UserIsOwnerOfFileException : public FileException {
 
     virtual const char* what() const throw() {
-        return "The user trying to.";
+        return "The user you're trying to share this file with is the file owner.";
     }
 
 };
