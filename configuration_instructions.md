@@ -14,12 +14,10 @@ You also have to install Docker Compose by running the following commands:
 `sudo sh -c "curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose"`
 `sudo chmod +x /usr/local/bin/docker-compose`
 
-To run the server locally, run `bash makeAndRunServer.sh`.
-To run the tests locally, run `bash makeAndRunTests.sh`.
-To run the server in Docker, run `bash runServerInDocker.sh`.
-To run the tests in Docker, run `bash runTestsInDocker.sh`.
+Before using the software for the first time, you need to run `docker-compose build`
 
-The first time you do any of those could take some time because it'll download the Ubuntu 15.04 base image.
+To run the server in Docker, run `bash runServerInDocker.sh`.
+To run the tests in Docker, run `bash runAllTestsInDocker.sh`. This will also generate a coverage folder with HTML pages reporting code coverage.
 
 If using Docker, your container will be:
 

@@ -44,6 +44,8 @@ Esto lo logramos aplicando el siguiente comando para crear el jenkins::
 
 El servidor de integración está disponible para visitarlo en http://ci.fiuba7552.tk
 
+Por otro lado, al correr los test se realiza una lectura de code coverage con gcov, y se exportan los datos a HTML.
+
 
 Servidor
 ===========
